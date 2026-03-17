@@ -1,24 +1,33 @@
 {
   inputs,
+  pkgs,
   userName,
   hostName,
-  pkgs,
   ...
 }:
 {
   imports = [
-    inputs.home-manager.darwinModules.home-manager
+    ./home-manager.nix
   ];
 
-  nix.settings.experimental-features = [
-    "nix-command"
-    "flakes"
-  ];
+  nix = {
+    settings = {
+      experimental-features = [
+        "nix-command"
+        "flakes"
+      ];
+    };
+  };
 
   nixpkgs.hostPlatform = "aarch64-darwin";
 
-  networking.hostName = hostName;
-  system.primaryUser = userName;
+  system = {
+    primaryUser = userName;
+    stateVersion = 6;
+  };
 
-  system.stateVersion = 6;
+  networking = {
+    hostName = hostName;
+  };
+
 }

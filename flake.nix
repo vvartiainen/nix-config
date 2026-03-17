@@ -16,7 +16,13 @@
   };
 
   outputs =
-    inputs@{ self, darwin, ... }:
+    inputs@{
+      self,
+      darwin,
+      nixpkgs,
+      home-manager,
+      ...
+    }:
     let
       userName = "vvarti";
       hostName = "default";
