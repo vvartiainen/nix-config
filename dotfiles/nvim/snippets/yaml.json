@@ -1,0 +1,7 @@
+{
+  "schema": {
+    "prefix": "sc",
+    "body": "# yaml-language-server: $schema=/absolute/path/to/schema",
+    "description": "YAML LS Schema definision"
+  }
+}

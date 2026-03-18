@@ -26,6 +26,7 @@
     let
       userName = "vvarti";
       hostName = "default";
+      repoRoot = "/Users/${userName}/prog/nix-config";
     in
     {
       darwinConfigurations.${hostName} = darwin.lib.darwinSystem {
@@ -39,6 +40,7 @@
             self
             userName
             hostName
+            repoRoot
             ;
         };
       };

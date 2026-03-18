@@ -1,0 +1,27 @@
+{
+  "name": "personal-snippets",
+  "contributes": {
+    "snippets": [
+      {
+        "language": "typescript",
+        "path": "./typescript.json"
+      },
+      {
+        "language": "typescriptreact",
+        "path": "./typescript.json"
+      },
+      {
+        "language": "javascriptreact",
+        "path": "./typescript.json"
+      },
+      {
+        "language": "sh",
+        "path": "./shell.json"
+      },
+      {
+        "language": "yaml",
+        "path": "./yaml.json"
+      }
+    ]
+  }
+}

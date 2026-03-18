@@ -1,0 +1,22 @@
+{
+  "shebang": {
+    "prefix": "sb",
+    "body": "#!/bin/bash\n\nset -eou pipefail",
+    "description": "Bash shebang"
+  },
+  "curl": {
+    "prefix": "cur",
+    "body": "curl -s -X -H 'Content-Type: application/json' -d '{\"key\": \"value\"}' http://localhost:3000",
+    "description": "Curl request"
+  },
+  "rsync": {
+    "prefix": "rsync",
+    "body": "rsync -avz --progress ${1:from} ${2:to} ${3}",
+    "description": "Rsync command"
+  },
+  "scp": {
+    "prefix": "scp",
+    "body": "scp ${1:from} ${2:to}",
+    "description": "SCP command"
+  }
+}

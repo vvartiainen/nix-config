@@ -2,6 +2,7 @@
   inputs,
   pkgs,
   userName,
+  repoRoot,
   ...
 }:
 
@@ -20,6 +21,9 @@
     useGlobalPkgs = true;
     useUserPackages = true;
     backupFileExtension = "backup-before-nix";
+    extraSpecialArgs = {
+      inherit repoRoot;
+    };
     users.${userName} = {
       imports = [ ../programs/default.nix ];
       home = {
