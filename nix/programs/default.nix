@@ -17,9 +17,8 @@ in
       GOPATH = "$HOME/golang";
       GOROOT = "/opt/homebrew/opt/go/libexec";
       FZF_DEFAULT_COMMAND = "fd --type f";
-      FZF_CTRL_T_COMMAND = "$FZF_DEFAULT_COMMAND";
+      FZF_CTRL_T_COMMAND = "fd --type f";
       FZF_DEFAULT_OPTS = "--height 80% --bind 'ctrl-y:execute-silent(pbcopy <<< {})+abort' --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8";
-      ZSH_AUTOSUGGEST_STRATEGY = "completion history";
     };
 
     sessionPath = [
@@ -70,6 +69,8 @@ in
     enableCompletion = true;
     autosuggestion = {
       enable = true;
+      # Atuin sets this at runtime; avoid conflicting static defaults.
+      strategy = [ ];
     };
     plugins = [
       {
@@ -86,6 +87,10 @@ in
     oh-my-zsh = {
       enable = true;
       theme = "robbyrussell";
+      # In Nix, oh-my-zsh is store-managed and not self-updated.
+      extraConfig = ''
+        zstyle ':omz:update' mode disabled
+      '';
       plugins = [
         "kitty"
         "aws"
@@ -120,15 +125,12 @@ in
       reloadall = "sudo yabai --load-sa ; yabai --restart-service ; skhd --restart-service ; sketchybar --reload";
     };
     initContent = ''
-      zstyle ':omz:update' mode reminder
-
       source "$HOME/prog/dotfiles/tool-configs/fzf.sh"
 
       # Init tools
-      # eval "$(thefuck --alias)"
+      eval "$(thefuck --alias)"
       eval "$(zoxide init --cmd cd zsh)"
       eval "$(mise activate zsh)"
-      # eval "$(uv generate-shell-completion zsh)"
 
       yy() {
         local tmp
