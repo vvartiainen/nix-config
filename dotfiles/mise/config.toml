@@ -1,0 +1,10 @@
+[tools]
+java = "latest"
+lua = "5.1"
+node = "22"
+"npm:@mermaid-js/mermaid-cli" = "latest"
+"npm:knip" = "latest"
+"npm:neovim" = "latest"
+python = "latest"
+terraform = "latest"
+uv = "latest"

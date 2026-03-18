@@ -5,3 +5,4 @@
 - Remaining symlinks
 - Homebrew
 - Program configs
+- Git configs
