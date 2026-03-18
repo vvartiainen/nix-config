@@ -13,6 +13,7 @@ in
       EDITOR = "nvim";
       VISUAL = "nvim";
       LANG = "en_US.UTF-8";
+      SSH_AUTH_SOCK = "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock";
       GOPATH = "$HOME/golang";
       GOROOT = "/opt/homebrew/opt/go/libexec";
       FZF_DEFAULT_COMMAND = "fd --type f";
