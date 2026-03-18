@@ -8,6 +8,127 @@ let
   dotfilesPath = "${repoRoot}/dotfiles";
 in
 {
+  home = {
+    sessionVariables = {
+      EDITOR = "nvim";
+      VISUAL = "nvim";
+      LANG = "en_US.UTF-8";
+      GOPATH = "$HOME/golang";
+      GOROOT = "/opt/homebrew/opt/go/libexec";
+      FZF_DEFAULT_COMMAND = "fd --type f";
+      FZF_CTRL_T_COMMAND = "$FZF_DEFAULT_COMMAND";
+      FZF_DEFAULT_OPTS = "--height 80% --bind 'ctrl-y:execute-silent(pbcopy <<< {})+abort' --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8";
+      ZSH_AUTOSUGGEST_STRATEGY = "completion history";
+    };
+
+    file.".rgignore".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.rgignore";
+
+    sessionPath = [
+      "/opt/homebrew/opt/libpq/bin"
+      "$HOME/golang/bin"
+      "/opt/homebrew/opt/go/libexec/bin"
+    ];
+
+    packages = with pkgs; [
+      fzf
+      git
+      jq
+      lazydocker
+      lazygit
+      statix
+      yazi
+    ];
+  };
+
+  programs.starship = {
+    enable = true;
+    enableZshIntegration = true;
+  };
+
+  programs.fzf = {
+    enable = true;
+    enableZshIntegration = true;
+  };
+
+  programs.zoxide = {
+    enable = true;
+    enableZshIntegration = true;
+  };
+
+  programs.atuin = {
+    enable = true;
+    enableZshIntegration = true;
+  };
+
+  programs.zsh = {
+    enable = true;
+    enableCompletion = true;
+    history = {
+      path = "$HOME/.zsh_history";
+      size = 100000;
+      save = 100000;
+    };
+    oh-my-zsh = {
+      enable = true;
+      theme = "robbyrussell";
+      plugins = [
+        "kitty"
+        "fast-syntax-highlighting"
+        "aws"
+        "git"
+        "terraform"
+        "npm"
+        "golang"
+        "poetry"
+        "bun"
+        "docker"
+        "docker-compose"
+        "rsync"
+      ];
+    };
+    shellAliases = {
+      rm = "rm -i";
+      cp = "cp -i";
+      mv = "mv -i";
+      rg = "rg --hyperlink-format=kitty";
+      ls = "lsd --hyperlink=auto";
+      la = "lsd -la --hyperlink=auto";
+      lt = "lsd --tree --hyperlink=auto";
+      vi = "nvim";
+      vim = "nvim";
+      lg = "lazygit";
+      vimode = "bindkey -v";
+      sshc = "vi ~/.ssh/config";
+      sshkh = "vi ~/.ssh/known_hosts";
+      reloadyabai = "sudo yabai --load-sa && yabai --restart-service";
+      reloadsketchybar = "sketchybar --reload";
+      reloadskhd = "skhd --restart-service";
+      reloadall = "sudo yabai --load-sa ; yabai --restart-service ; skhd --restart-service ; sketchybar --reload";
+    };
+    initExtra = ''
+      zstyle ':omz:update' mode reminder
+      source "$HOMEBREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+
+      source "$HOME/prog/dotfiles/tool-configs/fzf.sh"
+
+      # Init tools
+      # eval "$(thefuck --alias)"
+      eval "$(zoxide init --cmd cd zsh)"
+      eval "$(mise activate zsh)"
+      # eval "$(uv generate-shell-completion zsh)"
+
+      yy() {
+        local tmp
+        tmp="$(mktemp -t yazi-cwd.XXXXXX)"
+        yazi "$@" --cwd-file="$tmp"
+        if cwd="$(command cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+          builtin cd -- "$cwd" || return
+        fi
+        rm -f -- "$tmp"
+      }
+    '';
+  };
+
   xdg = {
     enable = true;
     configFile = {
@@ -24,15 +145,4 @@ in
     };
   };
 
-  home.file.".rgignore".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.rgignore";
-
-  home.packages = with pkgs; [
-    fzf
-    git
-    jq
-    lazydocker
-    lazygit
-    statix
-    yazi
-  ];
 }
