@@ -28,7 +28,10 @@ in
       "/opt/homebrew/opt/go/libexec/bin"
     ];
 
-    file.".rgignore".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.rgignore";
+    file = {
+      ".rgignore".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.rgignore";
+      ".tmux.conf".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/tmux/tmux.conf";
+    };
 
     packages = with pkgs; [
       fzf
@@ -149,7 +152,6 @@ in
       "sketchybar".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/sketchybar";
       "skhd".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/skhd";
       "starship.toml".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/starship.toml";
-      "tmux".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/tmux";
       "yabai".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/yabai";
       "yazi".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/yazi";
     };
