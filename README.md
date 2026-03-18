@@ -2,7 +2,10 @@
 
 ## TODO
 
-- Remaining symlinks
-- Homebrew
+- Zsh configs
 - Program configs
 - Git configs
+
+```bash
+sudo xcodebuild -license accept
+```
