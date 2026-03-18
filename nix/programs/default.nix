@@ -21,13 +21,13 @@ in
       ZSH_AUTOSUGGEST_STRATEGY = "completion history";
     };
 
-    file.".rgignore".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.rgignore";
-
     sessionPath = [
       "/opt/homebrew/opt/libpq/bin"
       "$HOME/golang/bin"
       "/opt/homebrew/opt/go/libexec/bin"
     ];
+
+    file.".rgignore".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.rgignore";
 
     packages = with pkgs; [
       fzf
@@ -38,6 +38,7 @@ in
       statix
       yazi
     ];
+
   };
 
   programs.starship = {
@@ -63,6 +64,16 @@ in
   programs.zsh = {
     enable = true;
     enableCompletion = true;
+    autosuggestion = {
+      enable = true;
+    };
+    plugins = [
+      {
+        name = "fast-syntax-highlighting";
+        src = pkgs.zsh-fast-syntax-highlighting;
+        file = "share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh";
+      }
+    ];
     history = {
       path = "$HOME/.zsh_history";
       size = 100000;
@@ -73,7 +84,6 @@ in
       theme = "robbyrussell";
       plugins = [
         "kitty"
-        "fast-syntax-highlighting"
         "aws"
         "git"
         "terraform"
@@ -105,9 +115,8 @@ in
       reloadskhd = "skhd --restart-service";
       reloadall = "sudo yabai --load-sa ; yabai --restart-service ; skhd --restart-service ; sketchybar --reload";
     };
-    initExtra = ''
+    initContent = ''
       zstyle ':omz:update' mode reminder
-      source "$HOMEBREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
 
       source "$HOME/prog/dotfiles/tool-configs/fzf.sh"
 
