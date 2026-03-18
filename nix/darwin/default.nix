@@ -36,6 +36,11 @@
     computerName = hostName;
   };
 
+  security.pam.services.sudo_local = {
+    enable = true;
+    touchIdAuth = true;
+  };
+
   system = {
     primaryUser = userName;
     stateVersion = 6;
