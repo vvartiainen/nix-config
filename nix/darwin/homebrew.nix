@@ -149,7 +149,7 @@
     onActivation = {
       autoUpdate = true;
       upgrade = true;
-      cleanup = "none"; # Change this to 'zap' at some point to do cleanup
+      cleanup = "zap";
     };
   };
 }
