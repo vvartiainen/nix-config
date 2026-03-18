@@ -1,7 +1,4 @@
 {
-  inputs,
-  lib,
-  pkgs,
   userName,
   hostName,
   ...
@@ -35,7 +32,7 @@
   nixpkgs.config.allowUnfree = true;
 
   networking = {
-    hostName = hostName;
+    inherit hostName;
     computerName = hostName;
   };
 
