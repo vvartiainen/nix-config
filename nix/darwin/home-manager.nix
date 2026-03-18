@@ -21,6 +21,7 @@
     useUserPackages = true;
     backupFileExtension = "backup-before-nix";
     users.${userName} = {
+      imports = [ ../programs/default.nix ];
       home = {
         username = userName;
         homeDirectory = "/Users/${userName}";
