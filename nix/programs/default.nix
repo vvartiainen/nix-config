@@ -12,6 +12,7 @@
     jq
     lazydocker
     lazygit
+    statix
     yazi
   ];
 }
