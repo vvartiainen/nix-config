@@ -1,4 +1,5 @@
 {
+  lib,
   pkgs,
   config,
   repoRoot,
@@ -103,29 +104,49 @@ in
       reloadskhd = "skhd --restart-service";
       reloadall = "sudo yabai --load-sa ; yabai --restart-service ; skhd --restart-service ; sketchybar --reload";
     };
-    initContent = ''
-      source "$HOME/prog/dotfiles/tool-configs/fzf.sh"
-
-      # Init tools
-      eval "$(thefuck --alias)"
-      eval "$(zoxide init --cmd cd zsh)"
-      eval "$(mise activate zsh)"
-
-      # Load host-specific env/settings when present.
-      if [ -f "$HOME/.zsh_local" ]; then
-        source "$HOME/.zsh_local"
-      fi
-
-      yy() {
-        local tmp
-        tmp="$(mktemp -t yazi-cwd.XXXXXX)"
-        yazi "$@" --cwd-file="$tmp"
-        if cwd="$(command cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
-          builtin cd -- "$cwd" || return
+    initContent = lib.mkMerge [
+      (lib.mkOrder 550 ''
+        if [ -d /opt/homebrew/share/zsh/site-functions ]; then
+          fpath=(/opt/homebrew/share/zsh/site-functions $fpath)
         fi
-        rm -f -- "$tmp"
-      }
-    '';
+      '')
+      ''
+        source "$HOME/prog/dotfiles/tool-configs/fzf.sh"
+
+        # Init tools
+        eval "$(thefuck --alias)"
+        eval "$(zoxide init --cmd cd zsh)"
+        eval "$(mise activate zsh)"
+
+        # Load host-specific env/settings when present.
+        if [ -f "$HOME/.zsh_local" ]; then
+          source "$HOME/.zsh_local"
+        fi
+
+        if whence -w _docker >/dev/null 2>&1; then
+          # Support setups where docker is aliased to podman.
+          compdef _docker docker=podman
+        fi
+
+        # terraform from mise does not provide a native zsh completion function.
+        # Fall back to terraform's own completion protocol via bash compatibility.
+        if ! whence -w _terraform >/dev/null 2>&1 && command -v terraform >/dev/null 2>&1; then
+          autoload -Uz bashcompinit
+          bashcompinit
+          complete -o nospace -C "$(command -v terraform)" terraform
+        fi
+
+        yy() {
+          local tmp
+          tmp="$(mktemp -t yazi-cwd.XXXXXX)"
+          yazi "$@" --cwd-file="$tmp"
+          if cwd="$(command cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+            builtin cd -- "$cwd" || return
+          fi
+          rm -f -- "$tmp"
+        }
+      ''
+    ];
   };
 
   xdg = {
