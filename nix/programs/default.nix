@@ -113,6 +113,12 @@ in
       ''
         source "$HOME/prog/dotfiles/tool-configs/fzf.sh"
 
+        # Edit current command line in $EDITOR with Ctrl+X Ctrl+E.
+        autoload -Uz edit-command-line
+        zle -N edit-command-line
+        bindkey -M emacs '^X^E' edit-command-line
+        bindkey -M viins '^X^E' edit-command-line
+
         # Init tools
         eval "$(thefuck --alias)"
         eval "$(zoxide init --cmd cd zsh)"
