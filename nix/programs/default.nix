@@ -132,6 +132,11 @@ in
       eval "$(zoxide init --cmd cd zsh)"
       eval "$(mise activate zsh)"
 
+      # Load host-specific env/settings when present.
+      if [ -f "$HOME/.zsh_local" ]; then
+        source "$HOME/.zsh_local"
+      fi
+
       yy() {
         local tmp
         tmp="$(mktemp -t yazi-cwd.XXXXXX)"
