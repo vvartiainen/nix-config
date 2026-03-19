@@ -119,6 +119,9 @@ in
         bindkey -M emacs '^X^E' edit-command-line
         bindkey -M viins '^X^E' edit-command-line
 
+        # Expands history expressions like !! or !$ when you press space
+        bindkey ' ' magic-space
+
         # Init tools
         eval "$(thefuck --alias)"
         eval "$(zoxide init --cmd cd zsh)"
