@@ -109,6 +109,8 @@
       "1password-cli"
       "brave-browser"
       "calibre"
+      "android-platform-tools"
+      "android-studio"
       "cursor"
       "devtoys"
       "discord"
