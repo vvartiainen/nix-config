@@ -23,9 +23,10 @@ in
     };
 
     sessionPath = [
+      "$HOME/.local/bin"
       "/opt/homebrew/opt/libpq/bin"
-      "$HOME/golang/bin"
       "/opt/homebrew/opt/go/libexec/bin"
+      "$HOME/golang/bin"
     ];
 
     file = {
