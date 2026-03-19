@@ -84,27 +84,6 @@ in
       size = 100000;
       save = 100000;
     };
-    oh-my-zsh = {
-      enable = true;
-      theme = "robbyrussell";
-      # In Nix, oh-my-zsh is store-managed and not self-updated.
-      extraConfig = ''
-        zstyle ':omz:update' mode disabled
-      '';
-      plugins = [
-        "kitty"
-        "aws"
-        "git"
-        "terraform"
-        "npm"
-        "golang"
-        "poetry"
-        "bun"
-        "docker"
-        "docker-compose"
-        "rsync"
-      ];
-    };
     shellAliases = {
       rm = "rm -i";
       cp = "cp -i";
