@@ -106,12 +106,17 @@ in
     };
     initContent = lib.mkMerge [
       (lib.mkOrder 550 ''
+        if [[ -n "$ZSH_PROFILE" ]]; then
+          zmodload zsh/zprof
+        fi
+
         if [ -d /opt/homebrew/share/zsh/site-functions ]; then
           fpath=(/opt/homebrew/share/zsh/site-functions $fpath)
         fi
       '')
       ''
-        source "$HOME/prog/dotfiles/tool-configs/fzf.sh"
+
+        source "${repoRoot}/scripts/fzf.sh"
 
         # Edit current command line in $EDITOR with Ctrl+X Ctrl+E.
         autoload -Uz edit-command-line
@@ -154,6 +159,10 @@ in
           fi
           rm -f -- "$tmp"
         }
+
+        if [[ -n "$ZSH_PROFILE" ]]; then
+          zprof
+        fi
       ''
     ];
   };
