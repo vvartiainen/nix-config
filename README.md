@@ -38,37 +38,47 @@ nix --version
 
 1. Clone this repository and `cd` into it.
 
-2. Edit `flake.nix`:
-   - set `userName`
-   - set `hostName`
-   - set `repoRoot` if your local path differs
-
-3. Bootstrap `nix-darwin` from this flake (first activation):
+2. Create local host overrides:
 
 ```bash
-sudo nix run nix-darwin -- switch --flake .#<hostName>
+cp ./local-config.nix.example ./local-config.nix
+```
+
+Then edit `local-config.nix` and set any values you want to override:
+
+- `userName`
+- `hostName`
+- `repoRoot`
+
+When using the gitignored `local-config.nix`, use `path:.#...` flake references so untracked local files are included.
+
+1. Bootstrap `nix-darwin` from this flake (first activation):
+
+```bash
+sudo nix run nix-darwin -- switch --flake path:.
+sudo nix run nix-darwin -- switch --flake path:#<HOSTNAME>
 ```
 
 ## First-time setup and validation
 
-1. Edit `flake.nix`:
-   - set `userName`
-   - set `hostName`
-   - set `repoRoot` if your local path differs
+1. Ensure `local-config.nix` exists (copy from `local-config.nix.example`) and set:
+   - `userName`
+   - `hostName`
+   - `repoRoot` if your local path differs
 2. Validate the flake (no apply):
 
 ```bash
 nix flake show
 nix flake check
-nix eval .#darwinConfigurations.<hostName>.system
-nix build .#darwinConfigurations.<hostName>.system
-darwin-rebuild build --flake .#<hostName>
+nix eval path:.#darwinConfigurations.<hostName>.system
+nix build path:.#darwinConfigurations.<hostName>.system
+darwin-rebuild build --flake path:.#<hostName>
 ```
 
 1. Apply manually when ready:
 
 ```bash
-sudo darwin-rebuild switch --flake .#<hostName>
+sudo darwin-rebuild switch --flake path:.#<hostName>
 ```
 
 ## Notes

@@ -24,9 +24,20 @@
       ...
     }:
     let
-      userName = "vvarti";
-      hostName = "default";
-      repoRoot = "/Users/${userName}/prog/nix-config";
+      defaultConfig = {
+        userName = "vvarti";
+        hostName = "mbp";
+        repoRoot = "/Users/vvarti/prog/nix-config";
+      };
+
+      localConfigPath = ./local-config.nix;
+      userConfig = if builtins.pathExists localConfigPath then import localConfigPath else defaultConfig;
+
+      inherit (userConfig)
+        userName
+        hostName
+        repoRoot
+        ;
     in
     {
       darwinConfigurations.${hostName} = darwin.lib.darwinSystem {

@@ -1,0 +1,6 @@
+{
+  # Override per host as needed.
+  # userName = "your-user";
+  # hostName = "YOUR-HOSTNAME";
+  # repoRoot = "/Users/your-user/prog/nix-config";
+}
