@@ -67,20 +67,20 @@ in
     enable = true;
     enableCompletion = true;
     # Cache completions for 24h
-    completionInit = ''
-      autoload -U compinit
-      zmodload zsh/datetime
-      zmodload zsh/stat
-      typeset -A __zcompdump_stat
-      if ! zstat -H __zcompdump_stat -- ~/.zcompdump 2>/dev/null; then
-        compinit
-      elif (( EPOCHSECONDS - __zcompdump_stat[mtime] > 86400 )); then
-        compinit
-      else
-        compinit -C
-      fi
-      unset __zcompdump_stat
-    '';
+    # completionInit = ''
+    #   autoload -U compinit
+    #   zmodload zsh/datetime
+    #   zmodload zsh/stat
+    #   typeset -A __zcompdump_stat
+    #   if ! zstat -H __zcompdump_stat -- ~/.zcompdump 2>/dev/null; then
+    #     compinit
+    #   elif (( EPOCHSECONDS - __zcompdump_stat[mtime] > 86400 )); then
+    #     compinit
+    #   else
+    #     compinit -C
+    #   fi
+    #   unset __zcompdump_stat
+    # '';
     autosuggestion = {
       enable = true;
       # Atuin sets this at runtime; avoid conflicting static defaults.
