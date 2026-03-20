@@ -42,6 +42,7 @@
     {
       darwinConfigurations.${hostName} = darwin.lib.darwinSystem {
         modules = [
+          home-manager.darwinModules.home-manager
           ./nix/darwin/default.nix
         ];
 

@@ -8,7 +8,9 @@ This repository contains my macOS configs using nix, nix-darwin and home-manager
 
 - `flake.nix` and `flake.lock`: flake entrypoint and pinned inputs
 - `nix/darwin/`: nix-darwin modules and system-level configuration
+- `nix/darwin/programs/`: macOS-specific Home Manager modules
 - `nix/shared/`: shared modules that are not platform-specific
+- `nix/shared/programs/`: per-program Home Manager modules
 - `dotfiles/`: app config files (for example `nvim`, `tmux`, `yabai`, `skhd`)
 - `scripts/`: small helper scripts used by the setup
 

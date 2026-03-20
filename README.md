@@ -1,6 +1,8 @@
 # nix-config
 
-macOS setup managed with Nix flakes, `nix-darwin`, and Home Manager.
+My macOS setup managed with Nix flakes, nix-darwin, and Home Manager.
+
+Don't expect this to work out of the box for you, but feel free to borrow anything!
 
 ## Repository layout
 
@@ -8,20 +10,18 @@ macOS setup managed with Nix flakes, `nix-darwin`, and Home Manager.
 - `nix/darwin/`: system-level nix-darwin modules
   - `default.nix`: core macOS and Nix settings
   - `homebrew.nix`: Homebrew taps, brews, casks, and MAS apps
-  - `home-manager.nix`: Home Manager integration for the user
+  - `programs/`: macOS-specific Home Manager modules
 - `nix/shared/`: shared modules that are not platform-specific
   - `home-manager.nix`: user-level tools, shell setup, and dotfile mappings
+  - `programs/`: one Home Manager module per program (`zsh`, `fzf`, `starship`, etc.)
 - `dotfiles/`: actual config files for apps (`nvim`, `tmux`, `yabai`, `skhd`, etc.)
 - `scripts/`: helper scripts sourced by shell config etc.
 
 ## Prerequisites
 
 - macOS (Apple Silicon expected by current config)
-- Xcode license accepted:
-
-```bash
-sudo xcodebuild -license accept
-```
+- Xcode
+- Homebrew
 
 ## Installation (first machine)
 
