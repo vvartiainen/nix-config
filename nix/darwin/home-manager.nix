@@ -25,7 +25,7 @@
       inherit repoRoot;
     };
     users.${userName} = {
-      imports = [ ../programs/default.nix ];
+      imports = [ ../shared/home-manager.nix ];
       home = {
         username = userName;
         homeDirectory = "/Users/${userName}";

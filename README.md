@@ -9,7 +9,8 @@ macOS setup managed with Nix flakes, `nix-darwin`, and Home Manager.
   - `default.nix`: core macOS and Nix settings
   - `homebrew.nix`: Homebrew taps, brews, casks, and MAS apps
   - `home-manager.nix`: Home Manager integration for the user
-- `nix/programs/default.nix`: user-level tools, shell setup, and dotfile mappings
+- `nix/shared/`: shared modules that are not platform-specific
+  - `home-manager.nix`: user-level tools, shell setup, and dotfile mappings
 - `dotfiles/`: actual config files for apps (`nvim`, `tmux`, `yabai`, `skhd`, etc.)
 - `scripts/`: helper scripts sourced by shell config etc.
 

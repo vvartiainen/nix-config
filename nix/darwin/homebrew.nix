@@ -1,5 +1,29 @@
-{ ... }:
 {
+  lib,
+  userName,
+  ...
+}:
+{
+  home-manager.users.${userName} = {
+    home = {
+      sessionVariables = {
+        GOROOT = "/opt/homebrew/opt/go/libexec";
+      };
+
+      sessionPath = [
+        "/opt/homebrew/opt/libpq/bin"
+        "/opt/homebrew/opt/go/libexec/bin"
+      ];
+    };
+
+    # Ensure brew-managed completion functions are on fpath.
+    programs.zsh.initContent = lib.mkBefore ''
+      if [ -d /opt/homebrew/share/zsh/site-functions ]; then
+        fpath=(/opt/homebrew/share/zsh/site-functions $fpath)
+      fi
+    '';
+  };
+
   environment = {
     variables = {
       HOMEBREW_PREFIX = "/opt/homebrew";
@@ -157,4 +181,5 @@
       cleanup = "zap";
     };
   };
+
 }
