@@ -1,6 +1,7 @@
 {
   lib,
   pkgs,
+  config,
   repoRoot,
   ...
 }:
@@ -8,6 +9,7 @@
   programs.zsh = {
     enable = true;
     enableCompletion = true;
+    dotDir = config.home.homeDirectory;
     # Cache completions for 24h
     # completionInit = ''
     #   autoload -U compinit

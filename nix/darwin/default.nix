@@ -33,11 +33,11 @@
       home = {
         username = userName;
         homeDirectory = "/Users/${userName}";
-        stateVersion = "25.11";
+        stateVersion = "25.11"; # This should not be changed even when flakes are updated!
       };
     };
   };
 
-  system.stateVersion = 6;
+  system.stateVersion = 6; # This should not be changed even when flakes are updated!
   nixpkgs.hostPlatform = "aarch64-darwin";
 }
