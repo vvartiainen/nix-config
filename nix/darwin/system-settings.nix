@@ -42,7 +42,7 @@
         "com.apple.swipescrolldirection" = false;
         "com.apple.sound.beep.feedback" = 0;
 
-        "com.apple.keyboard.fnState" = true; # enable function keys
+        "com.apple.keyboard.fnState" = false; # enable function keys
         AppleInterfaceStyle = "Dark";
         AppleKeyboardUIMode = 3;
         ApplePressAndHoldEnabled = false;
