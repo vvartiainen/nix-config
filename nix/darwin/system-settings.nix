@@ -33,7 +33,7 @@
       };
 
       trackpad = {
-        Clicking = true; # enable tap to click()
+        Clicking = false; # enable tap to click()
         TrackpadRightClick = true; # enable two finger right click
         TrackpadThreeFingerDrag = true; # enable three finger drag
       };
@@ -101,7 +101,7 @@
         "com.apple.AdLib" = {
           allowApplePersonalizedAdvertising = false;
         };
-        "com.apple.ImageCapture".disableHotPlug = true;
+        "com.apple.ImageCapture".disableHotPlug = true; # Do not open Photos when plugging in device
       };
 
       loginwindow = {
