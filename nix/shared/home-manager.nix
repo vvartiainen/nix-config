@@ -37,6 +37,7 @@ in
       jq
       lazydocker
       lazygit
+      lnav
       statix
       yazi
     ];
