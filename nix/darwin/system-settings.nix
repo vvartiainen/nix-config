@@ -32,11 +32,13 @@
         ShowStatusBar = true;
       };
 
-      trackpad = {
-        Clicking = false; # enable tap to click()
-        TrackpadRightClick = true; # enable two finger right click
-        TrackpadThreeFingerDrag = true; # enable three finger drag
-      };
+      # These don't seem to work right now, try to fix at some point
+      # After apply and re-login, the drag is broken until toggling it on and off in system settings ui
+      # trackpad = {
+      #   Clicking = false; # enable tap to click()
+      #   TrackpadRightClick = true; # enable two finger right click
+      #   TrackpadThreeFingerDrag = true; # enable three finger drag
+      # };
 
       NSGlobalDomain = {
         "com.apple.swipescrolldirection" = false;
