@@ -56,6 +56,7 @@
       vimode = "bindkey -v";
       sshc = "vi ~/.ssh/config";
       sshkh = "vi ~/.ssh/known_hosts";
+      ginit = "git init && touch .gitignore && touch README.md && git add . && git commit -m 'chore: initial commit'";
     };
     initContent = lib.mkMerge [
       (lib.mkOrder 550 ''
