@@ -2,15 +2,11 @@
 -- Default keymaps that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/keymaps.lua
 -- Add any additional keymaps here
 
+LazyVim = LazyVim
+Snacks = Snacks
+
 local wk = require("which-key")
 wk.add({
-  -- Copilot enable manually by setup
-  { "<leader>C", function() end, icon = "", desc = "copilot" },
-  { "<leader>Cs", "<cmd>lua require('copilot').setup({})<CR>", icon = "", desc = "Setup Copilot" },
-  { "<leader>Ce", "<cmd>Copilot enable<CR>", icon = "", desc = "Enable Copilot" },
-  { "<leader>Cd", "<cmd>Copilot disable<CR>", icon = "", desc = "Disable Copilot" },
-  { "<leader>Cm", "<cmd>CopilotChatModels<CR>", icon = "", desc = "Choose Copilot model" },
-
   -- Show hidden
   { "<leader><space>", LazyVim.pick("files", { hidden = true }), desc = "Find Files (Root Dir)" },
 })

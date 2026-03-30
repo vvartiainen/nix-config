@@ -1,4 +1,3 @@
----@type LazySpec
 return {
   "mikavilpas/yazi.nvim",
   event = "VeryLazy",
@@ -17,8 +16,5 @@ return {
   ---@type YaziConfig
   opts = {
     open_for_directories = false,
-    keymaps = {
-      show_help = "<f1>",
-    },
   },
 }

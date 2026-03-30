@@ -1,7 +1,17 @@
+local wk = require("which-key")
+wk.add({
+  { "<leader>C", function() end, icon = "", desc = "copilot" },
+})
+
 return {
   "zbirenbaum/copilot.lua",
   cmd = "Copilot",
-  event = "InsertEnter",
+  keys = {
+    { "<leader>Cs", "<cmd>lua require('copilot').setup({})<CR>", desc = "Setup Copilot" },
+    { "<leader>Ce", "<cmd>Copilot enable<CR>", desc = "Enable Copilot" },
+    { "<leader>Cd", "<cmd>Copilot disable<CR>", desc = "Disable Copilot" },
+    { "<leader>Cm", "<cmd>CopilotChatModels<CR>", desc = "Choose Copilot model" },
+  },
   opts = {
     filetypes = {
       css = true,
