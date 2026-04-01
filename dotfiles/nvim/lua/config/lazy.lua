@@ -23,7 +23,6 @@ require("lazy").setup({
     lazy = false,
     version = false,
   },
-  install = { colorscheme = { "catppuccin-mocha" } },
   checker = { enabled = false },
   performance = {
     rtp = {
