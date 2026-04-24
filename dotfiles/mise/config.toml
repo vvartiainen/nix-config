@@ -1,7 +1,7 @@
 [tools]
 java = "latest"
 lua = "5.1"
-node = "22"
+node = "24"
 "npm:@mermaid-js/mermaid-cli" = "latest"
 "npm:knip" = "latest"
 "npm:neovim" = "latest"

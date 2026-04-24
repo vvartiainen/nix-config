@@ -27,6 +27,7 @@ in
     ];
 
     file = {
+      ".npmrc".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.npmrc";
       ".rgignore".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.rgignore";
       ".tmux.conf".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/tmux/tmux.conf";
     };
