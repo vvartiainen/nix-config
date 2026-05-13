@@ -31,6 +31,8 @@ in
       ".rgignore".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.rgignore";
       ".tmux.conf".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/tmux/tmux.conf";
       ".copilot/skills".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.copilot/skills";
+      ".copilot/lsp-config.json".source =
+        config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.copilot/lsp-config.json";
     };
 
     packages = with pkgs; [
