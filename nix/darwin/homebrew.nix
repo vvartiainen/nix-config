@@ -135,6 +135,7 @@
       "1password-cli"
       "brave-browser"
       "calibre"
+      "copilot-cli"
       "cursor-cli"
       "android-platform-tools"
       "android-studio"
