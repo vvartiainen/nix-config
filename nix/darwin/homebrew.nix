@@ -172,9 +172,9 @@
       "AdGuard for Safari" = 1440147259;
       "Amphetamine" = 937984704;
       "iMovie" = 408981434;
-      "Keynote" = 409183694;
-      "Numbers" = 409203825;
-      "Pages" = 409201541;
+      "Keynote" = 361285480;
+      "Numbers" = 361304891;
+      "Pages" = 361309726;
       "WhatsApp" = 310633997;
       "Windows App" = 1295203466;
       "Xcode" = 497799835;
