@@ -115,6 +115,7 @@
       "valkey"
       "wget"
       "yazi"
+      "yt-dlp"
       "zig"
       "zoxide"
       "zsh-autocomplete"
