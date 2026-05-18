@@ -87,6 +87,7 @@
       "mise"
       "neovim"
       "nixfmt"
+      "opencode"
       "oven-sh/bun/bun"
       "pgformatter"
       "pkgconf"

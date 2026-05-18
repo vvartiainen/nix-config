@@ -57,6 +57,7 @@ in
       "nvim".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/nvim";
       "starship.toml".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/starship.toml";
       "yazi".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/yazi";
+      "opencode".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/opencode";
     };
   };
 }
