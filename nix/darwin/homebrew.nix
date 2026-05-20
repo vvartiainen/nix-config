@@ -80,6 +80,7 @@
       "lazydocker"
       "lazygit"
       "libpq"
+      "libpq@16"
       "lsd"
       "luajit"
       "luarocks"
