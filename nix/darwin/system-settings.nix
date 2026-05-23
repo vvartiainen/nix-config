@@ -32,19 +32,17 @@
         ShowStatusBar = true;
       };
 
-      # These don't seem to work right now, try to fix at some point
-      # After apply and re-login, the drag is broken until toggling it on and off in system settings ui
-      # trackpad = {
-      #   Clicking = false; # enable tap to click()
-      #   TrackpadRightClick = true; # enable two finger right click
-      #   TrackpadThreeFingerDrag = true; # enable three finger drag
-      # };
+      trackpad = {
+        Clicking = false; # enable tap to click()
+        TrackpadRightClick = true; # enable two finger right click
+        TrackpadThreeFingerDrag = false; # enable three finger drag
+      };
 
       NSGlobalDomain = {
         "com.apple.swipescrolldirection" = false;
         "com.apple.sound.beep.feedback" = 0;
 
-        "com.apple.keyboard.fnState" = false; # enable function keys
+        "com.apple.keyboard.fnState" = true; # enable function keys
         AppleInterfaceStyle = "Dark";
         AppleKeyboardUIMode = 3;
         ApplePressAndHoldEnabled = false;
@@ -108,7 +106,7 @@
 
       loginwindow = {
         GuestEnabled = false; # disable guest user
-        SHOWFULLNAME = true; # show full name in login window
+        SHOWFULLNAME = false; # show full name in login window
       };
     };
   };
