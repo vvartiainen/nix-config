@@ -27,7 +27,9 @@ in
     ];
 
     file = {
+      ".bunfig.toml".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.bunfig.toml";
       ".npmrc".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.npmrc";
+      ".yarnrc.yml".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.yarnrc.yml";
       ".rgignore".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.rgignore";
       ".tmux.conf".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/tmux/tmux.conf";
       ".copilot/skills".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.copilot/skills";
@@ -55,7 +57,10 @@ in
       "kitty".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/kitty";
       "mise".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/mise";
       "nvim".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/nvim";
+      "pip/pip.conf".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/pip/pip.conf";
+      "pnpm/config.yaml".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/pnpm/config.yaml";
       "starship.toml".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/starship.toml";
+      "uv/uv.toml".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/uv/uv.toml";
       "yazi".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/yazi";
       "opencode".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/opencode";
     };
