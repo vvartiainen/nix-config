@@ -35,6 +35,11 @@ in
       ".copilot/skills".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.copilot/skills";
       ".copilot/lsp-config.json".source =
         config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.copilot/lsp-config.json";
+      ".copilot/settings.json".source =
+        config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.copilot/settings.json";
+      ".cursor/cli-config.json".source =
+        config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.cursor/cli-config.json";
+
     };
 
     packages = with pkgs; [

@@ -1,0 +1,18 @@
+{
+  "model": "gpt-5.4",
+  "footer": {
+    "showModelEffort": true,
+    "showDirectory": true,
+    "showBranch": true,
+    "showContextWindow": true,
+    "showQuota": true,
+    "showAgent": true,
+    "showCodeChanges": false,
+    "showUsername": false,
+    "showCustom": true
+  },
+  "includeCoAuthoredBy": false,
+  "allowedUrls": [
+    "https://docs.github.com"
+  ]
+}
