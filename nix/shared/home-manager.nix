@@ -39,7 +39,7 @@ in
         config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.copilot/settings.json";
       ".cursor/cli-config.json".source =
         config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.cursor/cli-config.json";
-
+      ".agents/skills".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.agents/skills";
     };
 
     packages = with pkgs; [
