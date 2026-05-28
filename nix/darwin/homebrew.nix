@@ -169,12 +169,11 @@
 
     masApps = {
       "1Password for Safari" = 1569813296;
-      "AdGuard for Safari" = 1440147259;
       "Amphetamine" = 937984704;
-      "iMovie" = 408981434;
       "Keynote" = 361285480;
       "Numbers" = 361304891;
       "Pages" = 361309726;
+      "uBlock Origin Lite" = 6745342698;
       "WhatsApp" = 310633997;
       "Windows App" = 1295203466;
       "Xcode" = 497799835;
