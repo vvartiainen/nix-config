@@ -54,7 +54,6 @@
       "cpm"
       "delve"
       "docker"
-      "docker-completion"
       "duckdb"
       "fastfetch"
       "fd"
