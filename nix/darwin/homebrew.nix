@@ -182,6 +182,11 @@
       autoUpdate = true;
       upgrade = true;
       cleanup = "zap";
+
+      # https://github.com/nix-darwin/nix-darwin/issues/1787
+      extraFlags = [
+        "--force-cleanup"
+      ];
     };
   };
 
