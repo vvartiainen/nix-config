@@ -73,6 +73,7 @@
       "imagemagick"
       "jq"
       "julia"
+      "just"
       "koekeishiya/formulae/skhd"
       "koekeishiya/formulae/yabai"
       "kubernetes-cli"

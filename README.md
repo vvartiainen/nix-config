@@ -7,7 +7,7 @@ Don't expect this to work out of the box for you, but feel free to borrow anythi
 ## Repository layout
 
 - `flake.nix`: flake entrypoint, inputs, and `darwinConfigurations.<hostName>`
-- `nix/darwin/`: system-level nix-darwin modules
+- `nix/darwin/`: macOS specific nix-darwin modules
   - `default.nix`: core macOS and Nix settings
   - `homebrew.nix`: Homebrew taps, brews, casks, and MAS apps
   - `programs/`: macOS-specific Home Manager modules
@@ -15,6 +15,8 @@ Don't expect this to work out of the box for you, but feel free to borrow anythi
   - `home-manager.nix`: user-level tools, shell setup, and dotfile mappings
   - `programs/`: one Home Manager module per program (`zsh`, `fzf`, `starship`, etc.)
 - `dotfiles/`: actual config files for apps (`nvim`, `tmux`, `yabai`, `skhd`, etc.)
+  - Using `mkOutOfStoreSymlink` so updates in these files are reflected directly
+  - Might want to move some of these to "more pure" / immutable configs at some point
 - `scripts/`: helper scripts sourced by shell config etc.
 
 ## Prerequisites
@@ -22,66 +24,102 @@ Don't expect this to work out of the box for you, but feel free to borrow anythi
 - macOS (Apple Silicon expected by current config)
 - Xcode
 - Homebrew
+- just (`brew install just`)
 
-## Installation (first machine)
+## Installation
 
 1. Install Nix (with flakes support):
 
-```bash
-sh <(curl -L https://nixos.org/nix/install)
-```
+    ```bash
+    sh <(curl -L https://nixos.org/nix/install)
+    ```
 
 1. Restart your shell and verify Nix:
 
-```bash
-nix --version
-```
+    ```bash
+    nix --version
+    ```
 
 1. Clone this repository and `cd` into it.
 
-2. Create local host overrides:
+1. Create local host overrides:
+
+    ```bash
+    cp ./local-config.nix.example ./local-config.nix
+    ```
+
+    Or generate it from the current user, host name, and repository path:
+
+    ```bash
+    just generate-local-config <HOSTNAME>
+    ```
+
+    Then edit `local-config.nix` and set or verify any values you want to override:
+
+    - `userName`
+    - `hostName`
+    - `repoRoot`
+
+    When using the gitignored `local-config.nix`, use `path:.#...` flake references so untracked local files are included.
+
+    Use the same value for `<HOSTNAME>` as the `hostName` you set in `local-config.nix`.
+
+1. Bootstrap `nix-darwin` from this flake (first activation). If `local-config.nix` does not exist yet, this command calls `just generate-local-config <HOSTNAME>` first:
 
 ```bash
-cp ./local-config.nix.example ./local-config.nix
+just bootstrap <HOSTNAME>
 ```
 
-Then edit `local-config.nix` and set any values you want to override:
+## Validating and applying the configs
 
-- `userName`
-- `hostName`
-- `repoRoot`
+1. Validate
 
-When using the gitignored `local-config.nix`, use `path:.#...` flake references so untracked local files are included.
+    ```bash
+    just show
+    just check
+    just eval-system <HOSTNAME>
+    just build-system <HOSTNAME>
+    just build <HOSTNAME>
+    ```
 
-1. Bootstrap `nix-darwin` from this flake (first activation):
+2. Apply manually when ready:
+
+    ```bash
+    just switch <HOSTNAME>
+    ```
+
+## Roll back to a previous version
+
+If a newly applied system generation causes problems, you can roll back to an earlier nix-darwin generation. Because Home Manager is integrated as a nix-darwin module here, rolling back the system generation also rolls back the Home Manager state from that generation.
+
+Roll back to the immediately previous generation:
 
 ```bash
-sudo nix run nix-darwin -- switch --flake path:.
-sudo nix run nix-darwin -- switch --flake path:#<HOSTNAME>
+just rollback
 ```
 
-## First-time setup and validation
-
-1. Ensure `local-config.nix` exists (copy from `local-config.nix.example`) and set:
-   - `userName`
-   - `hostName`
-   - `repoRoot` if your local path differs
-2. Validate the flake (no apply):
+List available generations:
 
 ```bash
-nix flake show
-nix flake check
-nix eval path:.#darwinConfigurations.<hostName>.system
-nix build path:.#darwinConfigurations.<hostName>.system
-darwin-rebuild build --flake path:.#<hostName>
+just generations
 ```
 
-1. Apply manually when ready:
+Roll back to a specific generation:
 
 ```bash
-sudo darwin-rebuild switch --flake path:.#<hostName>
+just rollback-to <GENERATION>
 ```
 
-## Notes
+## Cleanup and garbage collection
 
-- Home Manager uses out-of-store symlinks to `dotfiles/`, so edits there are reflected directly.
+```bash
+# Delete all historical versions older than 7 days
+just clean
+
+# Wiping history won't garbage collect the unused packages, so run system gc manually as root:
+just gc
+
+# Due to the following issue, you need to run the gc command as per user to delete home-manager's historical data:
+# https://github.com/NixOS/nix/issues/8508
+just gc-user
+```
