@@ -14,5 +14,6 @@
   "includeCoAuthoredBy": false,
   "allowedUrls": [
     "https://docs.github.com"
-  ]
+  ],
+  "disabledSkills": []
 }
