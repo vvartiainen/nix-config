@@ -72,6 +72,10 @@ backend = "npm:knip"
 version = "5.4.0"
 backend = "npm:neovim"
 
+[[tools."npm:skills"]]
+version = "1.5.9"
+backend = "npm:skills"
+
 [[tools."npm:typescript"]]
 version = "6.0.3"
 backend = "npm:typescript"
