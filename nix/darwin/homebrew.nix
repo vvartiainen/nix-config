@@ -156,6 +156,7 @@
       "linear"
       "localsend"
       "moonlight"
+      "obsidian"
       "podman-desktop"
       "raycast"
       "sf-symbols"
