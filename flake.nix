@@ -9,7 +9,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    darwin = {
+    nix-darwin = {
       url = "github:nix-darwin/nix-darwin/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
@@ -18,7 +18,7 @@
   outputs =
     inputs@{
       self,
-      darwin,
+      nix-darwin,
       nixpkgs,
       home-manager,
       ...
@@ -40,7 +40,7 @@
         ;
     in
     {
-      darwinConfigurations.${hostName} = darwin.lib.darwinSystem {
+      darwinConfigurations.${hostName} = nix-darwin.lib.darwinSystem {
         modules = [
           home-manager.darwinModules.home-manager
           ./nix/darwin/default.nix
