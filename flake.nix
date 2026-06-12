@@ -13,6 +13,11 @@
       url = "github:nix-darwin/nix-darwin/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    cli-toolbox = {
+      url = "github:vvartiainen/cli-toolbox";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =

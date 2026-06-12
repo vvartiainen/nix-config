@@ -43,6 +43,8 @@ in
     };
 
     packages = with pkgs; [
+      inputs.cli-toolbox.packages.${system}.default
+
       fzf
       git
       jq
