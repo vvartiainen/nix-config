@@ -15,7 +15,9 @@
     };
 
     cli-toolbox = {
-      url = "github:vvartiainen/cli-toolbox";
+      url = "git+ssh://git@github.com/vvartiainen/cli-toolbox.git";
+      # TODO: Make repo public and use this instead
+      # url = "github:vvartiainen/cli-toolbox";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -26,6 +28,7 @@
       nix-darwin,
       nixpkgs,
       home-manager,
+      cli-toolbox,
       ...
     }:
     let

@@ -2,6 +2,7 @@
   pkgs,
   userName,
   repoRoot,
+  inputs,
   ...
 }:
 {
@@ -23,7 +24,7 @@
     useUserPackages = true;
     backupFileExtension = "backup-before-nix";
     extraSpecialArgs = {
-      inherit repoRoot;
+      inherit repoRoot inputs;
     };
     users.${userName} = {
       imports = [

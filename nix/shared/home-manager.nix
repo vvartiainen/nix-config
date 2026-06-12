@@ -2,6 +2,7 @@
   pkgs,
   config,
   repoRoot,
+  inputs,
   ...
 }:
 let
@@ -43,7 +44,7 @@ in
     };
 
     packages = with pkgs; [
-      inputs.cli-toolbox.packages.${system}.default
+      inputs.cli-toolbox.packages.${stdenv.hostPlatform.system}.default
 
       fzf
       git
