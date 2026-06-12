@@ -37,6 +37,21 @@
     ];
   };
 
+  # TODO: Temp until nix-darwin feature is merged
+  # https://github.com/nix-darwin/nix-darwin/pull/1789
+  system.activationScripts.preActivation.text = lib.mkAfter ''
+    if [ -x /opt/homebrew/bin/brew ]; then
+      PATH="/opt/homebrew/bin:$PATH" \
+      sudo --preserve-env=PATH --user=${userName} --set-home \
+        /opt/homebrew/bin/brew trust --formula \
+          felixkratz/formulae/sketchybar \
+          koekeishiya/formulae/skhd \
+          koekeishiya/formulae/yabai \
+          oven-sh/bun/bun \
+          railwaycat/emacsmacport/emacs-mac@29
+    fi
+  '';
+
   homebrew = {
     enable = true;
 
@@ -185,6 +200,7 @@
       upgrade = true;
       cleanup = "zap";
 
+      # TODO: Temp until these are fixed
       # https://github.com/nix-darwin/nix-darwin/issues/1787
       extraFlags = [
         "--force-cleanup"
