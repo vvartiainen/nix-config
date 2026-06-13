@@ -2,7 +2,6 @@
   lib,
   pkgs,
   config,
-  repoRoot,
   ...
 }:
 {
@@ -49,10 +48,16 @@
       rm = "rm -i";
       cp = "cp -i";
       mv = "mv -i";
+
       rg = "rg --hyperlink-format=kitty";
       ls = "lsd --hyperlink=auto";
       la = "lsd -la --hyperlink=auto";
       lt = "lsd --tree --hyperlink=auto";
+
+      falias = "alias | fzf";
+      fhistory = "history | fzf";
+      fbinds = "bindkey | fzf";
+
       vi = "nvim";
       vim = "nvim";
       lg = "lazygit";
@@ -68,8 +73,6 @@
         fi
       '')
       ''
-
-        source "${repoRoot}/scripts/fzf.sh"
 
         # Edit current command line in $EDITOR with Ctrl+X Ctrl+E.
         autoload -Uz edit-command-line
