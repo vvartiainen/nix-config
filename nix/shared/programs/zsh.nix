@@ -42,6 +42,9 @@
       size = 100000;
       save = 100000;
     };
+    shellGlobalAliases = {
+      ".." = "cd ..";
+    };
     shellAliases = {
       rm = "rm -i";
       cp = "cp -i";
