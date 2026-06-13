@@ -18,6 +18,7 @@ return {
       javascript = true,
       javascriptreact = true,
       lua = true,
+      nix = true,
       sh = true,
       svelte = true,
       tf = true,
