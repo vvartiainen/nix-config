@@ -7,11 +7,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1781376269,
-        "narHash": "sha256-/IPEKiKSpRkum0hjMhHb3Evplc3NhtjQBf5z41cdH2g=",
+        "lastModified": 1781455082,
+        "narHash": "sha256-IcQ/UaFE+uQN+U9/iCskQI3eQf+b2P0liYqvJRsHFeA=",
         "owner": "vvartiainen",
         "repo": "cli-toolbox",
-        "rev": "00d0654b9e8b8fcd7850272c869dc89336ec9a41",
+        "rev": "389c301314b331164a5d65d52e3f23543344bab6",
         "type": "github"
       },
       "original": {
