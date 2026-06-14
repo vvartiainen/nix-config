@@ -42,12 +42,13 @@
       save = 100000;
     };
     shellGlobalAliases = {
-      ".." = "cd ..";
     };
     shellAliases = {
       rm = "rm -i";
       cp = "cp -i";
       mv = "mv -i";
+
+      ".." = "cd ..";
 
       rg = "rg --hyperlink-format=kitty";
       ls = "lsd --hyperlink=auto";
