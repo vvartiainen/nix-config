@@ -7,17 +7,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1781269792,
-        "narHash": "sha256-W2oyWn5/viiwLK7Ao1PUklKIWSy7mQpzOlnrXjhuELI=",
-        "ref": "refs/heads/main",
-        "rev": "1e86d8b1ae9548494fdfdb572ffc786593610444",
-        "revCount": 9,
-        "type": "git",
-        "url": "ssh://git@github.com/vvartiainen/cli-toolbox.git"
+        "lastModified": 1781376269,
+        "narHash": "sha256-/IPEKiKSpRkum0hjMhHb3Evplc3NhtjQBf5z41cdH2g=",
+        "owner": "vvartiainen",
+        "repo": "cli-toolbox",
+        "rev": "00d0654b9e8b8fcd7850272c869dc89336ec9a41",
+        "type": "github"
       },
       "original": {
-        "type": "git",
-        "url": "ssh://git@github.com/vvartiainen/cli-toolbox.git"
+        "owner": "vvartiainen",
+        "repo": "cli-toolbox",
+        "type": "github"
       }
     },
     "home-manager": {
