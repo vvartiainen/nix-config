@@ -75,6 +75,7 @@
       "felixkratz/formulae/sketchybar"
       "ffmpeg"
       "ffmpegthumbnailer"
+      "figlet"
       "fish"
       "fzf"
       "gh"
