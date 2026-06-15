@@ -4,7 +4,8 @@ return {
     optional = true,
     opts = {
       library = {
-        { path = "snacks.nvim", words = { "snacks" } },
+        { path = "LazyVim", words = { "LazyVim" } },
+        { path = "snacks.nvim", words = { "Snacks" } },
         { path = "yazi.nvim", words = { "yazi" } },
         { path = "blink.cmp", words = { "blink" } },
         { path = "conform.nvim", words = { "conform" } },

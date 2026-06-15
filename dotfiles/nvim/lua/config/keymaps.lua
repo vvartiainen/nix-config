@@ -2,9 +2,6 @@
 -- Default keymaps that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/keymaps.lua
 -- Add any additional keymaps here
 
-LazyVim = LazyVim
-Snacks = Snacks
-
 local wk = require("which-key")
 wk.add({
   -- Show hidden
