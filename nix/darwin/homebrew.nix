@@ -37,21 +37,6 @@
     ];
   };
 
-  # TODO: Temp until nix-darwin feature is merged
-  # https://github.com/nix-darwin/nix-darwin/pull/1789
-  system.activationScripts.preActivation.text = lib.mkAfter ''
-    if [ -x /opt/homebrew/bin/brew ]; then
-      PATH="/opt/homebrew/bin:$PATH" \
-      sudo --preserve-env=PATH --user=${userName} --set-home \
-        /opt/homebrew/bin/brew trust --formula \
-          felixkratz/formulae/sketchybar \
-          koekeishiya/formulae/skhd \
-          koekeishiya/formulae/yabai \
-          oven-sh/bun/bun \
-          railwaycat/emacsmacport/emacs-mac@29
-    fi
-  '';
-
   homebrew = {
     enable = true;
 
@@ -90,8 +75,8 @@
       "jq"
       "julia"
       "just"
-      "koekeishiya/formulae/skhd"
-      "koekeishiya/formulae/yabai"
+      "asmvik/formulae/skhd"
+      "asmvik/formulae/yabai"
       "kubernetes-cli"
       "lazydocker"
       "lazygit"
@@ -136,18 +121,13 @@
       "zoxide"
       "zsh-autocomplete"
       "zsh-autosuggestions"
-      "railwaycat/emacsmacport/emacs-mac@29"
     ];
 
     taps = [
       "felixkratz/formulae"
-      "hashicorp/tap"
       "jesseduffield/lazydocker"
-      "koekeishiya/formulae"
-      "nikitabobko/tap"
+      "asmvik/formulae"
       "oven-sh/bun"
-      "railwaycat/emacsmacport"
-      "sqitchers/sqitch"
     ];
 
     casks = [
@@ -200,12 +180,6 @@
       autoUpdate = true;
       upgrade = true;
       cleanup = "zap";
-
-      # TODO: Temp until these are fixed
-      # https://github.com/nix-darwin/nix-darwin/issues/1787
-      extraFlags = [
-        "--force-cleanup"
-      ];
     };
   };
 
