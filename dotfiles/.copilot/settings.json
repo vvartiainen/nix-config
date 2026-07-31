@@ -1,5 +1,5 @@
 {
-  "model": "gpt-5.4",
+  "model": "gpt-5.6-sol",
   "footer": {
     "showModelEffort": true,
     "showDirectory": true,
@@ -15,5 +15,12 @@
   "allowedUrls": [
     "https://docs.github.com"
   ],
-  "disabledSkills": []
+  "disabledSkills": [],
+  "theme": "github",
+  "beep": true,
+  "notifications": true,
+  "scrollbar": true,
+  "voice": {
+    "enabled": false
+  }
 }
