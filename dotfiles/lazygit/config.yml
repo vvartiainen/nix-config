@@ -1,6 +1,6 @@
 git:
-  pagers:
-    - pager: delta --dark --paging=never
+  diffRenderers:
+    - command: delta --dark --paging=never
       colorArg: always
   autoFetch: true
 os:
@@ -27,6 +27,5 @@ gui:
       - "#cdd6f4"
     searchingActiveBorderColor:
       - "#f9e2af"
-
   authorColors:
     "*": "#b4befe"
