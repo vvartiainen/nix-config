@@ -55,6 +55,7 @@
       "delve"
       "docker"
       "duckdb"
+      "eugene1g/safehouse/agent-safehouse"
       "fastfetch"
       "fd"
       "felixkratz/formulae/sketchybar"
