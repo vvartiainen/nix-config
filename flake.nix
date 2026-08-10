@@ -49,7 +49,7 @@
       darwinConfigurations.${hostName} = nix-darwin.lib.darwinSystem {
         modules = [
           home-manager.darwinModules.home-manager
-          ./nix/darwin/default.nix
+          ./nix/hosts/mbp
         ];
 
         specialArgs = {

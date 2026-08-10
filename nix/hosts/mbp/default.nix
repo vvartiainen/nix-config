@@ -7,10 +7,10 @@
 }:
 {
   imports = [
-    ../shared/nix.nix
-    ../shared/networking.nix
-    ./system-settings.nix
-    ./homebrew.nix
+    ../../modules/shared/nix.nix
+    ../../modules/shared/networking.nix
+    ../../modules/darwin/system-settings.nix
+    ../../modules/darwin/homebrew.nix
   ];
 
   users.users.${userName} = {
@@ -28,8 +28,8 @@
     };
     users.${userName} = {
       imports = [
-        ../shared/home-manager.nix
-        ./programs
+        ../../modules/home
+        ../../modules/darwin/programs
       ];
       home = {
         username = userName;

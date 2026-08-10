@@ -7,13 +7,13 @@ Don't expect this to work out of the box for you, but feel free to borrow anythi
 ## Repository layout
 
 - `flake.nix`: flake entrypoint, inputs, and `darwinConfigurations.<hostName>`
-- `nix/darwin/`: macOS specific nix-darwin modules
-  - `default.nix`: core macOS and Nix settings
-  - `homebrew.nix`: Homebrew taps, brews, casks, and MAS apps
-  - `programs/`: macOS-specific Home Manager modules
-- `nix/shared/`: shared modules that are not platform-specific
-  - `home-manager.nix`: user-level tools, shell setup, and dotfile mappings
+- `nix/hosts/`: per-host composition roots
+  - `mbp/`: wires shared, home, and darwin modules for this machine profile
+- `nix/modules/shared/`: system-level modules that are not platform-specific (`nix`, `networking`)
+- `nix/modules/home/`: Home Manager user base and CLI program modules
   - `programs/`: one Home Manager module per program (`zsh`, `fzf`, `starship`, etc.)
+- `nix/modules/darwin/`: macOS system modules (`homebrew`, `system-settings`) and macOS HM programs
+  - `programs/`: macOS-specific Home Manager modules (`yabai`, `skhd`, `sketchybar`, etc.)
 - `dotfiles/`: actual config files for apps (`nvim`, `tmux`, `yabai`, `skhd`, etc.)
   - Using `mkOutOfStoreSymlink` so updates in these files are reflected directly
   - Might want to move some of these to "more pure" / immutable configs at some point
