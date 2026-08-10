@@ -32,14 +32,12 @@ in
       ".yarnrc.yml".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.yarnrc.yml";
       ".rgignore".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.rgignore";
       ".tmux.conf".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/tmux/tmux.conf";
-      ".copilot/skills".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.copilot/skills";
       ".copilot/lsp-config.json".source =
         config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.copilot/lsp-config.json";
       ".copilot/settings.json".source =
         config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.copilot/settings.json";
       ".cursor/cli-config.json".source =
         config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.cursor/cli-config.json";
-      ".agents/skills".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.agents/skills";
     };
 
     packages = with pkgs; [
