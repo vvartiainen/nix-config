@@ -1,6 +1,5 @@
 {
   lib,
-  pkgs,
   config,
   ...
 }:
@@ -24,18 +23,14 @@
     #   fi
     #   unset __zcompdump_stat
     # '';
+    fastSyntaxHighlighting = {
+      enable = true;
+    };
     autosuggestion = {
       enable = true;
       # Atuin sets this at runtime; avoid conflicting static defaults.
       strategy = [ ];
     };
-    plugins = [
-      {
-        name = "fast-syntax-highlighting";
-        src = pkgs.zsh-fast-syntax-highlighting;
-        file = "share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh";
-      }
-    ];
     history = {
       path = "$HOME/.zsh_history";
       size = 100000;
