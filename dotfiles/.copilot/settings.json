@@ -1,5 +1,5 @@
 {
-  "model": "gpt-5.6-sol",
+  "model": "gpt-5.4",
   "footer": {
     "showModelEffort": true,
     "showDirectory": true,
@@ -22,5 +22,7 @@
   "scrollbar": true,
   "voice": {
     "enabled": false
-  }
+  },
+  "planModel": "gpt-5.6-sol",
+  "planEffortLevel": "medium"
 }
