@@ -137,6 +137,7 @@
       "calibre"
       "copilot-cli"
       "cursor-cli"
+      "drawio"
       "android-platform-tools"
       "android-studio"
       "cursor"
