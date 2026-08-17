@@ -9,6 +9,7 @@
   ];
 
   programs.zsh.shellAliases = {
+    ct = "cli-toolbox";
     fssh = "cli-toolbox ssh connect";
     faws = "eval \"$(cli-toolbox aws profile)\"";
     fkittysession = "cli-toolbox kitty select-session";
