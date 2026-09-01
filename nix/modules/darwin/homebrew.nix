@@ -37,6 +37,31 @@
     ];
   };
 
+  system.activationScripts.postActivation.text = lib.mkAfter ''
+    yabaiBin="/opt/homebrew/bin/yabai"
+    sudoersDir="/private/etc/sudoers.d"
+    sudoersFile="$sudoersDir/yabai"
+
+    if [[ ! -x "$yabaiBin" ]]; then
+      echo "error: yabai binary not found at $yabaiBin" >&2
+      exit 1
+    fi
+
+    yabaiHash=$(shasum -a 256 "$yabaiBin" | cut -d " " -f 1)
+    mkdir -p "$sudoersDir"
+    sudoersTemp=$(mktemp "$sudoersDir/.yabai.XXXXXX")
+    trap 'rm -f "$sudoersTemp"' EXIT
+
+    printf '%s ALL=(root) NOPASSWD: sha256:%s %s --load-sa\n' \
+      "${userName}" "$yabaiHash" "$yabaiBin" > "$sudoersTemp"
+    chmod 0440 "$sudoersTemp"
+    chown root:wheel "$sudoersTemp"
+    /usr/sbin/visudo -cf "$sudoersTemp" > /dev/null
+    mv -f "$sudoersTemp" "$sudoersFile"
+
+    trap - EXIT
+  '';
+
   homebrew = {
     enable = true;
 
@@ -77,7 +102,11 @@
       "julia"
       "just"
       "asmvik/formulae/skhd"
-      "asmvik/formulae/yabai"
+      {
+        name = "asmvik/formulae/yabai";
+        args = [ "HEAD" ];
+        postinstall = "codesign -fs 'yabai-cert' $(brew --prefix yabai)/bin/yabai";
+      }
       "kubernetes-cli"
       "lazydocker"
       "lazygit"
