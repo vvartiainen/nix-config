@@ -24,5 +24,26 @@
     "enabled": false
   },
   "planModel": "gpt-5.6-sol",
-  "planEffortLevel": "medium"
+  "planEffortLevel": "medium",
+  "subagents": {
+    "agents": {
+      "task": {
+        "model": "inherit",
+        "effortLevel": "medium",
+        "contextTier": "default"
+      },
+      "general-purpose": {
+        "model": "inherit"
+      },
+      "code-review": {
+        "model": "inherit"
+      },
+      "research": {
+        "model": "inherit"
+      },
+      "security-review": {
+        "model": "inherit"
+      }
+    }
+  }
 }
