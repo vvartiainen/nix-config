@@ -2,6 +2,8 @@
 {
   imports = [
     ./onepassword.nix
-    ./wm.nix
+    ./sketchybar.nix
+    ./skhd.nix
+    ./yabai.nix
   ];
 }
