@@ -164,7 +164,6 @@
       "1password-cli"
       "brave-browser"
       "calibre"
-      "copilot-cli"
       "cursor-cli"
       "drawio"
       "android-platform-tools"
