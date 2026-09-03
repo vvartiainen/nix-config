@@ -32,14 +32,8 @@ in
     };
 
     packages = with pkgs; [
-      fzf
-      git
-      jq
-      lazydocker
-      lazygit
       lnav
       statix
-      yazi
     ];
 
   };

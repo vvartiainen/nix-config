@@ -109,7 +109,6 @@
       "lazydocker"
       "lazygit"
       "libpq"
-      "libpq@16"
       "lsd"
       "luajit"
       "luarocks"
@@ -137,7 +136,6 @@
       "tlrc"
       "tmux"
       "tree-sitter"
-      "tree-sitter-cli"
       "unar"
       "uv"
       "valkey"
@@ -145,8 +143,6 @@
       "yazi"
       "yt-dlp"
       "zig"
-      "zsh-autocomplete"
-      "zsh-autosuggestions"
     ];
 
     taps = [
