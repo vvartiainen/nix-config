@@ -164,7 +164,6 @@
       "1password-cli"
       "brave-browser"
       "calibre"
-      "cursor-cli"
       "drawio"
       "android-platform-tools"
       "android-studio"

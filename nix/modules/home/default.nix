@@ -32,8 +32,6 @@ in
       ".yarnrc.yml".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.yarnrc.yml";
       ".rgignore".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.rgignore";
       ".tmux.conf".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/tmux/tmux.conf";
-      ".cursor/cli-config.json".source =
-        config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.cursor/cli-config.json";
     };
 
     packages = with pkgs; [
