@@ -67,6 +67,7 @@
 
     brews = [
       "ansible"
+      "atuin"
       "awscli"
       "azure-cli"
       "bat"
