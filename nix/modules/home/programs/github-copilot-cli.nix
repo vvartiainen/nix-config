@@ -62,8 +62,6 @@ in
         ".cts" = "typescript";
       };
     };
-
-    skills.lsp-setup = ../../../../dotfiles/.copilot/skills/lsp-setup;
   };
 
   home.file.".copilot/settings.json".source =
