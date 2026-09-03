@@ -57,6 +57,8 @@
       vi = "nvim";
       vim = "nvim";
       lg = "lazygit";
+      z = "cd";
+      zi = "cdi";
       vimode = "bindkey -v";
       sshc = "vi ~/.ssh/config";
       sshkh = "vi ~/.ssh/known_hosts";
@@ -81,7 +83,6 @@
 
         # Init tools
         eval "$(thefuck --alias)"
-        eval "$(zoxide init --cmd cd zsh)"
         eval "$(mise activate zsh)"
 
         # Load host-specific env/settings when present.
