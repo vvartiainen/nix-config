@@ -67,7 +67,6 @@
 
     brews = [
       "ansible"
-      "atuin"
       "awscli"
       "azure-cli"
       "bat"
@@ -88,7 +87,6 @@
       "ffmpegthumbnailer"
       "figlet"
       "fish"
-      "fzf"
       "gh"
       "ghostscript"
       "git"
@@ -134,7 +132,6 @@
       "sqlc"
       "sqlfluff"
       "sqlite"
-      "starship"
       "tectonic"
       "thefuck"
       "tlrc"
@@ -148,7 +145,6 @@
       "yazi"
       "yt-dlp"
       "zig"
-      "zoxide"
       "zsh-autocomplete"
       "zsh-autosuggestions"
     ];
