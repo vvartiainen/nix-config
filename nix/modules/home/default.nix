@@ -5,7 +5,7 @@
   ...
 }:
 let
-  dotfilesPath = "${repoRoot}/dotfiles";
+  link = rel: config.lib.file.mkOutOfStoreSymlink "${repoRoot}/dotfiles/${rel}";
 in
 {
   imports = [ ./programs ];
@@ -24,11 +24,10 @@ in
     ];
 
     file = {
-      ".bunfig.toml".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.bunfig.toml";
-      ".npmrc".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.npmrc";
-      ".yarnrc.yml".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.yarnrc.yml";
-      ".rgignore".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.rgignore";
-      ".tmux.conf".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/tmux/tmux.conf";
+      ".bunfig.toml".source = link ".bunfig.toml";
+      ".npmrc".source = link ".npmrc";
+      ".yarnrc.yml".source = link ".yarnrc.yml";
+      ".rgignore".source = link ".rgignore";
     };
 
     packages = with pkgs; [
@@ -41,16 +40,19 @@ in
   xdg = {
     enable = true;
     configFile = {
-      "btop".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/btop";
-      "kitty".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/kitty";
-      "mise".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/mise";
-      "nvim".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/nvim";
-      "pip/pip.conf".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/pip/pip.conf";
-      "pnpm/config.yaml".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/pnpm/config.yaml";
-      "starship.toml".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/starship.toml";
-      "uv/uv.toml".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/uv/uv.toml";
-      "yazi".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/yazi";
-      "opencode".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/opencode";
+      "btop".source = link "btop";
+      "kitty".source = link "kitty";
+      "lazygit".source = link "lazygit";
+      "mise".source = link "mise";
+      "nvim".source = link "nvim";
+      "pip/pip.conf".source = link "pip/pip.conf";
+      "pnpm/config.yaml".source = link "pnpm/config.yaml";
+      "starship.toml".source = link "starship.toml";
+      "tmux/tmux.conf".source = link "tmux/tmux.conf";
+      "uv/uv.toml".source = link "uv/uv.toml";
+      "yazi".source = link "yazi";
+      "opencode/opencode.json".source = link "opencode/opencode.json";
+      "opencode/tui.json".source = link "opencode/tui.json";
     };
   };
 }
