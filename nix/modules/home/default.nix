@@ -51,8 +51,7 @@ in
       "tmux/tmux.conf".source = link "tmux/tmux.conf";
       "uv/uv.toml".source = link "uv/uv.toml";
       "yazi".source = link "yazi";
-      "opencode/opencode.json".source = link "opencode/opencode.json";
-      "opencode/tui.json".source = link "opencode/tui.json";
+      "opencode".source = link "opencode";
     };
   };
 }
