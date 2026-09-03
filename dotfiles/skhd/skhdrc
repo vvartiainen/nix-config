@@ -25,14 +25,14 @@ ctrl + alt + cmd - down : yabai -m space --move prev
 ctrl + alt + cmd - n : yabai -m space --create
 ctrl + alt + cmd - d : yabai -m space --destroy
 
-ctrl + alt + cmd - left : $HOME/prog/dotfiles/yabai/movewindow.sh prev
-ctrl + alt + cmd - right : $HOME/prog/dotfiles/yabai/movewindow.sh next
-ctrl + alt + cmd - 1 : $HOME/prog/dotfiles/yabai/movewindow.sh 1
-ctrl + alt + cmd - 2 : $HOME/prog/dotfiles/yabai/movewindow.sh 2
-ctrl + alt + cmd - 3 : $HOME/prog/dotfiles/yabai/movewindow.sh 3
-ctrl + alt + cmd - 4 : $HOME/prog/dotfiles/yabai/movewindow.sh 4
-ctrl + alt + cmd - 5 : $HOME/prog/dotfiles/yabai/movewindow.sh 5
-ctrl + alt + cmd - 6 : $HOME/prog/dotfiles/yabai/movewindow.sh 6
+ctrl + alt + cmd - left : $HOME/.config/yabai/movewindow.sh prev
+ctrl + alt + cmd - right : $HOME/.config/yabai/movewindow.sh next
+ctrl + alt + cmd - 1 : $HOME/.config/yabai/movewindow.sh 1
+ctrl + alt + cmd - 2 : $HOME/.config/yabai/movewindow.sh 2
+ctrl + alt + cmd - 3 : $HOME/.config/yabai/movewindow.sh 3
+ctrl + alt + cmd - 4 : $HOME/.config/yabai/movewindow.sh 4
+ctrl + alt + cmd - 5 : $HOME/.config/yabai/movewindow.sh 5
+ctrl + alt + cmd - 6 : $HOME/.config/yabai/movewindow.sh 6
 
 # Swap windows
 ctrl + alt + cmd - h : yabai -m window --swap west
