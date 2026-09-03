@@ -16,9 +16,6 @@ in
       VISUAL = "nvim";
       LANG = "en_US.UTF-8";
       GOPATH = "$HOME/golang";
-      FZF_DEFAULT_COMMAND = "fd --type f";
-      FZF_CTRL_T_COMMAND = "fd --type f";
-      FZF_DEFAULT_OPTS = "--height 80% --bind 'ctrl-y:execute-silent(pbcopy <<< {})+abort' --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8";
     };
 
     sessionPath = [
