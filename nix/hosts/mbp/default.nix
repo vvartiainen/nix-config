@@ -14,7 +14,7 @@
   ];
 
   users.users.${userName} = {
-    name = "${userName}";
+    name = userName;
     home = "/Users/${userName}";
     shell = pkgs.zsh;
   };

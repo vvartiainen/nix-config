@@ -8,21 +8,6 @@
     enable = true;
     enableCompletion = true;
     dotDir = config.home.homeDirectory;
-    # Cache completions for 24h
-    # completionInit = ''
-    #   autoload -U compinit
-    #   zmodload zsh/datetime
-    #   zmodload zsh/stat
-    #   typeset -A __zcompdump_stat
-    #   if ! zstat -H __zcompdump_stat -- ~/.zcompdump 2>/dev/null; then
-    #     compinit
-    #   elif (( EPOCHSECONDS - __zcompdump_stat[mtime] > 86400 )); then
-    #     compinit
-    #   else
-    #     compinit -C
-    #   fi
-    #   unset __zcompdump_stat
-    # '';
     fastSyntaxHighlighting = {
       enable = true;
     };
@@ -35,8 +20,6 @@
       path = "$HOME/.zsh_history";
       size = 100000;
       save = 100000;
-    };
-    shellGlobalAliases = {
     };
     shellAliases = {
       rm = "rm -i";
