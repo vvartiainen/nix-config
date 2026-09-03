@@ -13,7 +13,7 @@ Don't expect this to work out of the box for you, but feel free to borrow anythi
 - `nix/modules/home/`: Home Manager user base and CLI program modules
   - `programs/`: one Home Manager module per program (`zsh`, `fzf`, `starship`, etc.)
 - `nix/modules/darwin/`: macOS system modules (`homebrew`, `system-settings`) and macOS HM programs
-  - `programs/`: macOS-specific Home Manager modules (`wm`, `onepassword`)
+  - `programs/`: macOS-specific Home Manager modules (`yabai`, `skhd`, `sketchybar`, `onepassword`)
 - `dotfiles/`: actual config files for apps (`nvim`, `tmux`, `yabai`, `skhd`, etc.)
   - Using `mkOutOfStoreSymlink` so updates in these files are reflected directly
   - Might want to move some of these to "more pure" / immutable configs at some point
