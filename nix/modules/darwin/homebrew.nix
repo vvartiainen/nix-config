@@ -67,7 +67,6 @@
 
     brews = [
       "ansible"
-      "atuin"
       "awscli"
       "azure-cli"
       "bat"
@@ -108,7 +107,6 @@
       }
       "kubernetes-cli"
       "lazydocker"
-      "lazygit"
       "libpq"
       "lsd"
       "luajit"
@@ -141,7 +139,6 @@
       "uv"
       "valkey"
       "wget"
-      "yazi"
       "yt-dlp"
       "zig"
     ];
