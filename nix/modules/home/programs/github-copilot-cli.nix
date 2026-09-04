@@ -1,15 +1,23 @@
 {
+  lib,
   pkgs,
+  config,
   ...
 }:
 let
   jsonFormat = pkgs.formats.json { };
+  jq = lib.getExe pkgs.jq;
 
-  # Copilot CLI stores user-editable settings in settings.json. The
-  # home-manager `settings` option still writes config.json, which the CLI
+  # Copilot CLI stores user-editable settings in settings.json and rewrites
+  # that file in place. A home-manager symlink into the Nix store gets
+  # replaced on the first CLI settings change, so keep the file writable and
+  # merge Nix settings on activation instead.
+  #
+  # The home-manager `settings` option still writes config.json, which the CLI
   # now treats as runtime state (auth, plugins) and must remain writable.
   settings = {
     model = "gpt-5.6-sol";
+    effortLevel = "medium";
     footer = {
       showModelEffort = true;
       showDirectory = true;
@@ -43,6 +51,8 @@ let
       "security-review".model = "inherit";
     };
   };
+
+  staticSettings = jsonFormat.generate "github-copilot-cli-settings.json" settings;
 in
 {
   programs.github-copilot-cli = {
@@ -64,6 +74,20 @@ in
     };
   };
 
-  home.file.".copilot/settings.json".source =
-    jsonFormat.generate "github-copilot-cli-settings.json" settings;
+  home.activation.githubCopilotCliSettings = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+    config_path="${config.programs.github-copilot-cli.configDir}/settings.json"
+    mkdir -p "$(dirname "$config_path")"
+    if [ -L "$config_path" ]; then
+      rm -f "$config_path"
+    fi
+    if [ ! -e "$config_path" ]; then
+      echo '{}' > "$config_path"
+    fi
+    if ! ${jq} -S '. * $static[0]' \
+      --slurpfile static ${staticSettings} \
+      "$config_path" > "$config_path.tmp" 2>/dev/null; then
+      ${jq} -S '.' ${staticSettings} > "$config_path.tmp"
+    fi
+    mv "$config_path.tmp" "$config_path"
+  '';
 }
