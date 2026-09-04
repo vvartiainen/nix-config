@@ -58,9 +58,16 @@ in
   programs.github-copilot-cli = {
     enable = true;
 
+    # TypeScript 7 from mise is a native compiler and speaks LSP itself
+    # (`tsc --lsp`). It no longer ships `tsserver.js`, so
+    # `typescript-language-server` cannot start. Use the mise shim so Copilot
+    # does not need zsh/`mise activate` on PATH.
     lspServers.typescript = {
-      command = "typescript-language-server";
-      args = [ "--stdio" ];
+      command = "${config.xdg.dataHome}/mise/shims/tsc";
+      args = [
+        "--lsp"
+        "--stdio"
+      ];
       fileExtensions = {
         ".ts" = "typescript";
         ".tsx" = "typescriptreact";
