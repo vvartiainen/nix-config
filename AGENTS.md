@@ -15,15 +15,16 @@ This repository contains my macOS configs using nix, nix-darwin and home-manager
 
 ## Validation commands (no apply)
 
-Run these after config changes:
+Use the `justfile` recipes after config changes so commands get the repository's
+correct bootstrapping:
 
-- `nix flake show`
-- `nix flake check`
-- `nix eval .#darwinConfigurations.<hostName>.system`
-- `nix build .#darwinConfigurations.<hostName>.system`
-- `darwin-rebuild build --flake .#<hostName>`
+- `just show`
+- `just check`
+- `just eval-system <hostName>`
+- `just build-system <hostName>`
+- `just build <hostName>`
 
-Do not run apply commands (for example `darwin-rebuild switch`); user applies manually.
+Do not run apply commands (for example `just switch <hostName>`); user applies manually.
 
 ## Working conventions
 
