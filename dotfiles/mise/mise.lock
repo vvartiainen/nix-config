@@ -63,10 +63,6 @@ url = "https://nodejs.org/dist/v24.18.1/node-v24.18.1-darwin-x64.tar.gz"
 checksum = "sha256:ec56b84a7551893ab2324ebdfdc4ab974a63b4781162600b68a1293cc3e53765"
 url = "https://nodejs.org/dist/v24.18.1/node-v24.18.1-win-x64.zip"
 
-[[tools."npm:@earendil-works/pi-coding-agent"]]
-version = "0.82.1"
-backend = "npm:@earendil-works/pi-coding-agent"
-
 [[tools."npm:@mermaid-js/mermaid-cli"]]
 version = "11.16.0"
 backend = "npm:@mermaid-js/mermaid-cli"

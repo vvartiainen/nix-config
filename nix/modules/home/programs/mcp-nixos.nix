@@ -10,6 +10,11 @@ let
   jq = lib.getExe pkgs.jq;
   yq = lib.getExe pkgs.yq-go;
   mcpNixos = lib.getExe pkgs.mcp-nixos;
+  piSettings = jsonFormat.generate "pi-mcp-nixos.json" {
+    mcpServers.nixos = {
+      command = mcpNixos;
+    };
+  };
   cursorSettings = jsonFormat.generate "cursor-mcp-nixos.json" {
     mcpServers.nixos = {
       type = "stdio";
@@ -43,6 +48,7 @@ in
   home.activation.mcpNixosConfig =
     lib.hm.dag.entryAfter
       [
+        "linkGeneration"
         "codexMutableConfig"
         "githubCopilotCliSettings"
         "opencodeConfig"
@@ -67,6 +73,9 @@ in
           mv "$config_path.tmp" "$config_path"
         }
 
+        merge_mcp_config \
+          "${config.home.homeDirectory}/.pi/agent/mcp.json" \
+          ${piSettings}
         merge_mcp_config \
           "${config.home.homeDirectory}/.cursor/mcp.json" \
           ${cursorSettings}
