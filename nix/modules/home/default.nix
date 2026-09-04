@@ -40,9 +40,7 @@ in
   xdg = {
     enable = true;
     configFile = lib.mkMerge [
-      (linkTree "btop")
       (linkTree "kitty")
-      (linkTree "lazygit")
       (linkTree "mise")
       (linkTree "nvim")
       (linkTree "yazi")

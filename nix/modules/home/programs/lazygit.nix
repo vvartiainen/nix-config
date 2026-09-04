@@ -1,7 +1,43 @@
-{ pkgs, ... }:
+{ ... }:
 {
-  # Home Manager's lazygit module always declares config.yml (disabled when
-  # settings is empty), which conflicts with the linked dotfiles/lazygit
-  # config. Install the package here and keep the yaml as the source of truth.
-  home.packages = [ pkgs.lazygit ];
+  programs.lazygit = {
+    enable = true;
+
+    settings = {
+      git = {
+        diffRenderers = [
+          {
+            command = "delta --dark --paging=never";
+            colorArg = "always";
+          }
+        ];
+        autoFetch = true;
+      };
+
+      os = {
+        editPreset = "nvim";
+        edit = ''if [ -n "$NVIM" ]; then nvim --server $NVIM --remote-send '<C-\><C-n><cmd>close<cr>' && nvim --server $NVIM --remote {{filename}}; else nvim {{filename}}; fi'';
+        editAtLine = ''if [ -n "$NVIM" ]; then nvim --server $NVIM --remote-send '<C-\><C-n><cmd>close<cr>' && nvim --server $NVIM --remote-expr "v:lua.vim.api.nvim_command('edit ' . fnameescape('{{filename}}'))" && nvim --server $NVIM --remote-send '<cmd>{{line}}<cr>'; else nvim +{{line}} {{filename}}; fi'';
+      };
+
+      gui = {
+        switchTabsWithPanelJumpKeys = true;
+        theme = {
+          activeBorderColor = [
+            "#fab387"
+            "bold"
+          ];
+          inactiveBorderColor = [ "#89b4fa" ];
+          optionsTextColor = [ "#89b4fa" ];
+          selectedLineBgColor = [ "#313244" ];
+          cherryPickedCommitBgColor = [ "#45475a" ];
+          cherryPickedCommitFgColor = [ "#fab387" ];
+          unstagedChangesColor = [ "#f38ba8" ];
+          defaultFgColor = [ "#cdd6f4" ];
+          searchingActiveBorderColor = [ "#f9e2af" ];
+        };
+        authorColors."*" = "#b4befe";
+      };
+    };
+  };
 }

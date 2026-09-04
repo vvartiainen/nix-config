@@ -2,6 +2,7 @@
 {
   imports = [
     ./atuin.nix
+    ./btop.nix
     ./cli-toolbox.nix
     ./codex.nix
     ./cursor-cli.nix
