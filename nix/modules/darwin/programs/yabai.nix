@@ -1,13 +1,14 @@
 {
+  lib,
   config,
   repoRoot,
   ...
 }:
 let
-  link = rel: config.lib.file.mkOutOfStoreSymlink "${repoRoot}/dotfiles/${rel}";
+  inherit (import ../../home/link-dotfiles.nix { inherit lib config repoRoot; }) linkTree;
 in
 {
-  xdg.configFile."yabai".source = link "yabai";
+  xdg.configFile = linkTree "yabai";
 
   programs.zsh.shellAliases = {
     reloadyabai = "sudo yabai --load-sa && yabai --restart-service";

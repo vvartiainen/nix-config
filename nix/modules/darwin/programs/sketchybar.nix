@@ -1,13 +1,14 @@
 {
+  lib,
   config,
   repoRoot,
   ...
 }:
 let
-  link = rel: config.lib.file.mkOutOfStoreSymlink "${repoRoot}/dotfiles/${rel}";
+  inherit (import ../../home/link-dotfiles.nix { inherit lib config repoRoot; }) linkTree;
 in
 {
-  xdg.configFile."sketchybar".source = link "sketchybar";
+  xdg.configFile = linkTree "sketchybar";
 
   programs.zsh.shellAliases = {
     reloadsketchybar = "sketchybar --reload";
