@@ -2,6 +2,7 @@
   lib,
   pkgs,
   config,
+  repoRoot,
   ...
 }:
 let
@@ -53,15 +54,7 @@ let
   };
 
   staticSettings = jsonFormat.generate "github-copilot-cli-settings.json" settings;
-in
-{
-  programs.github-copilot-cli = {
-    enable = true;
-
-    # TypeScript 7 from mise is a native compiler and speaks LSP itself
-    # (`tsc --lsp`). It no longer ships `tsserver.js`, so
-    # `typescript-language-server` cannot start. Use the mise shim so Copilot
-    # does not need zsh/`mise activate` on PATH.
+  staticLspSettings = jsonFormat.generate "github-copilot-cli-lsp.json" {
     lspServers.typescript = {
       command = "${config.xdg.dataHome}/mise/shims/tsc";
       args = [
@@ -80,21 +73,65 @@ in
       };
     };
   };
+  staticPermissions = jsonFormat.generate "github-copilot-cli-permissions.json" {
+    locations.${repoRoot}.tool_approvals = [
+      {
+        kind = "commands";
+        commandIdentifiers = [
+          "git status:*"
+          "git diff:*"
+          "grep:*"
+          "npm run test:*"
+          "npm run build:*"
+          "npm run format:*"
+          "npm test:*"
+          "npx vitest:*"
+          "npx tsc:*"
+          "npx eslint:*"
+          "terraform fmt:*"
+          "terraform validate:*"
+        ];
+      }
+      {
+        kind = "mcp";
+        serverName = "nixos";
+        toolName = null;
+      }
+    ];
+  };
+in
+{
+  programs.github-copilot-cli = {
+    enable = true;
+  };
 
   home.activation.githubCopilotCliSettings = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-    config_path="${config.programs.github-copilot-cli.configDir}/settings.json"
-    mkdir -p "$(dirname "$config_path")"
-    if [ -L "$config_path" ]; then
-      rm -f "$config_path"
-    fi
-    if [ ! -e "$config_path" ]; then
-      echo '{}' > "$config_path"
-    fi
-    if ! ${jq} -S '. * $static[0]' \
-      --slurpfile static ${staticSettings} \
-      "$config_path" > "$config_path.tmp" 2>/dev/null; then
-      ${jq} -S '.' ${staticSettings} > "$config_path.tmp"
-    fi
-    mv "$config_path.tmp" "$config_path"
+    merge_copilot_config() {
+      config_path="$1"
+      static_path="$2"
+      mkdir -p "$(dirname "$config_path")"
+      if [ -L "$config_path" ]; then
+        rm -f "$config_path"
+      fi
+      if [ ! -e "$config_path" ]; then
+        echo '{}' > "$config_path"
+      fi
+      if ! ${jq} -S '. * $static[0]' \
+        --slurpfile static "$static_path" \
+        "$config_path" > "$config_path.tmp" 2>/dev/null; then
+        ${jq} -S '.' "$static_path" > "$config_path.tmp"
+      fi
+      mv "$config_path.tmp" "$config_path"
+    }
+
+    merge_copilot_config \
+      "${config.programs.github-copilot-cli.configDir}/settings.json" \
+      ${staticSettings}
+    merge_copilot_config \
+      "${config.programs.github-copilot-cli.configDir}/lsp-config.json" \
+      ${staticLspSettings}
+    merge_copilot_config \
+      "${config.programs.github-copilot-cli.configDir}/permissions-config.json" \
+      ${staticPermissions}
   '';
 }

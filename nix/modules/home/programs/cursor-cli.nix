@@ -12,6 +12,31 @@ let
   # this file has to stay writable. Nix settings are merged on activation.
   settings = {
     version = 1;
+    editor.vimMode = false;
+    permissions = {
+      allow = [
+        "Shell(git:status *)"
+        "Shell(git:diff *)"
+        "Shell(grep:*)"
+        "Shell(npm:run test *)"
+        "Shell(npm:run build *)"
+        "Shell(npm:run format *)"
+        "Shell(npm:test *)"
+        "Shell(npx:vitest *)"
+        "Shell(npx:tsc *)"
+        "Shell(npx:eslint *)"
+        "Shell(terraform:fmt *)"
+        "Shell(terraform:validate *)"
+        "Read(**)"
+        "Mcp(nixos:*)"
+      ];
+      deny = [
+        "Read(.env)"
+        "Read(.env.*)"
+        "Read(**/.env)"
+        "Read(**/.env.*)"
+      ];
+    };
     attribution = {
       attributeCommitsToAgent = false;
       attributePRsToAgent = false;
