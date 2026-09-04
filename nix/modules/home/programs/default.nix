@@ -3,6 +3,7 @@
   imports = [
     ./atuin.nix
     ./cli-toolbox.nix
+    ./codex.nix
     ./cursor-cli.nix
     ./fzf.nix
     ./github-copilot-cli.nix

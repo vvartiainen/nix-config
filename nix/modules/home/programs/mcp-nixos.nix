@@ -19,4 +19,8 @@ in
     command = mcpNixos;
     tools = [ "*" ];
   };
+
+  programs.codex.settings.mcp_servers.nixos = {
+    command = mcpNixos;
+  };
 }
