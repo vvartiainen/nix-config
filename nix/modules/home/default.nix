@@ -35,22 +35,6 @@ in
       lnav
       statix
     ];
-
-    # Old generations linked whole config dirs. Remove those directory
-    # symlinks before Home Manager creates per-file links, otherwise it
-    # follows the dir link and writes into the repo (circular symlinks).
-    activation.unlinkDotfileDirSymlinks = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
-      configHome="${config.xdg.configHome}"
-      for dir in btop kitty lazygit mise nvim yazi opencode sketchybar skhd yabai; do
-        target="$configHome/$dir"
-        if [ -L "$target" ]; then
-          echo "Removing directory symlink $target so files can be linked individually"
-          if [[ ! -v DRY_RUN ]]; then
-            rm -f "$target"
-          fi
-        fi
-      done
-    '';
   };
 
   xdg = {
