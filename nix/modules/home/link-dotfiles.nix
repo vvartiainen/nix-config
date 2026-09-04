@@ -1,4 +1,8 @@
-{ lib, config, repoRoot }:
+{
+  lib,
+  config,
+  repoRoot,
+}:
 let
   # List files from the flake tree so gitignored runtime dirs (node_modules,
   # etc.) are not linked. Symlink targets still use repoRoot so edits apply
@@ -9,13 +13,6 @@ let
     "node_modules"
     ".git"
     ".DS_Store"
-  ];
-
-  # Runtime files that programs write next to config (do not manage).
-  skipRels = [
-    "opencode/package.json"
-    "opencode/package-lock.json"
-    "opencode/bun.lock"
   ];
 
   link = rel: config.lib.file.mkOutOfStoreSymlink "${repoRoot}/dotfiles/${rel}";
@@ -37,10 +34,12 @@ let
             in
             if type == "directory" then
               walk childRel (dir + "/${name}")
-            else if builtins.elem childRel skipRels then
-              { }
             else
-              { ${childRel} = { source = link childRel; }; }
+              {
+                ${childRel} = {
+                  source = link childRel;
+                };
+              }
         ) (builtins.readDir dir);
     in
     walk rel (dotfilesSrc + "/${rel}");

@@ -46,7 +46,6 @@ in
       (linkTree "mise")
       (linkTree "nvim")
       (linkTree "yazi")
-      (linkTree "opencode")
       {
         "pip/pip.conf".source = link "pip/pip.conf";
         "pnpm/config.yaml".source = link "pnpm/config.yaml";
