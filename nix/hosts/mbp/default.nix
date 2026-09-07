@@ -41,4 +41,6 @@
 
   system.stateVersion = 6; # This should not be changed even when flakes are updated!
   nixpkgs.hostPlatform = "aarch64-darwin";
+
+  nix.linux-builder.enable = true;
 }
