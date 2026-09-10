@@ -31,7 +31,6 @@ return {
         "svelte-language-server",
         "tailwindcss-language-server",
         "terraform-ls",
-        "vtsls",
         "yaml-language-server",
         "zls",
       },
