@@ -9,6 +9,7 @@ return {
         { path = "yazi.nvim", words = { "yazi" } },
         { path = "blink.cmp", words = { "blink" } },
         { path = "conform.nvim", words = { "conform" } },
+        { path = "sidekick.nvim", words = { "sidekick" } },
       },
     },
   },
