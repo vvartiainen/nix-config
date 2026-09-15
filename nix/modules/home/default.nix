@@ -16,12 +16,10 @@ in
       EDITOR = "nvim";
       VISUAL = "nvim";
       LANG = "en_US.UTF-8";
-      GOPATH = "$HOME/golang";
     };
 
     sessionPath = [
       "$HOME/.local/bin"
-      "$HOME/golang/bin"
     ];
 
     file = {

@@ -6,13 +6,8 @@
 {
   home-manager.users.${userName} = {
     home = {
-      sessionVariables = {
-        GOROOT = "/opt/homebrew/opt/go/libexec";
-      };
-
       sessionPath = [
         "/opt/homebrew/opt/libpq/bin"
-        "/opt/homebrew/opt/go/libexec/bin"
       ];
     };
 
@@ -94,7 +89,6 @@
       "git-lfs"
       "gnu-sed"
       "gnumeric"
-      "go"
       "imagemagick"
       "jq"
       "julia"
@@ -123,7 +117,6 @@
       "podman"
       "poppler"
       "ripgrep"
-      "rustup"
       "scc"
       "sevenzip"
       "shellcheck"

@@ -33,7 +33,6 @@ return {
       lua = { "stylua" },
       markdown = { "markdownlint" },
       python = { "black" },
-      rust = { "rustanalyzer" },
       scss = { "prettier" },
       sh = { "shfmt", "shellcheck" },
       shell = { "shfmt", "shellcheck" },
