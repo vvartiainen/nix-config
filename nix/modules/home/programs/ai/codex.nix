@@ -5,20 +5,8 @@
   ...
 }:
 let
-  commandRules = pkgs.writeText "codex-nix-config.rules" ''
-    prefix_rule(pattern = ["git", "status"], decision = "allow")
-    prefix_rule(pattern = ["git", "diff"], decision = "allow")
-    prefix_rule(pattern = ["grep"], decision = "allow")
-    prefix_rule(pattern = ["npm", "run", "test"], decision = "allow")
-    prefix_rule(pattern = ["npm", "run", "build"], decision = "allow")
-    prefix_rule(pattern = ["npm", "run", "format"], decision = "allow")
-    prefix_rule(pattern = ["npm", "test"], decision = "allow")
-    prefix_rule(pattern = ["npx", "vitest"], decision = "allow")
-    prefix_rule(pattern = ["npx", "tsc"], decision = "allow")
-    prefix_rule(pattern = ["npx", "eslint"], decision = "allow")
-    prefix_rule(pattern = ["terraform", "fmt"], decision = "allow")
-    prefix_rule(pattern = ["terraform", "validate"], decision = "allow")
-  '';
+  permissions = import ./permissions.nix { inherit lib; };
+  commandRules = pkgs.writeText "codex-nix-config.rules" permissions.codexRules;
 in
 {
   programs.codex = {

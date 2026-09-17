@@ -8,6 +8,7 @@
 let
   jsonFormat = pkgs.formats.json { };
   jq = lib.getExe pkgs.jq;
+  permissions = import ./permissions.nix { inherit lib; };
 
   # Copilot CLI stores user-editable settings in settings.json and rewrites
   # that file in place. A home-manager symlink into the Nix store gets
@@ -77,27 +78,11 @@ let
     locations.${repoRoot}.tool_approvals = [
       {
         kind = "commands";
-        commandIdentifiers = [
-          "git status:*"
-          "git diff:*"
-          "grep:*"
-          "npm run test:*"
-          "npm run build:*"
-          "npm run format:*"
-          "npm test:*"
-          "npx vitest:*"
-          "npx tsc:*"
-          "npx eslint:*"
-          "terraform fmt:*"
-          "terraform validate:*"
-        ];
+        commandIdentifiers = permissions.copilot.commandIdentifiers;
       }
-      {
-        kind = "mcp";
-        serverName = "nixos";
-        toolName = null;
-      }
-    ];
+      { kind = "read"; }
+    ]
+    ++ permissions.copilot.mcp;
   };
 in
 {

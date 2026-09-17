@@ -7,6 +7,7 @@
 let
   jsonFormat = pkgs.formats.json { };
   jq = lib.getExe pkgs.jq;
+  permissions = import ./permissions.nix { inherit lib; };
 
   # Cursor CLI self-repairs and persists some keys into cli-config.json, so
   # this file has to stay writable. Nix settings are merged on activation.
@@ -14,35 +15,7 @@ let
     version = 1;
     editor.vimMode = false;
     permissions = {
-      allow = [
-        "Shell(git:status *)"
-        "Shell(git:diff *)"
-        "Shell(grep:*)"
-        "Shell(npm:run test *)"
-        "Shell(npm:run build *)"
-        "Shell(npm:run format *)"
-        "Shell(npm:test *)"
-        "Shell(npx:vitest *)"
-        "Shell(npx:tsc *)"
-        "Shell(npx:eslint *)"
-        "Shell(terraform:fmt *)"
-        "Shell(terraform:validate *)"
-        "Shell(just:eval-system *)"
-        "Shell(just:build-system *)"
-        "Shell(just:build-system *)"
-        "Shell(just:build *)"
-        "Shell(just:check *)"
-        "Shell(just:show *)"
-        "Shell(nix:fmt *)"
-        "Read(**)"
-        "Mcp(nixos:*)"
-      ];
-      deny = [
-        "Read(.env)"
-        "Read(.env.*)"
-        "Read(**/.env)"
-        "Read(**/.env.*)"
-      ];
+      inherit (permissions.cursor) allow deny;
     };
     attribution = {
       attributeCommitsToAgent = false;

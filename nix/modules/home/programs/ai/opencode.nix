@@ -7,6 +7,7 @@
 let
   jsonFormat = pkgs.formats.json { };
   jq = lib.getExe pkgs.jq;
+  permissions = import ./permissions.nix { inherit lib; };
 
   # OpenCode updates its config through commands such as `opencode mcp add`.
   # Keep it as a normal file and merge the declarative defaults on activation.
@@ -31,27 +32,8 @@ let
       ];
     };
     permission = {
-      bash = {
-        "*" = "ask";
-        "git status *" = "allow";
-        "git diff *" = "allow";
-        "grep *" = "allow";
-        "npm run test *" = "allow";
-        "npm run build *" = "allow";
-        "npm run format *" = "allow";
-        "npm test *" = "allow";
-        "npx vitest *" = "allow";
-        "npx tsc *" = "allow";
-        "npx eslint *" = "allow";
-        "terraform fmt *" = "allow";
-        "terraform validate *" = "allow";
-      };
-      read = {
-        "*" = "allow";
-        "*.env" = "deny";
-        "*.env.*" = "deny";
-        "*.env.example" = "allow";
-      };
+      bash = permissions.opencode.bash;
+      read = permissions.opencode.read;
     };
   };
 
