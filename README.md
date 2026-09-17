@@ -12,6 +12,7 @@ Don't expect this to work out of the box for you, but feel free to borrow anythi
 - `nix/modules/shared/`: system-level modules that are not platform-specific (`nix`, `networking`)
 - `nix/modules/home/`: Home Manager user base and CLI program modules
   - `programs/`: one Home Manager module per program (`zsh`, `fzf`, `starship`, etc.)
+  - `programs/ai/`: AI CLI utilities (`cursor-cli`, `codex`, `opencode`, Copilot CLI, Pi) plus shared MCP wiring
 - `nix/modules/darwin/`: macOS system modules (`homebrew`, `system-settings`) and macOS HM programs
   - `programs/`: macOS-specific Home Manager modules (`yabai`, `skhd`, `sketchybar`, `onepassword`)
 - `dotfiles/`: actual config files for apps (`nvim`, `tmux`, `yabai`, `skhd`, etc.)

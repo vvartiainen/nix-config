@@ -27,6 +27,13 @@ let
         "Shell(npx:eslint *)"
         "Shell(terraform:fmt *)"
         "Shell(terraform:validate *)"
+        "Shell(just:eval-system *)"
+        "Shell(just:build-system *)"
+        "Shell(just:build-system *)"
+        "Shell(just:build *)"
+        "Shell(just:check *)"
+        "Shell(just:show *)"
+        "Shell(nix:fmt *)"
         "Read(**)"
         "Mcp(nixos:*)"
       ];
