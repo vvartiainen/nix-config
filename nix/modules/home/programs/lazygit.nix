@@ -11,7 +11,7 @@
             colorArg = "always";
           }
         ];
-        autoFetch = true;
+        autoFetch = false;
       };
 
       os = {
