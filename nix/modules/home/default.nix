@@ -27,6 +27,9 @@ in
       ".npmrc".source = link ".npmrc";
       ".yarnrc.yml".source = link ".yarnrc.yml";
       ".rgignore".source = link ".rgignore";
+      # TPM treats ~/.config/tmux/tmux.conf as an XDG install and then loads
+      # plugins from ~/.config/tmux/plugins, not ~/.tmux/plugins.
+      ".tmux.conf".source = link "tmux/tmux.conf";
     };
 
     packages = with pkgs; [
@@ -46,7 +49,6 @@ in
         "pip/pip.conf".source = link "pip/pip.conf";
         "pnpm/config.yaml".source = link "pnpm/config.yaml";
         "starship.toml".source = link "starship.toml";
-        "tmux/tmux.conf".source = link "tmux/tmux.conf";
         "uv/uv.toml".source = link "uv/uv.toml";
       }
     ];
