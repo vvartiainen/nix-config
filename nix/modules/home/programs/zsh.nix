@@ -36,6 +36,7 @@
       falias = "alias | fzf";
       fhistory = "history | fzf";
       fbinds = "bindkey | fzf";
+      fenv = "env | fzf";
 
       vi = "nvim";
       vim = "nvim";
