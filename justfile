@@ -31,7 +31,9 @@ build host:
     darwin-rebuild build --flake '{{ flake_ref }}#{{ host }}'
 
 # Apply the nix-darwin configuration.
+# SKIP_HOMEBREW=1 skips brew bundle during activation.
 switch host:
+    printf '%s\n' "${SKIP_HOMEBREW:-0}" | sudo tee /tmp/nix-darwin-skip-homebrew >/dev/null
     sudo darwin-rebuild switch --flake '{{ flake_ref }}#{{ host }}'
 
 # Roll back to the previous nix-darwin generation.
