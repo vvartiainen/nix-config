@@ -1,12 +1,15 @@
 flake_ref := "path:."
 system_profile := "/nix/var/nix/profiles/system"
+# Flake config name. `$HOST` when exported, otherwise this machine's hostname.
+default_host := `hostname`
+host := env("HOST", default_host)
 
 # Create local host overrides if missing.
-generate-local-config host:
+generate-local-config host=host:
     if [ ! -f local-config.nix ]; then printf '{\n  userName = "%s";\n  hostName = "%s";\n  repoRoot = "%s";\n}\n' "$USER" '{{ host }}' '{{ justfile_directory() }}' > local-config.nix; fi
 
 # Bootstrap nix-darwin from this flake.
-bootstrap host:
+bootstrap host=host:
     just generate-local-config '{{ host }}'
     sudo nix run nix-darwin -- switch --flake '{{ flake_ref }}#{{ host }}'
 
@@ -19,20 +22,20 @@ check:
     nix flake check
 
 # Evaluate the darwin system derivation.
-eval-system host:
+eval-system host=host:
     nix eval '{{ flake_ref }}#darwinConfigurations.{{ host }}.system'
 
 # Build the darwin system derivation.
-build-system host:
+build-system host=host:
     nix build '{{ flake_ref }}#darwinConfigurations.{{ host }}.system'
 
 # Build the nix-darwin activation package without applying it.
-build host:
+build host=host:
     darwin-rebuild build --flake '{{ flake_ref }}#{{ host }}'
 
 # Apply the nix-darwin configuration.
 # SKIP_HOMEBREW=1 skips brew bundle during activation.
-switch host:
+switch host=host:
     printf '%s\n' "${SKIP_HOMEBREW:-0}" | sudo tee /tmp/nix-darwin-skip-homebrew >/dev/null
     sudo darwin-rebuild switch --flake '{{ flake_ref }}#{{ host }}'
 
