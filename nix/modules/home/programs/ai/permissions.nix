@@ -7,6 +7,7 @@ let
     [ "git" "status" ]
     [ "git" "diff" ]
     [ "grep" ]
+    [ "printf" ]
     [ "npm" "run" "test" ]
     [ "npm" "run" "build" ]
     [ "npm" "run" "format" ]
@@ -26,6 +27,14 @@ let
 
   mcpServers = [ "nixos" ];
 
+  urlDomains = [
+    "github.com"
+    "*.github.com"
+    "*.githubusercontent.com"
+    "github.io"
+    "*.github.io"
+  ];
+
   commandString = concatStringsSep " ";
 
   toCursorShell =
@@ -41,10 +50,19 @@ let
     cmd: ''prefix_rule(pattern = [${concatMapStringsSep ", " quote cmd}], decision = "allow")'';
 in
 {
+  inherit urlDomains;
+
+  sandboxReadonlyPaths = xdg: [
+    "/nix/store"
+    "${xdg.dataHome}/mise"
+    "${xdg.configHome}/mise"
+  ];
+
   cursor = {
     allow =
       (map toCursorShell allowedCommands)
       ++ [ "Read(**)" ]
+      ++ map (domain: "WebFetch(${domain})") urlDomains
       ++ map (name: "Mcp(${name}:*)") mcpServers;
     deny = [
       "Read(.env)"

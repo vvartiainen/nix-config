@@ -77,7 +77,7 @@ in
           "${config.home.homeDirectory}/.pi/agent/mcp.json" \
           ${piSettings}
         merge_mcp_config \
-          "${config.home.homeDirectory}/.cursor/mcp.json" \
+          "${config.xdg.configHome}/cursor/mcp.json" \
           ${cursorSettings}
         merge_mcp_config \
           "${config.programs.github-copilot-cli.configDir}/mcp-config.json" \

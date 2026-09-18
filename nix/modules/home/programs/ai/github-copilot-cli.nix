@@ -20,6 +20,13 @@ let
   settings = {
     model = "gpt-5.6-sol";
     effortLevel = "medium";
+    # Local sandboxing is experimental. PATH dirs are auto-granted read-only,
+    # but Nix binaries resolve into the store and mise shims into XDG dirs.
+    experimental = true;
+    sandbox = {
+      enabled = true;
+      userPolicy.filesystem.readonlyPaths = permissions.sandboxReadonlyPaths config.xdg;
+    };
     footer = {
       showModelEffort = true;
       showDirectory = true;
@@ -32,7 +39,7 @@ let
       showCustom = true;
     };
     includeCoAuthoredBy = false;
-    allowedUrls = [ "https://docs.github.com" ];
+    allowedUrls = permissions.urlDomains;
     disabledSkills = [ ];
     theme = "github";
     beep = true;
