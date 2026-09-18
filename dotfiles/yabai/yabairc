@@ -67,10 +67,17 @@ yabai -m rule --add app="^(Calculator|Software Update|Dictionary|System Preferen
 yabai -m rule --add label="Finder" app="^Finder$" title="(Co(py|nnect)|Move|Info|Pref)" manage=off
 yabai -m rule --add label="Safari" app="^Safari$" title="^(General|(Tab|Password|Website|Extension)s|AutoFill|Se(arch|curity)|Privacy|Advance)$" manage=off
 yabai -m rule --add label="About This Mac" app="System Information" title="About This Mac" manage=off
-yabai -m rule --add app="^1Password$" manage=off
 
-yabai -m signal --add app='^Ghostty$' event=window_created action='yabai -m space --layout bsp'
-yabai -m signal --add app='^Ghostty$' event=window_destroyed action='yabai -m space --layout bsp'
+# Catch 1Password's specific extension helpers and system level unlock overlays
+# # 1. Force the system ControlCenter biometric prompt completely out of the window tree
+yabai -m rule --add app="^ControlCenter$" manage=off layer=above
+
+# 2. Add an explicit regex rule to target ALL variations of 1Password's sub-windows
+# This drops opacity and border rendering loops that cause the focus lockouts
+yabai -m rule --add app="^1Password.*$" manage=off layer=above opacity=1.0 border=off
+
+# 3. Handle the browser extensions specifically (e.g. if using Arc or Safari)
+yabai -m rule --add app="^1Password Extension$" manage=off layer=above opacity=1.0 border=off
 
 # yabai -m signal --add event=window_destroyed action="yabai -m query --windows --window &> /dev/null || yabai -m window --focus recent || yabai -m window --focus first"
 # yabai -m signal --add event=application_terminated action="yabai -m query --windows --window &> /dev/null || yabai -m window --focus recent || yabai -m window --focus first"
