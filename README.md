@@ -26,6 +26,16 @@ Don't expect this to work out of the box for you, but feel free to borrow anythi
 - Homebrew
 - just (`brew install just`)
 
+Apple does not expose these as nix-darwin options. Run them once on a new machine (safe to re-run):
+
+```bash
+sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+sudo xcodebuild -license accept
+softwareupdate --install-rosetta --agree-to-license
+```
+
+Rosetta is required for `x86_64-linux` builds on the VZ linux-builder. The Xcode license must be accepted before `xcodebuild` and some Homebrew formulas work.
+
 ## Installation
 
 1. Install Nix (with flakes support):
