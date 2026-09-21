@@ -18,6 +18,12 @@
       url = "github:vvartiainen/cli-toolbox";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # asmvik/yabai plus macOS 27 scripting-addition offsets.
+    yabai-src = {
+      url = "github:ImTheSquid/yabai";
+      flake = false;
+    };
   };
 
   outputs =
