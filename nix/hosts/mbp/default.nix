@@ -11,6 +11,7 @@
     ../../modules/shared/networking.nix
     ../../modules/darwin/system-settings.nix
     ../../modules/darwin/homebrew.nix
+    ../../modules/darwin/programs/yabai.nix
   ];
 
   users.users.${userName} = {
