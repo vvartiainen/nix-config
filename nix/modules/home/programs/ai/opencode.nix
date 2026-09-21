@@ -8,6 +8,7 @@ let
   jsonFormat = pkgs.formats.json { };
   jq = lib.getExe pkgs.jq;
   permissions = import ./permissions.nix { inherit lib; };
+  hooks = import ./hooks.nix { inherit lib pkgs; };
 
   # OpenCode updates its config through commands such as `opencode mcp add`.
   # Keep it as a normal file and merge the declarative defaults on activation.
@@ -50,6 +51,8 @@ in
     enable = true;
     package = null;
   };
+
+  xdg.configFile."opencode/plugins/block-nix-apply.js".source = hooks.opencodePlugin;
 
   home.sessionVariables.OPENCODE_EXPERIMENTAL_LSP_TOOL = "true";
 

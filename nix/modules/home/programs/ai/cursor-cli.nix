@@ -8,7 +8,15 @@ let
   jsonFormat = pkgs.formats.json { };
   jq = lib.getExe pkgs.jq;
   permissions = import ./permissions.nix { inherit lib; };
+  hooks = import ./hooks.nix { inherit lib pkgs; };
   cursorConfigDir = "${config.xdg.configHome}/cursor";
+  cursorHooksDir = "${config.home.homeDirectory}/.cursor/hooks";
+  cursorHookPath = "${cursorHooksDir}/${hooks.cursor.hookFileName}";
+  cursorHook = {
+    command = "${cursorHookPath} --format cursor";
+    inherit (hooks.cursor) failClosed timeout;
+  };
+  staticHook = jsonFormat.generate "cursor-block-nix-apply-hook.json" cursorHook;
 
   # Cursor CLI self-repairs and persists some keys into cli-config.json, so
   # this file has to stay writable. Nix settings are merged on activation.
@@ -38,6 +46,8 @@ let
 in
 {
   home.sessionVariables.CURSOR_CONFIG_DIR = cursorConfigDir;
+
+  home.file.".cursor/hooks/${hooks.cursor.hookFileName}".source = lib.getExe hooks.script;
 
   home.packages = [
     pkgs.cursor-cli
@@ -72,5 +82,30 @@ in
     merge_cursor_config \
       "${cursorConfigDir}/sandbox.json" \
       ${staticSandbox}
+  '';
+
+  # Upsert this hook without replacing other entries (for example herdr).
+  home.activation.cursorAgentHooks = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+    hooks_path="${config.home.homeDirectory}/.cursor/hooks.json"
+    mkdir -p "$(dirname "$hooks_path")"
+    if [ -L "$hooks_path" ]; then
+      rm -f "$hooks_path"
+    fi
+    if [ ! -e "$hooks_path" ]; then
+      echo '{}' > "$hooks_path"
+    fi
+    if ! ${jq} -S --slurpfile hook ${staticHook} '
+      .version = (.version // 1)
+      | .hooks = (.hooks // {})
+      | .hooks.beforeShellExecution = (
+          ((.hooks.beforeShellExecution // []) | map(select(.command != $hook[0].command)))
+          + $hook
+        )
+    ' "$hooks_path" > "$hooks_path.tmp" 2>/dev/null; then
+      ${jq} -S --slurpfile hook ${staticHook} '
+        {version: 1, hooks: {beforeShellExecution: $hook}}
+      ' > "$hooks_path.tmp"
+    fi
+    mv "$hooks_path.tmp" "$hooks_path"
   '';
 }

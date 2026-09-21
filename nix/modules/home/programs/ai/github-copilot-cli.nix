@@ -9,6 +9,24 @@ let
   jsonFormat = pkgs.formats.json { };
   jq = lib.getExe pkgs.jq;
   permissions = import ./permissions.nix { inherit lib; };
+  hooks = import ./hooks.nix { inherit lib pkgs; };
+  copilotHooksDir = "${config.programs.github-copilot-cli.configDir}/hooks";
+  copilotHookPath = "${copilotHooksDir}/${hooks.copilot.hookFileName}";
+  copilotHomeRel = lib.removePrefix "${config.home.homeDirectory}/" copilotHooksDir;
+  staticCopilotHooks = jsonFormat.generate "github-copilot-cli-block-nix-apply.json" {
+    version = 1;
+    hooks.preToolUse = [
+      {
+        type = "command";
+        exec = copilotHookPath;
+        args = [
+          "--format"
+          "copilot"
+        ];
+        inherit (hooks.copilot) matcher timeoutSec;
+      }
+    ];
+  };
 
   # Copilot CLI stores user-editable settings in settings.json and rewrites
   # that file in place. A home-manager symlink into the Nix store gets
@@ -96,6 +114,9 @@ in
   programs.github-copilot-cli = {
     enable = true;
   };
+
+  home.file."${copilotHomeRel}/${hooks.copilot.hookFileName}".source = lib.getExe hooks.script;
+  home.file."${copilotHomeRel}/block-nix-apply.json".source = staticCopilotHooks;
 
   home.activation.githubCopilotCliSettings = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
     merge_copilot_config() {

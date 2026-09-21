@@ -1,4 +1,11 @@
-{ pkgs, ... }:
+{
+  lib,
+  pkgs,
+  ...
+}:
+let
+  hooks = import ./hooks.nix { inherit lib pkgs; };
+in
 {
   programs.pi-coding-agent = {
     enable = true;
@@ -20,4 +27,6 @@
       ];
     };
   };
+
+  home.file.".pi/agent/extensions/block-nix-apply.ts".source = hooks.piExtension;
 }
