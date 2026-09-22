@@ -85,6 +85,7 @@
       "git-lfs"
       "gnu-sed"
       "gnumeric"
+      "hunk"
       "imagemagick"
       "jq"
       "julia"
