@@ -37,40 +37,42 @@ let
   staticSandbox = jsonFormat.generate "cursor-sandbox.json" sandboxSettings;
 in
 {
-  home.sessionVariables.CURSOR_CONFIG_DIR = cursorConfigDir;
+  home = {
+    sessionVariables.CURSOR_CONFIG_DIR = cursorConfigDir;
 
-  home.packages = [
-    pkgs.cursor-cli
-    (pkgs.runCommand "cursor-cli-agent" { } ''
-      mkdir -p $out/bin
-      ln -s ${lib.getExe pkgs.cursor-cli} $out/bin/agent
-    '')
-  ];
+    packages = [
+      pkgs.cursor-cli
+      (pkgs.runCommand "cursor-cli-agent" { } ''
+        mkdir -p $out/bin
+        ln -s ${lib.getExe pkgs.cursor-cli} $out/bin/agent
+      '')
+    ];
 
-  home.activation.cursorCliConfig = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-    merge_cursor_config() {
-      config_path="$1"
-      static_path="$2"
-      mkdir -p "$(dirname "$config_path")"
-      if [ -L "$config_path" ]; then
-        rm -f "$config_path"
-      fi
-      if [ ! -e "$config_path" ]; then
-        echo '{}' > "$config_path"
-      fi
-      if ! ${jq} -S '. * $static[0]' \
-        --slurpfile static "$static_path" \
-        "$config_path" > "$config_path.tmp" 2>/dev/null; then
-        ${jq} -S '.' "$static_path" > "$config_path.tmp"
-      fi
-      mv "$config_path.tmp" "$config_path"
-    }
+    activation.cursorCliConfig = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+      merge_cursor_config() {
+        config_path="$1"
+        static_path="$2"
+        mkdir -p "$(dirname "$config_path")"
+        if [ -L "$config_path" ]; then
+          rm -f "$config_path"
+        fi
+        if [ ! -e "$config_path" ]; then
+          echo '{}' > "$config_path"
+        fi
+        if ! ${jq} -S '. * $static[0]' \
+          --slurpfile static "$static_path" \
+          "$config_path" > "$config_path.tmp" 2>/dev/null; then
+          ${jq} -S '.' "$static_path" > "$config_path.tmp"
+        fi
+        mv "$config_path.tmp" "$config_path"
+      }
 
-    merge_cursor_config \
-      "${cursorConfigDir}/cli-config.json" \
-      ${staticSettings}
-    merge_cursor_config \
-      "${cursorConfigDir}/sandbox.json" \
-      ${staticSandbox}
-  '';
+      merge_cursor_config \
+        "${cursorConfigDir}/cli-config.json" \
+        ${staticSettings}
+      merge_cursor_config \
+        "${cursorConfigDir}/sandbox.json" \
+        ${staticSandbox}
+    '';
+  };
 }

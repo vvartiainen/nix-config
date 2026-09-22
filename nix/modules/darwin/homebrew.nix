@@ -5,54 +5,6 @@
   ...
 }:
 {
-  # nix-darwin's activate script starts with `env -i`, so `just switch` writes
-  # this file from SKIP_HOMEBREW.
-  system.activationScripts.homebrew.text = lib.mkForce ''
-    skipHomebrew=0
-    if [[ -f /tmp/nix-darwin-skip-homebrew ]]; then
-      skipHomebrew=$(cat /tmp/nix-darwin-skip-homebrew)
-      rm -f /tmp/nix-darwin-skip-homebrew
-    fi
-    if [[ "$skipHomebrew" == 1 ]]; then
-      echo >&2 "Skipping Homebrew bundle (SKIP_HOMEBREW=1)"
-    else
-      echo >&2 "Homebrew bundle..."
-      if [ -f "${config.homebrew.prefix}/bin/brew" ]; then
-        ${config.homebrew.onActivation.brewBundleCmd { onlyCheck = false; }}
-      else
-        echo -e "\e[1;31merror: Homebrew is not installed, skipping...\e[0m" >&2
-      fi
-    fi
-  '';
-
-  home-manager.users.${userName} = {
-    home = {
-      sessionPath = [
-        "/opt/homebrew/opt/libpq/bin"
-      ];
-    };
-
-    # Ensure brew-managed completion functions are on fpath.
-    programs.zsh.initContent = lib.mkBefore ''
-      if [ -d /opt/homebrew/share/zsh/site-functions ]; then
-        fpath=(/opt/homebrew/share/zsh/site-functions $fpath)
-      fi
-    '';
-  };
-
-  environment = {
-    variables = {
-      HOMEBREW_PREFIX = "/opt/homebrew";
-      HOMEBREW_CELLAR = "/opt/homebrew/Cellar";
-      HOMEBREW_REPOSITORY = "/opt/homebrew";
-    };
-
-    systemPath = [
-      "/opt/homebrew/bin"
-      "/opt/homebrew/sbin"
-    ];
-  };
-
   homebrew = {
     enable = true;
 
@@ -194,4 +146,51 @@
     };
   };
 
+  environment = {
+    variables = {
+      HOMEBREW_PREFIX = "/opt/homebrew";
+      HOMEBREW_CELLAR = "/opt/homebrew/Cellar";
+      HOMEBREW_REPOSITORY = "/opt/homebrew";
+    };
+
+    systemPath = [
+      "/opt/homebrew/bin"
+      "/opt/homebrew/sbin"
+    ];
+  };
+
+  home-manager.users.${userName} = {
+    home = {
+      sessionPath = [
+        # libpq is not on PATH without this when installed from homebrew
+        "/opt/homebrew/opt/libpq/bin"
+      ];
+    };
+
+    # Ensure brew-managed completion functions are on fpath.
+    programs.zsh.initContent = lib.mkBefore ''
+      if [ -d /opt/homebrew/share/zsh/site-functions ]; then
+        fpath=(/opt/homebrew/share/zsh/site-functions $fpath)
+      fi
+    '';
+  };
+
+  # SKIP_HOMEBREW=1 env var to skip homebrew on switch
+  system.activationScripts.homebrew.text = lib.mkForce ''
+    skipHomebrew=0
+    if [[ -f /tmp/nix-darwin-skip-homebrew ]]; then
+      skipHomebrew=$(cat /tmp/nix-darwin-skip-homebrew)
+      rm -f /tmp/nix-darwin-skip-homebrew
+    fi
+    if [[ "$skipHomebrew" == 1 ]]; then
+      echo >&2 "Skipping Homebrew bundle (SKIP_HOMEBREW=1)"
+    else
+      echo >&2 "Homebrew bundle..."
+      if [ -f "${config.homebrew.prefix}/bin/brew" ]; then
+        ${config.homebrew.onActivation.brewBundleCmd { onlyCheck = false; }}
+      else
+        echo -e "\e[1;31merror: Homebrew is not installed, skipping...\e[0m" >&2
+      fi
+    fi
+  '';
 }
