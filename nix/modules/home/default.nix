@@ -33,6 +33,7 @@ in
     };
 
     packages = with pkgs; [
+      gdu
       lnav
       statix
     ];
