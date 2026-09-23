@@ -10,7 +10,7 @@
     settings = {
       theme = "catppuccin-mocha";
       defaultProvider = "openai-codex";
-      defaultModel = "gpt-5.6-sol";
+      defaultModel = "gpt-6-sol";
       defaultThinkingLevel = "medium";
 
       packages = [
