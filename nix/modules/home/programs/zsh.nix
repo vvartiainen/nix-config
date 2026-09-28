@@ -38,8 +38,6 @@
       fbinds = "bindkey | fzf";
       fenv = "env | fzf";
 
-      vi = "nvim";
-      vim = "nvim";
       lg = "lazygit";
       z = "cd";
       zi = "cdi";
@@ -55,6 +53,11 @@
         fi
       '')
       ''
+
+        # Functions rather than aliases: kitty session restore evals the saved
+        # command with no_aliases set.
+        vi() { nvim "$@" }
+        vim() { nvim "$@" }
 
         # Edit current command line in $EDITOR with Ctrl+X Ctrl+E.
         autoload -Uz edit-command-line
