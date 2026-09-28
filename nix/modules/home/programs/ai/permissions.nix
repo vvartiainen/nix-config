@@ -43,7 +43,13 @@ let
       bin = builtins.head cmd;
       args = builtins.tail cmd;
     in
-    if args == [ ] then "Shell(${bin}:*)" else "Shell(${bin}:${commandString args} *)";
+    if args == [ ] then
+      [ "Shell(${bin}:*)" ]
+    else
+      [
+        "Shell(${bin}:${commandString args})"
+        "Shell(${bin}:${commandString args} *)"
+      ];
 
   quote = s: ''"${s}"'';
   toCodexRule =
@@ -60,7 +66,7 @@ in
 
   cursor = {
     allow =
-      (map toCursorShell allowedCommands)
+      (lib.concatMap toCursorShell allowedCommands)
       ++ [ "Read(**)" ]
       ++ map (domain: "WebFetch(${domain})") urlDomains
       ++ map (name: "Mcp(${name}:*)") mcpServers;
