@@ -57,7 +57,7 @@ assign_app "Safari" "Start"
 # yabai -m rule --add app="Arc" space="Browser"
 
 # Programming
-assign_app "kitty" "Code"
+# assign_app "kitty" "Code"
 
 # Notes
 assign_app "Notion" "Notes"
