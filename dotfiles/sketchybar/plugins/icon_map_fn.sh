@@ -164,6 +164,9 @@ function icon_map() {
 	"Firefox")
 		icon_result=":firefox:"
 		;;
+	"Zen" | "Zen Browser" | "Twilight")
+		icon_result=":zen_browser:"
+		;;
 	"Slack")
 		icon_result=":slack:"
 		;;
@@ -297,7 +300,7 @@ function icon_map() {
 		icon_result=":drafts:"
 		;;
 	"Preview" | "预览" | "Skim" | "zathura")
-		icon_result=":pdf:"
+		icon_result=":preview:"
 		;;
 	"PyCharm")
 		icon_result=":pycharm:"
