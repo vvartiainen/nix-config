@@ -4,25 +4,87 @@ let
 
   # Canonical command prefixes allowed without prompting. Each entry is argv.
   allowedCommands = [
-    [ "git" "status" ]
-    [ "git" "diff" ]
+    [
+      "git"
+      "status"
+    ]
+    [
+      "git"
+      "diff"
+    ]
+    [
+      "git"
+      "add"
+    ]
+
     [ "grep" ]
     [ "printf" ]
-    [ "npm" "run" "test" ]
-    [ "npm" "run" "build" ]
-    [ "npm" "run" "format" ]
-    [ "npm" "test" ]
-    [ "npx" "vitest" ]
-    [ "npx" "tsc" ]
-    [ "npx" "eslint" ]
-    [ "terraform" "fmt" ]
-    [ "terraform" "validate" ]
-    [ "just" "eval-system" ]
-    [ "just" "build-system" ]
-    [ "just" "build" ]
-    [ "just" "check" ]
-    [ "just" "show" ]
-    [ "nix" "fmt" ]
+    [
+      "npm"
+      "run"
+      "test"
+    ]
+    [
+      "npm"
+      "run"
+      "build"
+    ]
+    [
+      "npm"
+      "run"
+      "format"
+    ]
+    [
+      "npm"
+      "test"
+    ]
+    [
+      "npx"
+      "vitest"
+    ]
+    [
+      "npx"
+      "tsc"
+    ]
+    [
+      "npx"
+      "eslint"
+    ]
+    [
+      "terraform"
+      "fmt"
+    ]
+    [
+      "terraform"
+      "validate"
+    ]
+    [
+      "just"
+      "eval-system"
+    ]
+    [
+      "just"
+      "build-system"
+    ]
+    [
+      "just"
+      "build"
+    ]
+    [
+      "just"
+      "check"
+    ]
+    [
+      "just"
+      "show"
+    ]
+    [
+      "nix"
+      "fmt"
+    ]
+    [ "rg" ]
+    [ "tail" ]
+    [ "head" ]
   ];
 
   mcpServers = [ "nixos" ];
@@ -88,14 +150,15 @@ in
   };
 
   opencode = {
-    bash =
-      { "*" = "ask"; }
-      // builtins.listToAttrs (
-        map (cmd: {
-          name = "${commandString cmd} *";
-          value = "allow";
-        }) allowedCommands
-      );
+    bash = {
+      "*" = "ask";
+    }
+    // builtins.listToAttrs (
+      map (cmd: {
+        name = "${commandString cmd} *";
+        value = "allow";
+      }) allowedCommands
+    );
     read = {
       "*" = "allow";
       "*.env" = "deny";
