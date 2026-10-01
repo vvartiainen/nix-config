@@ -20,11 +20,13 @@ correct bootstrapping:
 
 - `just show`
 - `just check`
-- `just eval-system <hostName>`
-- `just build-system <hostName>`
-- `just build <hostName>`
+- `just eval-system`
+- `just build-system`
+- `just build`
 
 Do not run apply commands (for example `just switch <hostName>`); user applies manually.
+
+The hostname is selected automatically, you should only need `just build` without anything else.
 
 ## Working conventions
 
