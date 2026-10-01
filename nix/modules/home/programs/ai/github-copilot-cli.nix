@@ -18,7 +18,7 @@ let
   # The home-manager `settings` option still writes config.json, which the CLI
   # now treats as runtime state (auth, plugins) and must remain writable.
   settings = {
-    model = "gpt-6-sol";
+    model = "claude-opus-5.5";
     effortLevel = "medium";
     # Local sandboxing is experimental. PATH dirs are auto-granted read-only,
     # but Nix binaries resolve into the store and mise shims into XDG dirs.
@@ -46,7 +46,7 @@ let
     notifications = true;
     scrollbar = true;
     voice.enabled = false;
-    planModel = "gpt-6-sol";
+    planModel = "claude-opus-5";
     planEffortLevel = "medium";
     subagents.agents = {
       task = {

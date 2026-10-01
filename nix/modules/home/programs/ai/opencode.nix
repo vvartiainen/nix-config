@@ -13,7 +13,7 @@ let
   # Keep it as a normal file and merge the declarative defaults on activation.
   settings = {
     "$schema" = "https://opencode.ai/config.json";
-    model = "openai/gpt-6-sol";
+    model = "openai/gpt-6.1-sol";
     lsp.typescript = {
       command = [
         "${config.xdg.dataHome}/mise/shims/tsc"
