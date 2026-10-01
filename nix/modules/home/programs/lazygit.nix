@@ -15,9 +15,7 @@
       };
 
       os = {
-        editPreset = "nvim";
-        edit = ''if [ -n "$NVIM" ]; then nvim --server $NVIM --remote-send '<C-\><C-n><cmd>close<cr>' && nvim --server $NVIM --remote {{filename}}; else nvim {{filename}}; fi'';
-        editAtLine = ''if [ -n "$NVIM" ]; then nvim --server $NVIM --remote-send '<C-\><C-n><cmd>close<cr>' && nvim --server $NVIM --remote-expr "v:lua.vim.api.nvim_command('edit ' . fnameescape('{{filename}}'))" && nvim --server $NVIM --remote-send '<cmd>{{line}}<cr>'; else nvim +{{line}} {{filename}}; fi'';
+        editPreset = "nvim-remote";
       };
 
       gui = {
