@@ -17,8 +17,9 @@ bootstrap host=host:
 show:
     nix flake show
 
-# Run flake checks.
+# Run flake checks and lint nix files.
 check:
+    statix check .
     nix flake check
 
 # Evaluate the darwin system derivation.
