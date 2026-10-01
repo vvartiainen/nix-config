@@ -30,7 +30,7 @@ let
   };
 
   sandboxSettings = {
-    additionalReadonlyPaths = permissions.sandboxReadonlyPaths config.xdg;
+    additionalReadonlyPaths = permissions.sandboxReadonlyPaths config;
   };
 
   staticSettings = jsonFormat.generate "cursor-cli-config.json" settings;

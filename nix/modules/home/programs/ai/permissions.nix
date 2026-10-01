@@ -116,15 +116,36 @@ let
   quote = s: ''"${s}"'';
   toCodexRule =
     cmd: ''prefix_rule(pattern = [${concatMapStringsSep ", " quote cmd}], decision = "allow")'';
+
+  sandboxReadonlyPaths = config: [
+    "/nix/store"
+    "/opt/homebrew"
+    "${config.xdg.dataHome}/mise"
+    "${config.xdg.configHome}/mise"
+    "${config.home.homeDirectory}/.gitconfig"
+  ];
 in
 {
-  inherit urlDomains;
+  inherit urlDomains sandboxReadonlyPaths;
 
-  sandboxReadonlyPaths = xdg: [
-    "/nix/store"
-    "${xdg.dataHome}/mise"
-    "${xdg.configHome}/mise"
-  ];
+  # Codex sandboxes read the whole disk by default; deny everything outside
+  # the workspace except Codex's runtime set and the tool paths above.
+  codexPermissions = config: {
+    default_permissions = "workspace-only";
+    permissions.workspace-only = {
+      extends = ":workspace";
+      filesystem = {
+        ":root" = "deny";
+        ":minimal" = "read";
+        ":workspace_roots" = {
+          "." = "write";
+          "**/.env" = "deny";
+          "**/.env.*" = "deny";
+        };
+      }
+      // lib.genAttrs (sandboxReadonlyPaths config) (_: "read");
+    };
+  };
 
   cursor = {
     allow =
@@ -159,6 +180,7 @@ in
         value = "allow";
       }) allowedCommands
     );
+    external_directory = "ask";
     read = {
       "*" = "allow";
       "*.env" = "deny";

@@ -32,8 +32,7 @@ let
       ];
     };
     permission = {
-      bash = permissions.opencode.bash;
-      read = permissions.opencode.read;
+      inherit (permissions.opencode) bash external_directory read;
     };
   };
 

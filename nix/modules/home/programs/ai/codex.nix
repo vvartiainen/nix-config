@@ -5,8 +5,11 @@
   ...
 }:
 let
+  tomlFormat = pkgs.formats.toml { };
+  yq = lib.getExe pkgs.yq-go;
   permissions = import ./permissions.nix { inherit lib; };
   commandRules = pkgs.writeText "codex-nix-config.rules" permissions.codexRules;
+  staticSettings = tomlFormat.generate "codex-config.toml" (permissions.codexPermissions config);
 in
 {
   programs.codex = {
@@ -30,6 +33,15 @@ in
       touch "$config_path"
     fi
     chmod u+w "$config_path"
+
+    if ! ${yq} eval-all \
+      --input-format toml \
+      --output-format toml \
+      '. as $item ireduce ({}; . * $item)' \
+      "$config_path" ${staticSettings} > "$config_path.tmp" 2>/dev/null; then
+      cp ${staticSettings} "$config_path.tmp"
+    fi
+    mv "$config_path.tmp" "$config_path"
 
     if [ -L "$rules_path" ]; then
       rm -f "$rules_path"

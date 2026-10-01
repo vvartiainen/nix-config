@@ -25,7 +25,7 @@ let
     experimental = true;
     sandbox = {
       enabled = true;
-      userPolicy.filesystem.readonlyPaths = permissions.sandboxReadonlyPaths config.xdg;
+      userPolicy.filesystem.readonlyPaths = permissions.sandboxReadonlyPaths config;
     };
     footer = {
       showModelEffort = true;
