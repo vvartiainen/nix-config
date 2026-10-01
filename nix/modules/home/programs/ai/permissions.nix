@@ -122,6 +122,9 @@ let
     "/opt/homebrew"
     "${config.xdg.dataHome}/mise"
     "${config.xdg.configHome}/mise"
+    # Package stores outside the sandboxes' built-in grants (e.g. aube's
+    # virtual store, which project node_modules symlink into).
+    config.xdg.cacheHome
     "${config.home.homeDirectory}/.gitconfig"
   ];
 in
