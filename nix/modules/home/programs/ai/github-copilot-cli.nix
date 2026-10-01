@@ -64,7 +64,9 @@ let
   staticSettings = jsonFormat.generate "github-copilot-cli-settings.json" settings;
   staticLspSettings = jsonFormat.generate "github-copilot-cli-lsp.json" {
     lspServers.typescript = {
-      command = "${config.xdg.dataHome}/mise/shims/tsc";
+      # The mise shim execs /opt/homebrew/Cellar/mise, which the sandbox can't
+      # read; the install's `latest` symlink stays within granted mise paths.
+      command = "${config.xdg.dataHome}/mise/installs/npm-typescript/latest/node_modules/.bin/tsc";
       args = [
         "--lsp"
         "--stdio"
