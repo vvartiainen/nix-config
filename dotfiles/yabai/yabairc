@@ -87,6 +87,11 @@ yabai -m rule --add app="^1Password.*$" manage=off sub-layer=above opacity=1.0
 # 3. Handle the browser extensions specifically (e.g. if using Arc or Safari)
 yabai -m rule --add app="^1Password Extension$" manage=off sub-layer=above opacity=1.0
 
+# Focus a pending auth prompt (1Password unlock/sudo, Touch ID, keychain) when switching spaces.
+focus_auth_prompt="osascript -l JavaScript $HOME/.config/yabai/focus-auth-prompt.js"
+yabai -m signal --add label=focus_auth_prompt_space event=space_changed action="$focus_auth_prompt"
+yabai -m signal --add label=focus_auth_prompt_display event=display_changed action="$focus_auth_prompt"
+
 # yabai -m signal --add event=window_destroyed action="yabai -m query --windows --window &> /dev/null || yabai -m window --focus recent || yabai -m window --focus first"
 # yabai -m signal --add event=application_terminated action="yabai -m query --windows --window &> /dev/null || yabai -m window --focus recent || yabai -m window --focus first"
 
