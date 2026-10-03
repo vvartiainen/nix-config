@@ -1,1 +1,9 @@
 ctrl + alt + cmd - t : kitten quick-access-terminal
+
+# Zen has no remappable next/prev tab shortcut
+ctrl + shift - j [
+  "zen" : skhd -k "ctrl - tab"
+]
+ctrl + shift - k [
+  "zen" : skhd -k "ctrl + shift - tab"
+]
