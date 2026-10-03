@@ -125,7 +125,6 @@
       "tidal"
       "visual-studio-code"
       "zed"
-      "zen" # TODO: Remove, managed in nix
     ];
 
     masApps = {
