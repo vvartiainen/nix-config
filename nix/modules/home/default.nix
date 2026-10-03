@@ -39,6 +39,9 @@ in
     ];
   };
 
+  # Homebrew coreutils' g-prefixed GNU du is earlier on PATH.
+  programs.zsh.shellAliases.gdu = lib.getExe pkgs.gdu;
+
   xdg = {
     enable = true;
     configFile = lib.mkMerge [
