@@ -12,6 +12,7 @@
     ./rust.nix
     ./starship.nix
     ./yazi.nix
+    ./zen-browser.nix
     ./zoxide.nix
     ./zsh.nix
   ];
