@@ -85,6 +85,9 @@ let
     [ "rg" ]
     [ "tail" ]
     [ "head" ]
+    [ "wc" ]
+    [ "base64" ]
+    [ "ls" ]
   ];
 
   mcpServers = [ "nixos" ];
