@@ -41,6 +41,23 @@ in
       id = 0;
       isDefault = true;
 
+      keyboardShortcuts =
+        lib.mapAttrsToList
+          (id: key: {
+            inherit id key;
+            modifiers = {
+              control = true;
+              shift = true;
+              alt = false;
+              meta = false;
+              accel = false;
+            };
+          })
+          {
+            "zen-workspace-backward" = "h";
+            "zen-workspace-forward" = "l";
+          };
+
       # Essentials are shown in every space that shares their container.
       pins = {
         "Gmail" = {
