@@ -40,8 +40,8 @@ setup_space() {
 setup_space 1 Start 1
 setup_space 2 Browser 2
 setup_space 3 Code 2
-setup_space 4 Notes 2
-setup_space 5 Misc 2
+setup_space 4 Misc 2
+setup_space 5 Notes 2
 
 # Skip app assignments when their destination Space does not exist.
 assign_app() {
