@@ -41,6 +41,11 @@ in
       id = 0;
       isDefault = true;
 
+      settings = {
+        "browser.ctrlTab.sortByRecentlyUsed" = false;
+        "browser.translations.automaticallyPopup" = false;
+      };
+
       keyboardShortcuts =
         lib.mapAttrsToList
           (id: key: {
