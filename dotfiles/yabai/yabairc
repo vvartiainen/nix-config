@@ -71,7 +71,7 @@ assign_app "Spotify" "Misc"
 assign_app "Discord" "Misc"
 assign_app "Whatsapp" "Misc"
 
-yabai -m rule --add app="^(Calculator|Software Update|Dictionary|System Preferences|System Settings|Photo Booth|Archive Utility|App Store|Steam|Activity Monitor)$" manage=off
+yabai -m rule --add app="^(Software Update|Dictionary|Photo Booth|Archive Utility|App Store)$" manage=off
 yabai -m rule --add label="Finder" app="^Finder$" title="(Co(py|nnect)|Move|Info|Pref)" manage=off
 yabai -m rule --add label="Safari" app="^Safari$" title="^(General|(Tab|Password|Website|Extension)s|AutoFill|Se(arch|curity)|Privacy|Advance)$" manage=off
 yabai -m rule --add label="About This Mac" app="System Information" title="About This Mac" manage=off
@@ -79,11 +79,9 @@ yabai -m rule --add label="About This Mac" app="System Information" title="About
 # Catch 1Password's specific extension helpers and system level unlock overlays
 # # 1. Force the system ControlCenter biometric prompt completely out of the window tree
 yabai -m rule --add app="^ControlCenter$" manage=off sub-layer=above
-
 # 2. Add an explicit regex rule to target ALL variations of 1Password's sub-windows
 # Keep these windows unmanaged and fully opaque.
 yabai -m rule --add app="^1Password.*$" manage=off sub-layer=above opacity=1.0
-
 # 3. Handle the browser extensions specifically (e.g. if using Arc or Safari)
 yabai -m rule --add app="^1Password Extension$" manage=off sub-layer=above opacity=1.0
 
