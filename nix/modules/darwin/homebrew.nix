@@ -97,6 +97,7 @@
       "1password-cli"
       "brave-browser"
       "calibre"
+      "chatgpt"
       "codex"
       "drawio"
       "android-platform-tools"
