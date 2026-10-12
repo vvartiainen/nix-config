@@ -5,7 +5,7 @@ version = "27.0.0"
 backend = "core:java"
 
 [tools.java.options]
-shorthand_vendor = "openjdk"
+shorthand_vendor = "temurin"
 
 [tools.java."platforms.linux-arm64"]
 checksum = "sha256:da4e9dde1fff90204739e969187bab4751bd59a2a1c479672e1a1810f7dd23ea"
@@ -70,6 +70,10 @@ backend = "npm:knip"
 [[tools."npm:neovim"]]
 version = "5.5.0"
 backend = "npm:neovim"
+
+[[tools."npm:puppeteer"]]
+version = "25.12.0"
+backend = "npm:puppeteer"
 
 [[tools."npm:skills"]]
 version = "1.5.26"

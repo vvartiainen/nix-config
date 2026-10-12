@@ -6,7 +6,8 @@ lockfile = true
 java = "latest"
 lua = "5.1"
 node = "24"
-"npm:@mermaid-js/mermaid-cli" = "latest"
+"npm:@mermaid-js/mermaid-cli" = "11.17.0"
+"npm:puppeteer" = { version = "25.12.0", postinstall = "npx -y puppeteer@25.12.0 browsers install chrome-headless-shell --path \"$HOME/.cache/puppeteer\"" }
 "npm:knip" = "latest"
 "npm:neovim" = "latest"
 "npm:typescript-language-server" = "latest"
