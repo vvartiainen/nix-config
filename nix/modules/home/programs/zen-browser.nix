@@ -2,13 +2,25 @@
   config,
   inputs,
   lib,
+  pkgs,
   ...
 }:
 let
   profilesIni = "${config.programs.zen-browser.configPath}/profiles.ini";
+  extensionSettings = "${config.programs.zen-browser.profilesPath}/${config.programs.zen-browser.profiles.default.path}/extension-settings.json";
+
+  # Policies cannot set extension shortcuts. "MacCtrl" is the Control key; "Ctrl" means Cmd on macOS.
+  extensionShortcuts = {
+    "addon@darkreader.org".addSite = "MacCtrl+Shift+D";
+  };
 in
 {
-  imports = [ inputs.zen-browser.homeModules.beta ];
+  # Work-specific containers, essentials and spaces are kept in a gitignored file. It is only
+  # visible to builds using the `path:.` flake ref from the justfile.
+  imports = [
+    inputs.zen-browser.homeModules.beta
+  ]
+  ++ lib.optional (builtins.pathExists ./zen-browser.local.nix) ./zen-browser.local.nix;
 
   # Zen must be able to write profiles.ini to record its install, so the read-only store symlink
   # is replaced with a writable copy. https://github.com/0xc000022070/zen-browser-flake/issues/285
@@ -23,6 +35,34 @@ in
 
   programs.zen-browser = {
     enable = true;
+
+    # Zen rewrites extension-settings.json from memory, so this is skipped while it is running.
+    activationFragments.default = [
+      {
+        requiresLock = true;
+        skipSubject = "extension shortcuts";
+        text = ''
+          file="${extensionSettings}"
+          if [ -d "$(dirname "$file")" ]; then
+            tmp="$(mktemp)"
+            { [ -f "$file" ] && cat "$file" || echo '{"version":3}'; } \
+              | ${lib.getExe pkgs.jq} --argjson shortcuts ${lib.escapeShellArg (builtins.toJSON extensionShortcuts)} '
+                  reduce ($shortcuts | to_entries[]) as $ext (.;
+                    reduce ($ext.value | to_entries[]) as $cmd (.;
+                      .commands[$cmd.key] = {
+                        precedenceList: [{
+                          id: $ext.key,
+                          installDate: 0,
+                          value: { shortcut: $cmd.value },
+                          enabled: true
+                        }]
+                      }))' > "$tmp"
+            run install -m 644 "$tmp" "$file"
+            rm -f "$tmp"
+          fi
+        '';
+      }
+    ];
 
     policies.ExtensionSettings =
       builtins.mapAttrs
@@ -64,6 +104,15 @@ in
             "zen-workspace-forward" = "l";
           };
 
+      containersForce = true;
+      containers = {
+        "Personal" = {
+          id = 1;
+          color = "turquoise";
+          icon = "fingerprint";
+        };
+      };
+
       # Essentials are shown in every space that shares their container.
       pins = {
         "Gmail" = {
@@ -84,6 +133,13 @@ in
           id = "81682fab-d725-495a-8a9b-c9012e2e1fb3";
           url = "https://www.hs.fi/";
           position = 300;
+          isEssential = true;
+          container = 1;
+        };
+        "YouTube" = {
+          id = "fdbc014e-984a-49b3-9571-3214eea36c7c";
+          url = "https://www.youtube.com/";
+          position = 400;
           isEssential = true;
           container = 1;
         };
