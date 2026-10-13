@@ -82,12 +82,17 @@ let
       "nix"
       "fmt"
     ]
+    [
+      "nix"
+      "eval"
+    ]
     [ "rg" ]
     [ "tail" ]
     [ "head" ]
     [ "wc" ]
     [ "base64" ]
     [ "ls" ]
+    [ "echo" ]
   ];
 
   mcpServers = [ "nixos" ];
