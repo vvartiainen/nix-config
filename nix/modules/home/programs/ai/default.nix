@@ -1,6 +1,8 @@
 { ... }:
 {
   imports = [
+    ./claude.nix
+    ./claude-code.nix
     ./codex.nix
     ./cursor-cli.nix
     ./github-copilot-cli.nix

@@ -98,6 +98,7 @@
       "brave-browser"
       "calibre"
       "chatgpt"
+      "claude"
       "codex"
       "drawio"
       "android-platform-tools"

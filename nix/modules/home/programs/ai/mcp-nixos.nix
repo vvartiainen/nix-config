@@ -21,6 +21,12 @@ let
       command = mcpNixos;
     };
   };
+  claudeCodeSettings = jsonFormat.generate "claude-code-mcp-nixos.json" {
+    mcpServers.nixos = {
+      type = "stdio";
+      command = mcpNixos;
+    };
+  };
   copilotSettings = jsonFormat.generate "copilot-mcp-nixos.json" {
     mcpServers.nixos = {
       type = "local";
@@ -53,6 +59,7 @@ in
         "githubCopilotCliSettings"
         "opencodeConfig"
         "cursorCliConfig"
+        "claudeCodeConfig"
       ]
       ''
         merge_mcp_config() {
@@ -85,6 +92,22 @@ in
         merge_mcp_config \
           "${config.xdg.configHome}/opencode/opencode.json" \
           ${opencodeSettings}
+
+        # User-scoped MCP servers belong in .claude.json, alongside runtime
+        # state. Preserve that state and leave malformed files untouched.
+        claude_config="${config.home.homeDirectory}/.claude.json"
+        if [ ! -e "$claude_config" ]; then
+          echo '{}' > "$claude_config"
+        fi
+        claude_tmp=$(mktemp "$claude_config.XXXXXX")
+        if ! ${jq} -e -S 'if type == "object" then . * $static[0] else error("expected an object") end' \
+          --slurpfile static ${claudeCodeSettings} \
+          "$claude_config" > "$claude_tmp"; then
+          rm -f "$claude_tmp"
+          echo >&2 "Could not merge Claude Code MCP config: $claude_config"
+          exit 1
+        fi
+        mv "$claude_tmp" "$claude_config"
 
         codex_config="${config.home.homeDirectory}/.codex/config.toml"
         if ! ${yq} eval-all \

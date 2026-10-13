@@ -172,6 +172,19 @@ in
     ];
   };
 
+  claude = {
+    allow =
+      map (cmd: "Bash(${commandString cmd}:*)") allowedCommands
+      ++ map (domain: "WebFetch(domain:${domain})") urlDomains
+      ++ map (name: "mcp__${name}__*") mcpServers;
+    deny = [
+      "Read(**/.env)"
+      "Read(**/.env.*)"
+      "Edit(**/.env)"
+      "Edit(**/.env.*)"
+    ];
+  };
+
   copilot = {
     commandIdentifiers = map (cmd: "${commandString cmd}:*") allowedCommands;
     mcp = map (name: {
