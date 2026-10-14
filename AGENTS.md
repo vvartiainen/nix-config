@@ -30,6 +30,7 @@ The hostname is selected automatically, you should only need `just build` withou
 
 ## Working conventions
 
+- Keep module boundaries clear: when creating program specific zsh config for example, add it to the program module instead of the generic zsh.nix
 - Keep changes minimal and easy to review
 - Prefer updating existing modules/files over adding new abstractions
 - Only update `flake.lock` when dependency updates are intentional
