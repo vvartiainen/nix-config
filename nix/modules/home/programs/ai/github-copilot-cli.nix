@@ -25,7 +25,14 @@ let
     experimental = true;
     sandbox = {
       enabled = true;
-      userPolicy.filesystem.readonlyPaths = permissions.sandboxReadonlyPaths config;
+      # Hooks run inside the sandbox; herdr installs its hook script here and
+      # the hook reports the session over herdr's socket (connect needs write).
+      userPolicy.filesystem = {
+        readonlyPaths = permissions.sandboxReadonlyPaths config ++ [
+          "${config.programs.github-copilot-cli.configDir}/hooks"
+        ];
+        readwritePaths = [ "${config.xdg.configHome}/herdr/herdr.sock" ];
+      };
     };
     footer = {
       showModelEffort = true;
@@ -39,7 +46,7 @@ let
       showCustom = true;
     };
     includeCoAuthoredBy = false;
-    allowedUrls = permissions.urlDomains;
+    allowedUrls = permissions.fetchDomains;
     disabledSkills = [ ];
     theme = "github";
     beep = true;
@@ -84,20 +91,36 @@ let
     };
   };
   staticPermissions = jsonFormat.generate "github-copilot-cli-permissions.json" {
-    locations.${repoRoot}.tool_approvals = [
-      {
-        kind = "commands";
-        commandIdentifiers = permissions.copilot.commandIdentifiers;
-      }
-      { kind = "read"; }
-    ]
-    ++ permissions.copilot.mcp;
+    locations.${repoRoot}.tool_approvals = [ { kind = "read"; } ];
   };
+
+  # Copilot reads tool rules only from CLI flags.
+  toolFlags =
+    lib.concatMap (tool: [
+      "--allow-tool"
+      tool
+    ]) permissions.copilot.allowTools
+    ++ lib.concatMap (tool: [
+      "--deny-tool"
+      tool
+    ]) permissions.copilot.denyTools;
 in
 {
   programs.github-copilot-cli = {
     enable = true;
   };
+
+  # The flags break subcommands, so only add them when starting a session.
+  programs.zsh.initContent = ''
+    copilot() {
+      case "$1" in
+        app|login|help|init|update|version|workflow|sessions|memories|plugin|mcp|skill|instruction|lsp|sandbox|completion)
+          command copilot "$@" ;;
+        *)
+          command copilot ${lib.escapeShellArgs toolFlags} "$@" ;;
+      esac
+    }
+  '';
 
   home.activation.githubCopilotCliSettings = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
     merge_copilot_config() {

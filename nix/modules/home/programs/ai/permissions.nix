@@ -82,27 +82,223 @@ let
       "nix"
       "fmt"
     ]
-    [
-      "nix"
-      "eval"
-    ]
-    [ "rg" ]
     [ "tail" ]
     [ "head" ]
     [ "wc" ]
     [ "base64" ]
     [ "ls" ]
     [ "echo" ]
+    [ "pwd" ]
+    [ "which" ]
+    [ "date" ]
+    [ "uname" ]
+    [ "file" ]
+    [ "stat" ]
+    [ "basename" ]
+    [ "dirname" ]
+    [ "realpath" ]
+    [ "cat" ]
+    [ "diff" ]
+    [ "cut" ]
+    [ "tr" ]
+    [ "jq" ]
+    [
+      "git"
+      "log"
+    ]
+    [
+      "git"
+      "show"
+    ]
+    [
+      "git"
+      "blame"
+    ]
+    [
+      "git"
+      "ls-files"
+    ]
+    [
+      "git"
+      "rev-parse"
+    ]
+    [
+      "nix"
+      "flake"
+      "show"
+    ]
+    [
+      "nix"
+      "flake"
+      "metadata"
+    ]
+    [
+      "nix"
+      "path-info"
+    ]
+    [
+      "nix"
+      "why-depends"
+    ]
+    [
+      "nix"
+      "derivation"
+      "show"
+    ]
+    [
+      "nix"
+      "log"
+    ]
+    [
+      "gh"
+      "pr"
+      "view"
+    ]
+    [
+      "gh"
+      "pr"
+      "diff"
+    ]
+    [
+      "gh"
+      "pr"
+      "checks"
+    ]
+    [
+      "gh"
+      "issue"
+      "view"
+    ]
+    [
+      "gh"
+      "run"
+      "view"
+    ]
+    [
+      "mise"
+      "ls"
+    ]
+    [
+      "mise"
+      "current"
+    ]
+    [
+      "mise"
+      "which"
+    ]
+    [
+      "mise"
+      "where"
+    ]
+  ];
+
+  # Commands allowed only exactly as written; their prefixes would also allow
+  # e.g. `git branch -D` or `git remote add`. Codex only supports prefix
+  # rules, so it doesn't get these.
+  exactCommands = [
+    [
+      "git"
+      "branch"
+      "--show-current"
+    ]
+    [
+      "git"
+      "remote"
+      "-v"
+    ]
+  ];
+
+  # Command prefixes that are never auto-approved. Prefix denies can be
+  # bypassed (`sh -c`, absolute paths), but those forms still prompt; this
+  # keeps these from being approved by accident.
+  deniedCommands = [
+    [ "op" ]
+    [ "security" ]
+    [
+      "gh"
+      "auth"
+    ]
+    [
+      "gh"
+      "api"
+    ]
+    [ "sudo" ]
+    [ "darwin-rebuild" ]
+    [
+      "just"
+      "switch"
+    ]
+    [
+      "git"
+      "push"
+      "--force"
+    ]
+    [
+      "mise"
+      "trust"
+    ]
+  ];
+
+  # Credential files denied for reads, relative to the home directory.
+  homeSecretPaths = [
+    ".ssh/**"
+    ".config/op/**"
+    ".config/gh/**"
+    ".aws/**"
+    ".gnupg/**"
+    ".netrc"
+    ".npmrc"
+  ];
+
+  secretFilePatterns = [
+    "**/*.pem"
+    "**/*.key"
   ];
 
   mcpServers = [ "nixos" ];
 
-  urlDomains = [
+  # Domains the agents may fetch pages from.
+  fetchDomains = [
     "github.com"
     "*.github.com"
     "*.githubusercontent.com"
     "github.io"
     "*.github.io"
+    "docs.aws.amazon.com"
+    # Nix
+    "nixos.org"
+    "*.nixos.org"
+    "nix.dev"
+    "noogle.dev"
+    "mynixos.com"
+    # Tooling
+    "mise.jdx.dev"
+    "neovim.io"
+    "developer.hashicorp.com"
+    "registry.terraform.io"
+    # Languages
+    "developer.mozilla.org"
+    "nodejs.org"
+    "www.typescriptlang.org"
+    "docs.python.org"
+    "docs.rs"
+    "pkg.go.dev"
+    # Registries
+    "www.npmjs.com"
+    "registry.npmjs.org"
+    "pypi.org"
+    "crates.io"
+  ];
+
+  # Domains reachable from sandboxed commands. Keep to package registries:
+  # anything that accepts uploads is an exfiltration path.
+  sandboxNetworkDomains = [
+    "registry.npmjs.org"
+    "pypi.org"
+    "files.pythonhosted.org"
+    "crates.io"
+    "index.crates.io"
+    "static.crates.io"
   ];
 
   commandString = concatStringsSep " ";
@@ -123,21 +319,31 @@ let
 
   quote = s: ''"${s}"'';
   toCodexRule =
-    cmd: ''prefix_rule(pattern = [${concatMapStringsSep ", " quote cmd}], decision = "allow")'';
+    decision: cmd:
+    ''prefix_rule(pattern = [${concatMapStringsSep ", " quote cmd}], decision = "${decision}")'';
+
+  toOpencodeRules =
+    value: cmds:
+    builtins.listToAttrs (
+      map (cmd: {
+        name = "${commandString cmd} *";
+        inherit value;
+      }) cmds
+    );
 
   sandboxReadonlyPaths = config: [
     "/nix/store"
     "/opt/homebrew"
     "${config.xdg.dataHome}/mise"
     "${config.xdg.configHome}/mise"
-    # Package stores outside the sandboxes' built-in grants (e.g. aube's
-    # virtual store, which project node_modules symlink into).
-    config.xdg.cacheHome
+    # Package stores outside the sandboxes' built-in grants: aube's virtual
+    # store, which project node_modules symlink into.
+    "${config.xdg.cacheHome}/aube/virtual-store"
     "${config.home.homeDirectory}/.gitconfig"
   ];
 in
 {
-  inherit urlDomains sandboxReadonlyPaths;
+  inherit fetchDomains sandboxNetworkDomains sandboxReadonlyPaths;
 
   # Codex sandboxes read the whole disk by default; deny everything outside
   # the workspace except Codex's runtime set and the tool paths above.
@@ -158,53 +364,65 @@ in
     };
   };
 
-  cursor = {
+  cursor = config: {
     allow =
       (lib.concatMap toCursorShell allowedCommands)
+      ++ map (cmd: "Shell(${builtins.head cmd}:${commandString (builtins.tail cmd)})") exactCommands
       ++ [ "Read(**)" ]
-      ++ map (domain: "WebFetch(${domain})") urlDomains
+      ++ map (domain: "WebFetch(${domain})") fetchDomains
       ++ map (name: "Mcp(${name}:*)") mcpServers;
-    deny = [
-      "Read(.env)"
-      "Read(.env.*)"
-      "Read(**/.env)"
-      "Read(**/.env.*)"
-    ];
+    deny =
+      (lib.concatMap toCursorShell deniedCommands)
+      ++ [
+        "Read(.env)"
+        "Read(.env.*)"
+        "Read(**/.env)"
+        "Read(**/.env.*)"
+      ]
+      ++ map (path: "Read(${config.home.homeDirectory}/${path})") homeSecretPaths
+      ++ map (pattern: "Read(${pattern})") secretFilePatterns;
   };
 
   claude = {
     allow =
       map (cmd: "Bash(${commandString cmd}:*)") allowedCommands
-      ++ map (domain: "WebFetch(domain:${domain})") urlDomains
+      ++ map (cmd: "Bash(${commandString cmd})") exactCommands
+      ++ [ "Read(//nix/store/**)" ]
+      ++ map (domain: "WebFetch(domain:${domain})") fetchDomains
       ++ map (name: "mcp__${name}__*") mcpServers;
-    deny = [
-      "Read(**/.env)"
-      "Read(**/.env.*)"
-      "Edit(**/.env)"
-      "Edit(**/.env.*)"
-    ];
+    deny =
+      map (cmd: "Bash(${commandString cmd}:*)") deniedCommands
+      ++ [
+        "Read(**/.env)"
+        "Read(**/.env.*)"
+        "Edit(**/.env)"
+        "Edit(**/.env.*)"
+      ]
+      ++ map (path: "Read(~/${path})") homeSecretPaths
+      ++ map (pattern: "Read(${pattern})") secretFilePatterns;
   };
 
+  # Copilot has no config file setting for tool rules, only the
+  # `--allow-tool` / `--deny-tool` CLI flags.
   copilot = {
-    commandIdentifiers = map (cmd: "${commandString cmd}:*") allowedCommands;
-    mcp = map (name: {
-      kind = "mcp";
-      serverName = name;
-      toolName = null;
-    }) mcpServers;
+    allowTools =
+      map (cmd: "shell(${commandString cmd}:*)") allowedCommands
+      ++ map (cmd: "shell(${commandString cmd})") exactCommands
+      ++ mcpServers;
+    denyTools = map (cmd: "shell(${commandString cmd}:*)") deniedCommands;
   };
 
   opencode = {
     bash = {
       "*" = "ask";
     }
-    // builtins.listToAttrs (
-      map (cmd: {
-        name = "${commandString cmd} *";
-        value = "allow";
-      }) allowedCommands
-    );
-    external_directory = "ask";
+    // toOpencodeRules "allow" allowedCommands
+    // lib.genAttrs (map commandString exactCommands) (_: "allow")
+    // toOpencodeRules "deny" deniedCommands;
+    external_directory = {
+      "*" = "ask";
+      "/nix/store/**" = "allow";
+    };
     read = {
       "*" = "allow";
       "*.env" = "deny";
@@ -213,5 +431,9 @@ in
     };
   };
 
-  codexRules = concatMapStringsSep "\n" toCodexRule allowedCommands + "\n";
+  codexRules =
+    concatMapStringsSep "\n" (toCodexRule "allow") allowedCommands
+    + "\n"
+    + concatMapStringsSep "\n" (toCodexRule "forbidden") deniedCommands
+    + "\n";
 }

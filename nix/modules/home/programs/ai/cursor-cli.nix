@@ -16,7 +16,7 @@ let
     version = 1;
     editor.vimMode = false;
     permissions = {
-      inherit (permissions.cursor) allow deny;
+      inherit (permissions.cursor config) allow deny;
     };
     sandbox = {
       mode = "enabled";

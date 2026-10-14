@@ -92,7 +92,7 @@ let
     sandbox = {
       enabled = true;
       autoAllowBashIfSandboxed = false;
-      network.allowedDomains = permissions.urlDomains;
+      network.allowedDomains = permissions.sandboxNetworkDomains;
     };
   };
 in
