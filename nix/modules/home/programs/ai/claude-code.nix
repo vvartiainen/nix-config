@@ -99,6 +99,11 @@ in
 {
   programs.claude-code.enable = true;
 
+  # claude ships no zsh completion; this one is derived from `--help` output.
+  home.packages = [
+    (pkgs.writeTextDir "share/zsh/site-functions/_claude" (builtins.readFile ./claude-completion.zsh))
+  ];
+
   home.file."${config.programs.claude-code.configDir}/themes/catppuccin-mocha.json".source =
     catppuccinMocha;
 
