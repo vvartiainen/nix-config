@@ -85,6 +85,8 @@ in
       settings = {
         "browser.ctrlTab.sortByRecentlyUsed" = false;
         "browser.translations.automaticallyPopup" = false;
+        # Ctrl+Tab cycles within essentials or within space tabs, depending on the current tab.
+        "zen.tabs.ctrl-tab.ignore-essential-tabs" = true;
       };
 
       keyboardShortcuts =
