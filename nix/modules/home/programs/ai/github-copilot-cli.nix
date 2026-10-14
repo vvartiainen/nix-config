@@ -108,6 +108,16 @@ in
 {
   programs.github-copilot-cli = {
     enable = true;
+    # The wrapper execs node, so the process is named `node` and herdr can't
+    # detect Copilot. Exec node through a symlink named `copilot` instead;
+    # macOS takes the process name from the exec'd path.
+    package = pkgs.github-copilot-cli.overrideAttrs (old: {
+      postInstall = ''
+        mkdir -p "$out"/libexec
+        ln -s ${pkgs.nodejs}/bin/node "$out"/libexec/copilot
+      ''
+      + lib.replaceStrings [ "${pkgs.nodejs}/bin/node" ] [ ''"$out"/libexec/copilot'' ] old.postInstall;
+    });
   };
 
   # The flags break subcommands, so only add them when starting a session.
