@@ -339,7 +339,7 @@ let
     # Package stores outside the sandboxes' built-in grants: aube's virtual
     # store, which project node_modules symlink into.
     "${config.xdg.cacheHome}/aube/virtual-store"
-    "${config.home.homeDirectory}/.gitconfig"
+    "${config.xdg.configHome}/git"
   ];
 in
 {

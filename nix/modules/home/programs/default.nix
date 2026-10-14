@@ -6,6 +6,7 @@
     ./btop.nix
     ./cli-toolbox.nix
     ./fzf.nix
+    ./git.nix
     ./go.nix
     ./herdr.nix
     ./lazygit.nix
