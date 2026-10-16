@@ -7,6 +7,7 @@
     # available to both the package manager and extensions such as MCP.
     extraPackages = [ pkgs.nodejs ];
 
+    # MCP is built in and reads ~/.pi/agent/mcp.json (see mcp-nixos.nix).
     settings = {
       theme = "catppuccin-mocha";
       defaultProvider = "openai-codex";
@@ -14,10 +15,11 @@
       defaultThinkingLevel = "medium";
 
       packages = [
-        "npm:pi-mcp-adapter@2.32.1"
-        "npm:pi-web-access@0.27.0"
-        "npm:@ifi/oh-pi-themes@0.5.1"
+        "npm:pi-web-access@0.40.0"
       ];
     };
   };
+
+  home.file.".pi/agent/themes/catppuccin-mocha.json".source =
+    ../../../../../dotfiles/pi/themes/catppuccin-mocha.json;
 }
