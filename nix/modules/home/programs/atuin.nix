@@ -1,16 +1,16 @@
-{ pkgs, lib, ... }:
+{ pkgs, ... }:
 let
-  # Homebrew already migrated the history DB with 18.21.0. nixpkgs is still
-  # on 18.19.0 (and rustc 1.97, while 18.21.0 needs 1.98), so a source bump
-  # does not build. Use the upstream release binary until pkgs.atuin is at
-  # least 18.21.0.
-  atuinVersion = "18.21.0";
+  # Use the upstream release binary instead of pkgs.atuin. nixpkgs atuin
+  # bumps often land before Hydra has a darwin build cached, which means a
+  # long source build that has failed for us. Homebrew already migrated the
+  # history DB, so keep this at or above the version Homebrew last ran.
+  atuinVersion = "18.23.0";
 
   system = pkgs.stdenv.hostPlatform.system;
   releaseAssets = {
     aarch64-darwin = {
       url = "https://github.com/atuinsh/atuin/releases/download/v${atuinVersion}/atuin-aarch64-apple-darwin.tar.gz";
-      hash = "sha256-xQ3wBef3MPULFTSNlzhQd5yU7g5A8BohIPBc+Zys6N4=";
+      hash = "sha256-gp2BsqiI8TQxzDdSLGq62so4HQaapdA7VFIfNVzn5b0=";
     };
   };
   release =
@@ -43,7 +43,6 @@ in
   programs.atuin = {
     enable = true;
     enableZshIntegration = true;
-    package =
-      if lib.versionAtLeast pkgs.atuin.version atuinVersion then pkgs.atuin else atuinBinary;
+    package = atuinBinary;
   };
 }
