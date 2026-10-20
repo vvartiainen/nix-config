@@ -78,6 +78,12 @@ in
           "{d7742d87-e61d-4b78-b8a1-b469842139fa}" = "vimium-ff";
         };
 
+    # Tracking protection blocks Outlook Web's background sign-in, which signs it out right after login.
+    policies.EnableTrackingProtection.Exceptions = [
+      "https://outlook.office.com"
+      "https://outlook.cloud.microsoft"
+    ];
+
     profiles.default = {
       id = 0;
       isDefault = true;
