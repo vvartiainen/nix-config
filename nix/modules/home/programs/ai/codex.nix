@@ -9,7 +9,26 @@ let
   yq = lib.getExe pkgs.yq-go;
   permissions = import ./permissions.nix { inherit lib; };
   commandRules = pkgs.writeText "codex-nix-config.rules" permissions.codexRules;
-  staticSettings = tomlFormat.generate "codex-config.toml" (permissions.codexPermissions config);
+  staticSettings = tomlFormat.generate "codex-config.toml" (
+    permissions.codexPermissions config
+    // {
+      # Codex only supports built-in status line items (no custom command),
+      # so mirror claude-statusline.sh as closely as possible.
+      tui = {
+        theme = "catppuccin-mocha";
+        status_line_use_colors = true;
+        status_line = [
+          "model-with-reasoning"
+          "current-dir"
+          "git-branch"
+          "context-used"
+          "five-hour-limit"
+          "weekly-limit"
+          "estimated-thread-cost"
+        ];
+      };
+    }
+  );
 in
 {
   programs.codex = {
