@@ -38,11 +38,15 @@ in
 
       # kitty only maps the right Option key to alt (macos_option_as_alt = right).
       keys = {
-        switch_workspace = "alt+1..9";
-        previous_workspace = "alt+shift+left";
-        next_workspace = "alt+shift+right";
-        previous_agent = "alt+shift+up";
-        next_agent = "alt+shift+down";
+        previous_agent = "alt+k";
+        next_agent = "alt+j";
+        focus_agent = "alt+1..9";
+        goto = "alt+g";
+        previous_workspace = "alt+h";
+        next_workspace = "alt+l";
+        switch_workspace = "alt+shift+1..9";
+        new_tab = "alt+n";
+        new_workspace = "alt+shift+n";
       };
 
       ui = {

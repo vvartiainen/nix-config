@@ -19,6 +19,10 @@ Don't expect this to work out of the box for you, but feel free to borrow anythi
   - Using `mkOutOfStoreSymlink` so updates in these files are reflected directly
   - Might want to move some of these to "more pure" / immutable configs at some point
 
+## Agent CLI keybindings
+
+See the [keybinding guide](docs/agent-keybindings.md) for shared shortcuts and the comparison matrix.
+
 ## Prerequisites
 
 - macOS (Apple Silicon expected by current config)

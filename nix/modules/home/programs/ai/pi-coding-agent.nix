@@ -18,6 +18,16 @@
         "npm:pi-web-access@0.40.0"
       ];
     };
+
+    keybindings = {
+      "$schema" = "https://pi.dev/schemas/keybindings.schema.json";
+      "app.model.select" = [
+        "alt+p"
+        "ctrl+l"
+      ];
+      # Shift+Tab changes modes in the other CLIs; Pi uses Alt+T for effort.
+      "app.thinking.cycle" = "alt+t";
+    };
   };
 
   home.file.".pi/agent/themes/catppuccin-mocha.json".source =

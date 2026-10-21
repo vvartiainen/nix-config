@@ -41,8 +41,30 @@ let
     theme = "catppuccin";
   };
 
+  # OpenCode v2 reads cli.json with dotted action IDs. Retain tui.json above
+  # for the legacy client, and keep the v2 settings mutable as well.
+  cliSettings = {
+    "$schema" = "https://opencode.ai/v2/cli.json";
+    theme.name = "catppuccin";
+    keybinds = {
+      "prompt.editor" = [
+        "ctrl+g"
+        "<leader>e"
+      ];
+      "session.first" = [
+        "home"
+        "alt+home"
+      ];
+      "model.list" = [
+        "alt+p"
+        "<leader>m"
+      ];
+    };
+  };
+
   staticSettings = jsonFormat.generate "opencode-config.json" settings;
   staticTuiSettings = jsonFormat.generate "opencode-tui.json" tuiSettings;
+  staticCliSettings = jsonFormat.generate "opencode-cli.json" cliSettings;
 in
 {
   programs.opencode = {
@@ -77,5 +99,8 @@ in
     merge_opencode_config \
       "${config.xdg.configHome}/opencode/tui.json" \
       ${staticTuiSettings}
+    merge_opencode_config \
+      "${config.xdg.configHome}/opencode/cli.json" \
+      ${staticCliSettings}
   '';
 }

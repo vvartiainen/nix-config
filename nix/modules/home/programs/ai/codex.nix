@@ -26,6 +26,14 @@ let
           "weekly-limit"
           "estimated-thread-cost"
         ];
+        keymap.global = {
+          open_transcript = [
+            "ctrl-o"
+            "ctrl-t"
+          ];
+          # Ctrl+O inspects output across the agent CLIs.
+          copy = "alt-y";
+        };
       };
     }
   );
