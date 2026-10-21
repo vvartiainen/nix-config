@@ -190,6 +190,10 @@ let
       "mise"
       "where"
     ]
+    [
+      "cargo"
+      "test"
+    ]
   ];
 
   # Commands allowed only exactly as written; their prefixes would also allow
@@ -348,19 +352,38 @@ in
   # Codex sandboxes read the whole disk by default; deny everything outside
   # the workspace except Codex's runtime set and the tool paths above.
   codexPermissions = config: {
+    approval_policy = "on-request";
+    approvals_reviewer = "user";
+
     default_permissions = "workspace-only";
     permissions.workspace-only = {
       extends = ":workspace";
+      network.enabled = true;
+
       filesystem = {
         ":root" = "deny";
         ":minimal" = "read";
+
         ":workspace_roots" = {
           "." = "write";
           "**/.env" = "deny";
           "**/.env.*" = "deny";
         };
       }
-      // lib.genAttrs (sandboxReadonlyPaths config) (_: "read");
+      // lib.genAttrs (sandboxReadonlyPaths config) (_: "read")
+      // (
+        let
+          home = config.home.homeDirectory;
+        in
+        {
+          "${home}/prog" = "read";
+          "${home}/.agent-sandbox/worktrees" = "read";
+          "${home}/.codex/skills" = "read";
+
+          "${home}/.cargo/registry" = "write";
+          "${home}/.cargo/git" = "write";
+        }
+      );
     };
   };
 
