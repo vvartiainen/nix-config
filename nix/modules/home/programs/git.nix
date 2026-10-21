@@ -4,6 +4,20 @@ _: {
     # git, git-delta and git-lfs come from Homebrew.
     package = null;
 
+    # Global ignores, written to ~/.config/git/ignore (git's default excludesFile).
+    ignores = [
+      ".DS_Store"
+      "._*"
+      ".AppleDouble"
+      ".LSOverride"
+      "Icon\r"
+      ".Spotlight-V100"
+      ".Trashes"
+      # Claude Code local state
+      "**/.claude/.cc-writes/"
+      "**/.claude/settings.local.json"
+    ];
+
     settings = {
       user = {
         name = "Ville Vartiainen";
