@@ -344,6 +344,8 @@ let
     # store, which project node_modules symlink into.
     "${config.xdg.cacheHome}/aube/virtual-store"
     "${config.xdg.configHome}/git"
+    "${config.home.homeDirectory}/prog"
+    "${config.home.homeDirectory}/.agent-sandbox/worktrees"
   ];
 in
 {
@@ -376,8 +378,6 @@ in
           home = config.home.homeDirectory;
         in
         {
-          "${home}/prog" = "read";
-          "${home}/.agent-sandbox/worktrees" = "read";
           "${home}/.codex/skills" = "read";
 
           "${home}/.cargo/registry" = "write";
