@@ -37,11 +37,32 @@ let
       };
     }
   );
+  profile = (permissions.codexPermissions config).default_permissions;
 in
 {
   programs.codex = {
     enable = true;
   };
+
+  # A linked worktree's git dirs live in the main repo, outside the workspace,
+  # and Codex keeps the gitdir read-only unless it's named exactly. Grant them
+  # per launch. Config keys split on dots, so key the rule on the nearest
+  # dot-free ancestor and pass the git dirs as subpaths.
+  programs.zsh.initContent = ''
+    codex() {
+      local git_dir common_dir base
+      if git_dir=$(git rev-parse --path-format=absolute --git-dir 2>/dev/null) &&
+        common_dir=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null) &&
+        [[ $git_dir != "$common_dir" ]]; then
+        base=''${common_dir:h}
+        while [[ $base == *.* ]]; do base=''${base:h}; done
+        local c=''${common_dir#$base/} g=''${git_dir#$base/}
+        command codex -c "permissions.${profile}.filesystem.$base={\"$c\"=\"write\", \"$c/hooks\"=\"read\", \"$c/config\"=\"read\", \"$g\"=\"write\"}" "$@"
+      else
+        command codex "$@"
+      fi
+    }
+  '';
 
   # Codex writes project trust, MCP changes, and other runtime settings to
   # config.toml. Keep both it and the rules directory outside the Nix store.

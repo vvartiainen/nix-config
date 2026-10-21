@@ -368,6 +368,12 @@ in
 
         ":workspace_roots" = {
           "." = "write";
+          # `:workspace` keeps `.git` read-only, which blocks commits even
+          # after approval. Keep hooks and config read-only: they run outside
+          # the sandbox.
+          ".git" = "write";
+          ".git/hooks" = "read";
+          ".git/config" = "read";
           "**/.env" = "deny";
           "**/.env.*" = "deny";
         };
