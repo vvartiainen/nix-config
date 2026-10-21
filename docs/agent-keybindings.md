@@ -41,10 +41,15 @@ Numbered agent jumps follow the visible agent panel order.
 | Jump to workspace 1–9 | Alt+Shift+1–9 |
 | New tab | Alt+N |
 | New workspace | Alt+Shift+N |
+| Clear pane / new conversation | Alt+C |
 | Previous / next tab | Ctrl+B → P / Ctrl+B → N |
 | Jump to tab 1–9 | Ctrl+B → 1–9 |
 | Focus pane | Ctrl+B → H/J/K/L |
 | Show active shortcuts | Ctrl+B → ? |
+
+Alt+C sends Ctrl+L to a shell, `/clear` to Claude, and `/new` to the other
+agents. It does nothing while an agent turn is running, and it assumes the
+agent prompt is empty.
 
 The native Go To picker lists individual agents and terminal panes. Press `/`
 to search names, agents, workspaces, branches, tabs, or paths. Outside search,

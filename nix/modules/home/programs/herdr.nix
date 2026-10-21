@@ -1,4 +1,9 @@
-{ config, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   herdr-here = pkgs.writeShellApplication {
     name = "herdr-here";
@@ -26,9 +31,38 @@ let
       fi
     '';
   };
+
+  # Clear the focused pane: new conversation in agent CLIs, Ctrl+L in a shell.
+  herdr-clear = pkgs.writeShellApplication {
+    name = "herdr-clear";
+    runtimeInputs = [
+      config.programs.herdr.package
+      pkgs.jq
+    ];
+    text = ''
+      pane=''${HERDR_ACTIVE_PANE_ID:?}
+      read -r status agent < <(herdr pane get "$pane" | jq -r '.result.pane | "\(.agent_status) \(.agent // "")"')
+
+      case "$agent" in
+        "") herdr pane send-keys "$pane" ctrl+l; exit ;;
+        claude) cmd=/clear ;;
+        *) cmd=/new ;;
+      esac
+
+      # Don't queue the command as a message while a turn is running.
+      [[ "$status" == working ]] && exit
+
+      herdr pane send-text "$pane" "$cmd"
+      sleep 0.1
+      herdr pane send-keys "$pane" enter
+    '';
+  };
 in
 {
-  home.packages = [ herdr-here ];
+  home.packages = [
+    herdr-here
+    herdr-clear
+  ];
   programs.zsh.shellAliases.hh = "herdr-here";
 
   programs.herdr = {
@@ -47,6 +81,15 @@ in
         switch_workspace = "alt+shift+1..9";
         new_tab = "alt+n";
         new_workspace = "alt+shift+n";
+
+        command = [
+          {
+            key = "alt+c";
+            type = "shell";
+            command = lib.getExe herdr-clear;
+            description = "clear pane / new conversation";
+          }
+        ];
       };
 
       ui = {
