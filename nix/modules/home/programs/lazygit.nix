@@ -10,7 +10,7 @@ _: {
             colorArg = "always";
           }
         ];
-        autoFetch = false;
+        autoFetch = true;
       };
 
       os = {
