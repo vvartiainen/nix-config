@@ -1,14 +1,9 @@
-{
-  userName,
-  ...
-}:
-{
+_: {
   nix = {
     enable = true;
     settings = {
       trusted-users = [
         "root"
-        userName
       ];
       experimental-features = [
         "nix-command"
