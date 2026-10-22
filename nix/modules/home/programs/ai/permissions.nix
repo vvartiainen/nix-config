@@ -402,6 +402,17 @@ in
         {
           "${home}/.codex/skills" = "read";
 
+          # Git probes ~/.gitconfig even when Home Manager writes the config
+          # under ~/.config/git. A denied probe prevents all git commands.
+          "${home}/.gitconfig" = "read";
+
+          # PATH entries reach Nix tools through these profile symlinks.
+          "${home}/.nix-profile" = "read";
+          "/etc/profiles/per-user/${config.home.username}" = "read";
+          "/run/current-system" = "read";
+          "/nix/var/nix/profiles" = "read";
+          "/etc/nix" = "read";
+
           "${home}/.cargo/registry" = "write";
           "${home}/.cargo/git" = "write";
         }
@@ -435,10 +446,8 @@ in
       ++ [ "Read(//nix/store/**)" ]
       ++ map (domain: "WebFetch(domain:${domain})") fetchDomains
       ++ map (name: "mcp__${name}__*") (mcpServers config);
-    # Unsandboxed retries otherwise go to the auto mode classifier.
-    ask = map (cmd: "Bash(${commandString cmd}:*)") askCommands ++ [
-      "Bash(dangerouslyDisableSandbox:true)"
-    ];
+    # Let auto mode review unsandboxed retries instead of always prompting.
+    ask = map (cmd: "Bash(${commandString cmd}:*)") askCommands;
     deny =
       map (cmd: "Bash(${commandString cmd}:*)") deniedCommands
       ++ [
