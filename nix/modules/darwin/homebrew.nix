@@ -100,6 +100,7 @@
       "chatgpt"
       "claude"
       "codex"
+      "codexbar"
       "drawio"
       "android-platform-tools"
       "android-studio"
