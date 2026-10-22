@@ -2,6 +2,7 @@
   lib,
   pkgs,
   config,
+  repoRoot,
   ...
 }:
 let
@@ -89,9 +90,17 @@ let
     permissions = permissions.claude config // {
       defaultMode = "default";
     };
+    # Sandboxed nix gets its own cache instead of write access to ~/.cache/nix.
+    env.NIX_CACHE_HOME = "${config.home.homeDirectory}/.cache/nix-agent";
     sandbox = {
       enabled = true;
       autoAllowBashIfSandboxed = false;
+      filesystem = {
+        allowWrite = [ "~/.cache/nix-agent" ];
+        # ~/.npmrc links to this tracked file; flake evaluation copies the
+        # whole repo, so nix must be able to read it.
+        allowRead = [ "/${repoRoot}/dotfiles/.npmrc" ];
+      };
       network = {
         allowedDomains = permissions.sandboxNetworkDomains;
         # Let sandboxed nix commands reach the daemon; the user is not a
