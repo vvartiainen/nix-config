@@ -1,21 +1,39 @@
-local function biome_lsp_or_prettier()
-  local root_dir = require("lspconfig").util.root_pattern("package.json")(vim.fn.getcwd())
-  local has_prettier = vim.fs.find({
-    ".prettierrc",
-    ".prettierrc.json",
-    ".prettierrc.yml",
-    ".prettierrc.yaml",
-    ".prettierrc.json5",
-    ".prettierrc.js",
-    ".prettierrc.cjs",
-    ".prettierrc.toml",
-    "prettier.config.js",
-    "prettier.config.cjs",
-  }, { path = root_dir, stop = root_dir, upward = true })[1]
-  if has_prettier then
-    return { "prettier" }
+-- JS/TS formatter follows the nearest config in the workspace
+local web_formatters = {
+  { "oxfmt", { ".oxfmtrc.json", ".oxfmtrc.jsonc", "oxfmt.config.ts" } },
+  { "biome", { "biome.json", "biome.jsonc", ".biome.json", ".biome.jsonc" } },
+  {
+    "prettier",
+    {
+      ".prettierrc",
+      ".prettierrc.json",
+      ".prettierrc.yml",
+      ".prettierrc.yaml",
+      ".prettierrc.json5",
+      ".prettierrc.js",
+      ".prettierrc.cjs",
+      ".prettierrc.mjs",
+      ".prettierrc.ts",
+      ".prettierrc.toml",
+      "prettier.config.js",
+      "prettier.config.cjs",
+      "prettier.config.mjs",
+      "prettier.config.ts",
+    },
+  },
+}
+
+local function web_formatter(fallback)
+  return function(bufnr)
+    local best, best_root
+    for _, f in ipairs(web_formatters) do
+      local root = vim.fs.root(bufnr, f[2])
+      if root and (not best_root or #root > #best_root) then
+        best, best_root = f[1], root
+      end
+    end
+    return { best or fallback }
   end
-  return { "biome" }
 end
 
 return {
@@ -27,9 +45,10 @@ return {
       css = { "prettier" },
       go = { "gofmt" },
       html = { "prettier" },
-      javascript = biome_lsp_or_prettier,
-      javascriptreact = biome_lsp_or_prettier,
-      json = { "prettier" },
+      javascript = web_formatter("biome"),
+      javascriptreact = web_formatter("biome"),
+      json = web_formatter("prettier"),
+      jsonc = web_formatter("prettier"),
       lua = { "stylua" },
       markdown = { "markdownlint" },
       python = { "black" },
@@ -42,8 +61,8 @@ return {
       terraform = { "terraform_fmt" },
       tf = { "terraform_fmt" },
       tfvars = { "terraform_fmt" },
-      typescript = biome_lsp_or_prettier,
-      typescriptreact = biome_lsp_or_prettier,
+      typescript = web_formatter("biome"),
+      typescriptreact = web_formatter("biome"),
       xml = { "xmlformatter" },
       yaml = { "prettier" },
       zsh = { "shfmt", "shellcheck" },

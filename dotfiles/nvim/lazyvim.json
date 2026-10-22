@@ -30,6 +30,7 @@
     "lazyvim.plugins.extras.lang.toml",
     "lazyvim.plugins.extras.lang.typescript",
     "lazyvim.plugins.extras.lang.typescript.biome",
+    "lazyvim.plugins.extras.lang.typescript.oxc",
     "lazyvim.plugins.extras.lang.typescript.tsc",
     "lazyvim.plugins.extras.lang.yaml",
     "lazyvim.plugins.extras.lang.zig",
