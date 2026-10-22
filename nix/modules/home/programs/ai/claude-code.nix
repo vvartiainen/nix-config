@@ -99,30 +99,32 @@ in
 {
   programs.claude-code.enable = true;
 
-  # claude ships no zsh completion; this one is derived from `--help` output.
-  home.packages = [
-    (pkgs.writeTextDir "share/zsh/site-functions/_claude" (builtins.readFile ./claude-completion.zsh))
-  ];
+  home = {
+    # claude ships no zsh completion; this one is derived from `--help` output.
+    packages = [
+      (pkgs.writeTextDir "share/zsh/site-functions/_claude" (builtins.readFile ./claude-completion.zsh))
+    ];
 
-  home.file."${config.programs.claude-code.configDir}/themes/catppuccin-mocha.json".source =
-    catppuccinMocha;
+    file."${config.programs.claude-code.configDir}/themes/catppuccin-mocha.json".source =
+      catppuccinMocha;
 
-  # Claude Code persists /config changes here, so merge defaults into a
-  # regular file instead of using the Home Manager settings symlink.
-  home.activation.claudeCodeConfig = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-    config_path="${config.programs.claude-code.configDir}/settings.json"
-    mkdir -p "$(dirname "$config_path")"
-    if [ ! -e "$config_path" ]; then
-      echo '{}' > "$config_path"
-    fi
-    config_tmp=$(mktemp "$config_path.XXXXXX")
-    if ! ${jq} -e -S 'if type == "object" then . * $static[0] else error("expected an object") end' \
-      --slurpfile static ${staticSettings} \
-      "$config_path" > "$config_tmp"; then
-      rm -f "$config_tmp"
-      echo >&2 "Could not merge Claude Code settings: $config_path"
-      exit 1
-    fi
-    mv "$config_tmp" "$config_path"
-  '';
+    # Claude Code persists /config changes here, so merge defaults into a
+    # regular file instead of using the Home Manager settings symlink.
+    activation.claudeCodeConfig = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+      config_path="${config.programs.claude-code.configDir}/settings.json"
+      mkdir -p "$(dirname "$config_path")"
+      if [ ! -e "$config_path" ]; then
+        echo '{}' > "$config_path"
+      fi
+      config_tmp=$(mktemp "$config_path.XXXXXX")
+      if ! ${jq} -e -S 'if type == "object" then . * $static[0] else error("expected an object") end' \
+        --slurpfile static ${staticSettings} \
+        "$config_path" > "$config_tmp"; then
+        rm -f "$config_tmp"
+        echo >&2 "Could not merge Claude Code settings: $config_path"
+        exit 1
+      fi
+      mv "$config_tmp" "$config_path"
+    '';
+  };
 }
