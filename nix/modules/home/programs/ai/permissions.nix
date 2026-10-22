@@ -67,6 +67,18 @@ let
       "show"
     ]
     [
+      "just"
+      "check"
+    ]
+    [
+      "just"
+      "build"
+    ]
+    [
+      "just"
+      "build-system"
+    ]
+    [
       "nix"
       "fmt"
     ]
@@ -205,21 +217,10 @@ let
     ]
   ];
 
-  # Builds go through the nix daemon outside the sandbox, and as a trusted
-  # user a build can run code as root. Always prompt, even in auto mode.
+  # Builds run in the nix daemon outside the agent sandbox. The `just`
+  # recipes above only build this flake; arbitrary build targets still prompt,
+  # even in auto mode.
   askCommands = [
-    [
-      "just"
-      "build-system"
-    ]
-    [
-      "just"
-      "build"
-    ]
-    [
-      "just"
-      "check"
-    ]
     [
       "nix"
       "build"

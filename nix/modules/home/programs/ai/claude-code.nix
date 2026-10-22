@@ -92,7 +92,12 @@ let
     sandbox = {
       enabled = true;
       autoAllowBashIfSandboxed = false;
-      network.allowedDomains = permissions.sandboxNetworkDomains;
+      network = {
+        allowedDomains = permissions.sandboxNetworkDomains;
+        # Let sandboxed nix commands reach the daemon; the user is not a
+        # trusted nix user, so builds run unprivileged as nixbld.
+        allowUnixSockets = [ "/nix/var/nix/daemon-socket/socket" ];
+      };
     };
   };
 in
