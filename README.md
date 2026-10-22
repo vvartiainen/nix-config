@@ -40,6 +40,8 @@ softwareupdate --install-rosetta --agree-to-license
 
 Rosetta is required for `x86_64-linux` builds on the VZ linux-builder. The Xcode license must be accepted before `xcodebuild` and some Homebrew formulas work.
 
+The linux-builder enables nested virtualization so the guest gets a real `/dev/kvm` and can run NixOS tests (`kvm` and `nixos-test` features). This needs an M3 or newer chip and macOS 15+; on older Macs the builder VM refuses to start, so set `vz.nestedVirtualization = false` and drop `nixos-test` from `supportedFeatures` in `nix/hosts/mbp/default.nix`. Only `aarch64-linux` guests are accelerated; `x86_64-linux` NixOS tests still fall back to slow emulation.
+
 ## Installation
 
 1. Install Nix (with flakes support):

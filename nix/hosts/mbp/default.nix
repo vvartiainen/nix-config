@@ -60,7 +60,8 @@
     ];
     config = {
       virtualisation = {
-        # Real /dev/kvm in the guest for nixos tests (M3+ and macOS 15+).
+        # Real /dev/kvm in the guest for nixos tests. Needs M3 or newer and
+        # macOS 15+, otherwise the VM refuses to start (see README).
         vz.nestedVirtualization = true;
         darwin-builder = {
           diskSize = 40 * 1024;
