@@ -50,7 +50,7 @@
       "aarch64-linux"
       "x86_64-linux"
     ];
-    ephemeral = true;
+    ephemeral = false;
     maxJobs = 4;
     config = {
       virtualisation = {
