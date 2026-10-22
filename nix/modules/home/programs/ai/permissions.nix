@@ -417,6 +417,10 @@ in
           "/nix/var/nix/profiles" = "read";
           "/etc/nix" = "read";
 
+          # Nix probes the socket before selecting the daemon store. The
+          # network allowlist above permits connecting, not filesystem probes.
+          "/nix/var/nix/daemon-socket/socket" = "read";
+
           "${home}/.cargo/registry" = "write";
           "${home}/.cargo/git" = "write";
 
