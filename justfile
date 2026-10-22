@@ -11,7 +11,7 @@ generate-local-config host=host:
 # Write hardware.local.nix; pure flake eval cannot probe the chip.
 # Nested virtualization needs M3+ and macOS 15+.
 detect-hardware:
-    @gen="$(sysctl -n machdep.cpu.brand_string | sed -nE 's/^Apple M([0-9]+).*/\1/p')"; os="$(sw_vers -productVersion | cut -d. -f1)"; nested=false; if [ "${gen:-0}" -ge 3 ] && [ "$os" -ge 15 ]; then nested=true; fi; printf '{ nestedVirtualization = %s; }\n' "$nested" > hardware.local.nix
+    @if ! brand="$(sysctl -n machdep.cpu.brand_string 2>/dev/null)"; then if [ -f hardware.local.nix ]; then echo "sysctl unavailable (sandbox?); keeping hardware.local.nix" >&2; exit 0; fi; echo "sysctl unavailable; cannot write hardware.local.nix" >&2; exit 1; fi; gen="$(printf '%s\n' "$brand" | sed -nE 's/^Apple M([0-9]+).*/\1/p')"; os="$(sw_vers -productVersion | cut -d. -f1)"; nested=false; if [ "${gen:-0}" -ge 3 ] && [ "$os" -ge 15 ]; then nested=true; fi; printf '{ nestedVirtualization = %s; }\n' "$nested" > hardware.local.nix
 
 # Bootstrap nix-darwin from this flake.
 bootstrap host=host: detect-hardware
