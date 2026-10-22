@@ -16,6 +16,9 @@
 
       packages = [
         "npm:pi-web-access@0.40.0"
+        # Subscription 5h/weekly limits in the footer and /usage, like the
+        # Claude Code status line and Codex limit items.
+        "npm:@narumitw/pi-usage@0.64.1"
       ];
     };
 
