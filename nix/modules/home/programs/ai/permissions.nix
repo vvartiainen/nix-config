@@ -376,7 +376,11 @@ in
     default_permissions = "workspace-only";
     permissions.workspace-only = {
       extends = ":workspace";
-      network.enabled = true;
+      network = {
+        enabled = true;
+        # Nix builds run through the daemon, outside the agent sandbox.
+        unix_sockets."/nix/var/nix/daemon-socket/socket" = "allow";
+      };
 
       filesystem = {
         ":root" = "deny";
@@ -415,6 +419,10 @@ in
 
           "${home}/.cargo/registry" = "write";
           "${home}/.cargo/git" = "write";
+
+          # Match Claude Code's dedicated cache without granting writes to
+          # the user's normal Nix cache.
+          "${home}/.cache/nix-agent" = "write";
         }
       );
     };

@@ -12,6 +12,8 @@ let
   staticSettings = tomlFormat.generate "codex-config.toml" (
     permissions.codexPermissions config
     // {
+      shell_environment_policy.set.NIX_CACHE_HOME = "${config.home.homeDirectory}/.cache/nix-agent";
+
       # Codex only supports built-in status line items (no custom command),
       # so mirror claude-statusline.sh as closely as possible.
       tui = {
