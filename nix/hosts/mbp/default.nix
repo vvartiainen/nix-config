@@ -1,5 +1,7 @@
 {
+  lib,
   pkgs,
+  hardware,
   userName,
   repoRoot,
   inputs,
@@ -53,16 +55,18 @@
     ephemeral = false;
     maxJobs = 4;
     supportedFeatures = [
-      "kvm"
       "benchmark"
       "big-parallel"
+    ]
+    ++ lib.optionals hardware.nestedVirtualization [
+      "kvm"
       "nixos-test"
     ];
     config = {
       virtualisation = {
         # Real /dev/kvm in the guest for nixos tests. Needs M3 or newer and
         # macOS 15+, otherwise the VM refuses to start (see README).
-        vz.nestedVirtualization = true;
+        vz.nestedVirtualization = hardware.nestedVirtualization;
         darwin-builder = {
           diskSize = 40 * 1024;
           memorySize = 8 * 1024;

@@ -8,8 +8,13 @@ host := env("HOST", default_host)
 generate-local-config host=host:
     if [ ! -f local-config.nix ]; then printf '{\n  userName = "%s";\n  hostName = "%s";\n  repoRoot = "%s";\n}\n' "$USER" '{{ host }}' '{{ justfile_directory() }}' > local-config.nix; fi
 
+# Write hardware.local.nix; pure flake eval cannot probe the chip.
+# Nested virtualization needs M3+ and macOS 15+.
+detect-hardware:
+    @gen="$(sysctl -n machdep.cpu.brand_string | sed -nE 's/^Apple M([0-9]+).*/\1/p')"; os="$(sw_vers -productVersion | cut -d. -f1)"; nested=false; if [ "${gen:-0}" -ge 3 ] && [ "$os" -ge 15 ]; then nested=true; fi; printf '{ nestedVirtualization = %s; }\n' "$nested" > hardware.local.nix
+
 # Bootstrap nix-darwin from this flake.
-bootstrap host=host:
+bootstrap host=host: detect-hardware
     just generate-local-config '{{ host }}'
     sudo nix run nix-darwin -- switch --flake '{{ flake_ref }}#{{ host }}'
 
@@ -18,25 +23,25 @@ show:
     nix flake show
 
 # Run flake checks and lint nix files.
-check:
+check: detect-hardware
     statix check .
     nix flake check
 
 # Evaluate the darwin system derivation.
-eval-system host=host:
+eval-system host=host: detect-hardware
     nix eval '{{ flake_ref }}#darwinConfigurations.{{ host }}.system'
 
 # Build the darwin system derivation.
-build-system host=host:
+build-system host=host: detect-hardware
     nix build '{{ flake_ref }}#darwinConfigurations.{{ host }}.system'
 
 # Build the nix-darwin activation package without applying it.
-build host=host:
+build host=host: detect-hardware
     darwin-rebuild build --flake '{{ flake_ref }}#{{ host }}'
 
 # Apply the nix-darwin configuration.
 # SKIP_HOMEBREW=1 skips brew bundle during activation.
-switch host=host:
+switch host=host: detect-hardware
     printf '%s\n' "${SKIP_HOMEBREW:-0}" | sudo tee /tmp/nix-darwin-skip-homebrew >/dev/null
     sudo darwin-rebuild switch --flake '{{ flake_ref }}#{{ host }}'
 
