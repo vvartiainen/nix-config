@@ -35,4 +35,4 @@ The hostname is selected automatically, you should only need `just build` withou
 - Prefer updating existing modules/files over adding new abstractions
 - Only update `flake.lock` when dependency updates are intentional
 - `git commit` the changes you have made, but let user manually handle the push of the changes
-  - use existing project commit style (conventional commits, short message, no long descriptions, no co-authored ads)
+  - use existing project commit style (conventional commits, short message, no long descriptions, no trailers such as Co-Authored-By or Claude-Session)
