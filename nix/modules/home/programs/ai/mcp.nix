@@ -9,49 +9,63 @@ let
   tomlFormat = pkgs.formats.toml { };
   jq = lib.getExe pkgs.jq;
   yq = lib.getExe pkgs.yq-go;
-  mcpNixos = lib.getExe pkgs.mcp-nixos;
-  piSettings = jsonFormat.generate "pi-mcp-nixos.json" {
-    mcpServers.nixos = {
-      command = mcpNixos;
+  # One server per agent backlog, started by each agent CLI on demand.
+  backlogServers = lib.listToAttrs (
+    map (
+      name:
+      lib.nameValuePair "backlog-${name}" {
+        command = lib.getExe config.backlog.package;
+        args = [
+          "mcp"
+          "start"
+          "--cwd"
+          "${config.backlog.vault}/${name}"
+        ];
+      }
+    ) config.backlog.projects
+  );
+  # Stdio MCP servers for every agent CLI.
+  servers = {
+    nixos = {
+      command = lib.getExe pkgs.mcp-nixos;
+      args = [ ];
     };
+  }
+  // backlogServers;
+  piSettings = jsonFormat.generate "pi-mcp.json" {
+    mcpServers = servers;
   };
-  cursorSettings = jsonFormat.generate "cursor-mcp-nixos.json" {
-    mcpServers.nixos = {
-      type = "stdio";
-      command = mcpNixos;
-    };
+  cursorSettings = jsonFormat.generate "cursor-mcp.json" {
+    mcpServers = lib.mapAttrs (_: s: s // { type = "stdio"; }) servers;
   };
-  claudeCodeSettings = jsonFormat.generate "claude-code-mcp-nixos.json" {
-    mcpServers.nixos = {
-      type = "stdio";
-      command = mcpNixos;
-    };
+  claudeCodeSettings = jsonFormat.generate "claude-code-mcp.json" {
+    mcpServers = lib.mapAttrs (_: s: s // { type = "stdio"; }) servers;
   };
-  copilotSettings = jsonFormat.generate "copilot-mcp-nixos.json" {
-    mcpServers.nixos = {
+  copilotSettings = jsonFormat.generate "copilot-mcp.json" {
+    mcpServers = lib.mapAttrs (
+      _: s:
+      s
+      // {
+        type = "local";
+        tools = [ "*" ];
+      }
+    ) servers;
+  };
+  opencodeSettings = jsonFormat.generate "opencode-mcp.json" {
+    mcp = lib.mapAttrs (_: s: {
       type = "local";
-      command = mcpNixos;
-      tools = [ "*" ];
-    };
-  };
-  opencodeSettings = jsonFormat.generate "opencode-mcp-nixos.json" {
-    mcp.nixos = {
-      type = "local";
-      command = [ mcpNixos ];
+      command = [ s.command ] ++ s.args;
       enabled = true;
-    };
+    }) servers;
   };
-  codexSettings = tomlFormat.generate "codex-mcp-nixos.toml" {
-    mcp_servers.nixos = {
-      command = mcpNixos;
-      enabled = true;
-    };
+  codexSettings = tomlFormat.generate "codex-mcp.toml" {
+    mcp_servers = lib.mapAttrs (_: s: s // { enabled = true; }) servers;
   };
 in
 {
   home.packages = [ pkgs.mcp-nixos ];
 
-  home.activation.mcpNixosConfig =
+  home.activation.mcpConfig =
     lib.hm.dag.entryAfter
       [
         "linkGeneration"

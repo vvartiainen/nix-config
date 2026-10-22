@@ -7,7 +7,7 @@
     # available to both the package manager and extensions such as MCP.
     extraPackages = [ pkgs.nodejs ];
 
-    # MCP is built in and reads ~/.pi/agent/mcp.json (see mcp-nixos.nix).
+    # MCP is built in and reads ~/.pi/agent/mcp.json (see mcp.nix).
     settings = {
       theme = "catppuccin-mocha";
       defaultProvider = "openai-codex";
