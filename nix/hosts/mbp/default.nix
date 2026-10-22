@@ -52,8 +52,16 @@
     ];
     ephemeral = false;
     maxJobs = 4;
+    supportedFeatures = [
+      "kvm"
+      "benchmark"
+      "big-parallel"
+      "nixos-test"
+    ];
     config = {
       virtualisation = {
+        # Real /dev/kvm in the guest for nixos tests (M3+ and macOS 15+).
+        vz.nestedVirtualization = true;
         darwin-builder = {
           diskSize = 40 * 1024;
           memorySize = 8 * 1024;
