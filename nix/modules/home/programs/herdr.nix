@@ -65,6 +65,12 @@ in
   ];
   programs.zsh.shellAliases.hh = "herdr-here";
 
+  # The Pi extension is versioned with herdr, so reinstall it on every
+  # activation to keep state reporting and session restore current.
+  home.activation.herdrPiIntegration = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+    ${lib.getExe config.programs.herdr.package} integration install pi >/dev/null
+  '';
+
   programs.herdr = {
     enable = true;
     settings = {
