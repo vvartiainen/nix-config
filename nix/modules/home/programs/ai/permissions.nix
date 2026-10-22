@@ -64,24 +64,17 @@ let
     ]
     [
       "just"
-      "build-system"
-    ]
-    [
-      "just"
-      "build"
-    ]
-    [
-      "just"
-      "check"
-    ]
-    [
-      "just"
       "show"
     ]
     [
       "nix"
       "fmt"
     ]
+    [
+      "nix"
+      "eval"
+    ]
+
     [ "tail" ]
     [ "head" ]
     [ "wc" ]
@@ -209,6 +202,27 @@ let
       "git"
       "remote"
       "-v"
+    ]
+  ];
+
+  # Builds go through the nix daemon outside the sandbox, and as a trusted
+  # user a build can run code as root. Always prompt, even in auto mode.
+  askCommands = [
+    [
+      "just"
+      "build-system"
+    ]
+    [
+      "just"
+      "build"
+    ]
+    [
+      "just"
+      "check"
+    ]
+    [
+      "nix"
+      "build"
     ]
   ];
 
@@ -419,6 +433,10 @@ in
       ++ [ "Read(//nix/store/**)" ]
       ++ map (domain: "WebFetch(domain:${domain})") fetchDomains
       ++ map (name: "mcp__${name}__*") mcpServers;
+    # Unsandboxed retries otherwise go to the auto mode classifier.
+    ask = map (cmd: "Bash(${commandString cmd}:*)") askCommands ++ [
+      "Bash(dangerouslyDisableSandbox:true)"
+    ];
     deny =
       map (cmd: "Bash(${commandString cmd}:*)") deniedCommands
       ++ [
