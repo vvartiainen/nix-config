@@ -273,7 +273,8 @@ let
     "**/*.key"
   ];
 
-  mcpServers = [ "nixos" ];
+  # The MCP servers from mcp.nix, whose tools are allowed without prompting.
+  mcpServers = config: [ "nixos" ] ++ map (name: "backlog-${name}") config.backlog.projects;
 
   # Domains the agents may fetch pages from.
   fetchDomains = [
@@ -413,7 +414,7 @@ in
       ++ map (cmd: "Shell(${builtins.head cmd}:${commandString (builtins.tail cmd)})") exactCommands
       ++ [ "Read(**)" ]
       ++ map (domain: "WebFetch(${domain})") fetchDomains
-      ++ map (name: "Mcp(${name}:*)") mcpServers;
+      ++ map (name: "Mcp(${name}:*)") (mcpServers config);
     deny =
       (lib.concatMap toCursorShell deniedCommands)
       ++ [
@@ -426,13 +427,13 @@ in
       ++ map (pattern: "Read(${pattern})") secretFilePatterns;
   };
 
-  claude = {
+  claude = config: {
     allow =
       map (cmd: "Bash(${commandString cmd}:*)") allowedCommands
       ++ map (cmd: "Bash(${commandString cmd})") exactCommands
       ++ [ "Read(//nix/store/**)" ]
       ++ map (domain: "WebFetch(domain:${domain})") fetchDomains
-      ++ map (name: "mcp__${name}__*") mcpServers;
+      ++ map (name: "mcp__${name}__*") (mcpServers config);
     # Unsandboxed retries otherwise go to the auto mode classifier.
     ask = map (cmd: "Bash(${commandString cmd}:*)") askCommands ++ [
       "Bash(dangerouslyDisableSandbox:true)"
@@ -451,11 +452,11 @@ in
 
   # Copilot has no config file setting for tool rules, only the
   # `--allow-tool` / `--deny-tool` CLI flags.
-  copilot = {
+  copilot = config: {
     allowTools =
       map (cmd: "shell(${commandString cmd}:*)") allowedCommands
       ++ map (cmd: "shell(${commandString cmd})") exactCommands
-      ++ mcpServers;
+      ++ mcpServers config;
     denyTools = map (cmd: "shell(${commandString cmd}:*)") deniedCommands;
   };
 

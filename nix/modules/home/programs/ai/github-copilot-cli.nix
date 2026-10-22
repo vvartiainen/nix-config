@@ -99,11 +99,11 @@ let
     lib.concatMap (tool: [
       "--allow-tool"
       tool
-    ]) permissions.copilot.allowTools
+    ]) (permissions.copilot config).allowTools
     ++ lib.concatMap (tool: [
       "--deny-tool"
       tool
-    ]) permissions.copilot.denyTools;
+    ]) (permissions.copilot config).denyTools;
 in
 {
   programs.github-copilot-cli = {

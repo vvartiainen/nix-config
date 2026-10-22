@@ -59,7 +59,14 @@ let
     }) servers;
   };
   codexSettings = tomlFormat.generate "codex-mcp.toml" {
-    mcp_servers = lib.mapAttrs (_: s: s // { enabled = true; }) servers;
+    mcp_servers = lib.mapAttrs (
+      _: s:
+      s
+      // {
+        enabled = true;
+        default_tools_approval_mode = "approve";
+      }
+    ) servers;
   };
 in
 {

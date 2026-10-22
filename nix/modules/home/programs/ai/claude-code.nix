@@ -86,7 +86,7 @@ let
       commit = "";
       pr = "";
     };
-    permissions = permissions.claude // {
+    permissions = permissions.claude config // {
       defaultMode = "default";
     };
     sandbox = {
