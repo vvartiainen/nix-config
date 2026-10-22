@@ -22,6 +22,29 @@ let
     meta.mainProgram = "backlog";
   });
 
+  # `bl nix-config board` instead of cd-ing into the iCloud folder. Without a
+  # project it falls back to $BACKLOG_PROJECT.
+  bl = pkgs.writeShellApplication {
+    name = "bl";
+    text = ''
+      projects=(${lib.escapeShellArgs cfg.projects})
+      if [[ $# -gt 0 && " ''${projects[*]} " == *" $1 "* ]]; then
+        project=$1
+        shift
+      elif [[ -n ''${BACKLOG_PROJECT:-} ]]; then
+        project=$BACKLOG_PROJECT
+      else
+        echo "usage: bl <project> [backlog args]   (default: task list)" >&2
+        echo "projects: ''${projects[*]}" >&2
+        exit 2
+      fi
+      if [[ $# -eq 0 ]]; then
+        set -- task list
+      fi
+      export BACKLOG_CWD=${lib.escapeShellArg cfg.vault}/$project
+      exec ${lib.getExe cfg.package} "$@"
+    '';
+  };
 in
 {
   options.backlog = {
@@ -47,5 +70,8 @@ in
     };
   };
 
-  config.home.packages = [ cfg.package ];
+  config.home.packages = [
+    cfg.package
+    bl
+  ];
 }
