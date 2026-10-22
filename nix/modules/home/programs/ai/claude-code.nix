@@ -97,7 +97,16 @@ let
   };
 in
 {
-  programs.claude-code.enable = true;
+  programs.claude-code = {
+    enable = true;
+    # Global ~/.claude/CLAUDE.md; repo instructions add to or narrow these.
+    context = ''
+      # Global instructions
+
+      - Never add trailers to git commit messages or PR descriptions, such as
+        Co-Authored-By or Claude-Session.
+    '';
+  };
 
   home = {
     # claude ships no zsh completion; this one is derived from `--help` output.
