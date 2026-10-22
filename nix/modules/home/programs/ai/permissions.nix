@@ -465,11 +465,11 @@ in
     };
   };
 
-  # Codex allow rules authorize leaving the sandbox. Even seemingly read-only
-  # programs can execute helpers or read arbitrary paths, so require approval
-  # for escalation; commands that work inside the sandbox remain available.
+  # Leave routine commands to the sandbox and on-request approval policy.
+  # Explicit prompt rules also prompt inside the sandbox, while allow rules
+  # can authorize leaving it. Only commands needing extra review get rules.
   codexRules =
-    concatMapStringsSep "\n" (toCodexRule "prompt") (allowedCommands ++ askCommands)
+    concatMapStringsSep "\n" (toCodexRule "prompt") askCommands
     + "\n"
     + concatMapStringsSep "\n" (toCodexRule "forbidden") deniedCommands
     + "\n";
