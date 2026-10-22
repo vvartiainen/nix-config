@@ -12,7 +12,10 @@ let
   staticSettings = tomlFormat.generate "codex-config.toml" (
     permissions.codexPermissions config
     // {
-      shell_environment_policy.set.NIX_CACHE_HOME = "${config.home.homeDirectory}/.cache/nix-agent";
+      shell_environment_policy.set = {
+        NIX_CACHE_HOME = "${config.home.homeDirectory}/.cache/nix-agent";
+        CARGO_HOME = "${config.xdg.cacheHome}/cargo-agent";
+      };
 
       # Codex only supports built-in status line items (no custom command),
       # so mirror claude-statusline.sh as closely as possible.
@@ -68,6 +71,8 @@ in
 
   # Codex writes project trust, MCP changes, and other runtime settings to
   # config.toml. Keep both it and the rules directory outside the Nix store.
+  # Replace the owned permission profile so removed grants do not survive a
+  # recursive merge. Other profiles and unrelated runtime settings persist.
   home.activation.codexMutableConfig = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
     config_dir="${config.home.homeDirectory}/.codex"
     config_path="$config_dir/config.toml"
@@ -84,10 +89,10 @@ in
     fi
     chmod u+w "$config_path"
 
-    if ! ${yq} eval-all \
+    if ! ${yq} eval-all --exit-status \
       --input-format toml \
       --output-format toml \
-      '. as $item ireduce ({}; . * $item)' \
+      '(select(fileIndex == 0) | del(.permissions."${profile}")) * select(fileIndex == 1)' \
       "$config_path" ${staticSettings} > "$config_path.tmp" 2>/dev/null; then
       cp ${staticSettings} "$config_path.tmp"
     fi

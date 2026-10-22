@@ -20,66 +20,7 @@ let
     [ "grep" ]
     [ "printf" ]
     [
-      "npm"
-      "run"
-      "test"
-    ]
-    [
-      "npm"
-      "run"
-      "build"
-    ]
-    [
-      "npm"
-      "run"
-      "format"
-    ]
-    [
-      "npm"
-      "test"
-    ]
-    [
-      "npx"
-      "vitest"
-    ]
-    [
-      "npx"
-      "tsc"
-    ]
-    [
-      "npx"
-      "eslint"
-    ]
-    [
       "terraform"
-      "fmt"
-    ]
-    [
-      "terraform"
-      "validate"
-    ]
-    [
-      "just"
-      "eval-system"
-    ]
-    [
-      "just"
-      "show"
-    ]
-    [
-      "just"
-      "check"
-    ]
-    [
-      "just"
-      "build"
-    ]
-    [
-      "just"
-      "build-system"
-    ]
-    [
-      "nix"
       "fmt"
     ]
     [
@@ -195,10 +136,6 @@ let
       "mise"
       "where"
     ]
-    [
-      "cargo"
-      "test"
-    ]
   ];
 
   # Commands allowed only exactly as written; their prefixes would also allow
@@ -217,10 +154,31 @@ let
     ]
   ];
 
-  # Builds run in the nix daemon outside the agent sandbox. The `just`
-  # recipes above only build this flake; arbitrary build targets still prompt,
-  # even in auto mode.
+  # These commands execute project-controlled code, accept additional recipes,
+  # or build through the Nix daemon. Never grant blanket approval to them.
   askCommands = [
+    [ "just" ]
+    [
+      "npm"
+      "run"
+    ]
+    [
+      "npm"
+      "test"
+    ]
+    [ "npx" ]
+    [
+      "cargo"
+      "test"
+    ]
+    [
+      "terraform"
+      "validate"
+    ]
+    [
+      "nix"
+      "fmt"
+    ]
     [
       "nix"
       "build"
@@ -310,13 +268,12 @@ let
     "crates.io"
   ];
 
-  # Domains reachable from sandboxed commands. Keep to package registries:
-  # anything that accepts uploads is an exfiltration path.
+  # Package download hosts only. npm's registry and crates.io also accept
+  # uploads, so access to them needs approval. This is a host boundary, not
+  # a guarantee against every possible data channel to an allowed service.
   sandboxNetworkDomains = [
-    "registry.npmjs.org"
     "pypi.org"
     "files.pythonhosted.org"
-    "crates.io"
     "index.crates.io"
     "static.crates.io"
   ];
@@ -360,8 +317,6 @@ let
     # store, which project node_modules symlink into.
     "${config.xdg.cacheHome}/aube/virtual-store"
     "${config.xdg.configHome}/git"
-    "${config.home.homeDirectory}/prog"
-    "${config.home.homeDirectory}/.agent-sandbox/worktrees"
   ];
 in
 {
@@ -372,12 +327,18 @@ in
   codexPermissions = config: {
     approval_policy = "on-request";
     approvals_reviewer = "user";
+    # Domain rules are not enforced without the proxy.
+    features.network_proxy = true;
 
     default_permissions = "workspace-only";
     permissions.workspace-only = {
       extends = ":workspace";
       network = {
         enabled = true;
+        mode = "limited";
+        domains = lib.genAttrs sandboxNetworkDomains (_: "allow");
+        allow_local_binding = false;
+        allow_upstream_proxy = false;
         # Nix builds run through the daemon, outside the agent sandbox.
         unix_sockets."/nix/var/nix/daemon-socket/socket" = "allow";
       };
@@ -396,7 +357,8 @@ in
           ".git/config" = "read";
           "**/.env" = "deny";
           "**/.env.*" = "deny";
-        };
+        }
+        // lib.genAttrs secretFilePatterns (_: "deny");
       }
       // lib.genAttrs (sandboxReadonlyPaths config) (_: "read")
       // (
@@ -421,8 +383,8 @@ in
           # network allowlist above permits connecting, not filesystem probes.
           "/nix/var/nix/daemon-socket/socket" = "read";
 
-          "${home}/.cargo/registry" = "write";
-          "${home}/.cargo/git" = "write";
+          # Dependency sources must not poison the user's normal Cargo cache.
+          "${config.xdg.cacheHome}/cargo-agent" = "write";
 
           # Match Claude Code's dedicated cache without granting writes to
           # the user's normal Nix cache.
@@ -456,9 +418,9 @@ in
       map (cmd: "Bash(${commandString cmd}:*)") allowedCommands
       ++ map (cmd: "Bash(${commandString cmd})") exactCommands
       ++ [ "Read(//nix/store/**)" ]
-      ++ map (domain: "WebFetch(domain:${domain})") fetchDomains
+      # WebFetch allows also widen the Bash sandbox's network allowlist.
+      ++ map (domain: "WebFetch(domain:${domain})") sandboxNetworkDomains
       ++ map (name: "mcp__${name}__*") (mcpServers config);
-    # Let auto mode review unsandboxed retries instead of always prompting.
     ask = map (cmd: "Bash(${commandString cmd}:*)") askCommands;
     deny =
       map (cmd: "Bash(${commandString cmd}:*)") deniedCommands
@@ -488,6 +450,8 @@ in
     }
     // toOpencodeRules "allow" allowedCommands
     // lib.genAttrs (map commandString exactCommands) (_: "allow")
+    // toOpencodeRules "ask" askCommands
+    // lib.genAttrs (map commandString askCommands) (_: "ask")
     // toOpencodeRules "deny" deniedCommands;
     external_directory = {
       "*" = "ask";
@@ -501,8 +465,11 @@ in
     };
   };
 
+  # Codex allow rules authorize leaving the sandbox. Even seemingly read-only
+  # programs can execute helpers or read arbitrary paths, so require approval
+  # for escalation; commands that work inside the sandbox remain available.
   codexRules =
-    concatMapStringsSep "\n" (toCodexRule "allow") allowedCommands
+    concatMapStringsSep "\n" (toCodexRule "prompt") (allowedCommands ++ askCommands)
     + "\n"
     + concatMapStringsSep "\n" (toCodexRule "forbidden") deniedCommands
     + "\n";
