@@ -63,8 +63,12 @@ in
     projects = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [
+        "agent-sandbox"
         "agent-sandbox-platform"
+        "agent-secret-proxy"
+        "cli-toolbox"
         "nix-config"
+        "receipt-ocr"
       ];
       description = "Backlogs: folder names in the vault. Each gets an MCP server in the agent CLIs (mcp.nix).";
     };
