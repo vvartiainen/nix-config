@@ -23,6 +23,8 @@ Don't expect this to work out of the box for you, but feel free to borrow anythi
 
 See the [keybinding guide](docs/agent-keybindings.md) for shared shortcuts and the comparison matrix.
 
+See the [permission guide](docs/agent-permissions.md) for command rules, sandboxes, and approval behavior.
+
 ## Prerequisites
 
 - macOS (Apple Silicon expected by current config)

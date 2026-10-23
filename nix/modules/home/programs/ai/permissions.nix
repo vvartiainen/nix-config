@@ -186,8 +186,8 @@ let
   ];
 
   # Command prefixes that are never auto-approved. Prefix denies can be
-  # bypassed (`sh -c`, absolute paths), but those forms still prompt; this
-  # keeps these from being approved by accident.
+  # bypassed (`sh -c`, absolute paths), but those forms still prompt or run
+  # sandboxed; this keeps these from being approved by accident.
   deniedCommands = [
     [ "op" ]
     [ "security" ]
