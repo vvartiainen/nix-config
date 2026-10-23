@@ -88,15 +88,22 @@ let
       pr = "";
     };
     permissions = permissions.claude config // {
-      defaultMode = "default";
+      # Like Codex: workspace edits and sandboxed commands run without
+      # prompts; ask rules and sandbox escapes still prompt.
+      defaultMode = "acceptEdits";
     };
     # Sandboxed nix gets its own cache instead of write access to ~/.cache/nix.
     env.NIX_CACHE_HOME = "${config.home.homeDirectory}/.cache/nix-agent";
     sandbox = {
       enabled = true;
-      autoAllowBashIfSandboxed = false;
+      autoAllowBashIfSandboxed = true;
       filesystem = {
         allowWrite = [ "~/.cache/nix-agent" ];
+        # Git hooks and config run outside the sandbox.
+        denyWrite = [
+          "**/.git/hooks"
+          "**/.git/config"
+        ];
         # ~/.npmrc links to this tracked file; flake evaluation copies the
         # whole repo, so nix must be able to read it.
         allowRead = [ "/${repoRoot}/dotfiles/.npmrc" ];
