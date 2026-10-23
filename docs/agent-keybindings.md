@@ -37,6 +37,7 @@ Numbered agent jumps follow the visible agent panel order.
 | Previous / next agent | Alt+K / Alt+J |
 | Jump to agent 1–9 | Alt+1–9 |
 | Go To picker | Alt+G |
+| Workspace picker | Alt+W |
 | Previous / next workspace | Alt+H / Alt+L |
 | Jump to workspace 1–9 | Alt+Shift+1–9 |
 | New tab | Alt+N |
@@ -46,6 +47,11 @@ Numbered agent jumps follow the visible agent panel order.
 | Jump to tab 1–9 | Ctrl+B → 1–9 |
 | Focus pane | Ctrl+B → H/J/K/L |
 | Show active shortcuts | Ctrl+B → ? |
+
+The sidebar groups agents by workspace, with separate agent, machine/workspace,
+and session-title lines. Blank rows separate entries; a brighter background marks
+the active row. Agent labels also appear on split-pane borders, and the outer
+terminal title includes the server hostname, workspace, tab, and pane.
 
 Alt+C sends Ctrl+L to a shell, `/clear` to Claude, and `/new` to the other
 agents. It does nothing while an agent turn is running, and it assumes the

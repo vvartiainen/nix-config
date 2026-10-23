@@ -82,6 +82,7 @@ in
         next_agent = "alt+j";
         focus_agent = "alt+1..9";
         goto = "alt+g";
+        workspace_picker = "alt+w";
         previous_workspace = "alt+h";
         next_workspace = "alt+l";
         switch_workspace = "alt+shift+1..9";
@@ -99,7 +100,59 @@ in
       };
 
       ui = {
+        sidebar_width = 36;
+        sidebar_min_width = 30;
+        sidebar_max_width = 48;
+        agent_panel_sort = "spaces";
         status_indicators = "symbols";
+
+        # Keep host/workspace context separate from agent identity and title.
+        sidebar = {
+          agents = {
+            row_gap = 1;
+            rows = [
+              [
+                "state_icon"
+                {
+                  token = "agent";
+                  bold = true;
+                }
+                "tab"
+                "pane"
+              ]
+              [
+                {
+                  token = "machine";
+                  fg = "#f9e2af";
+                }
+                {
+                  token = "workspace";
+                  fg = "#89b4fa";
+                  bold = true;
+                }
+              ]
+              [ "terminal_title_stripped" ]
+            ];
+          };
+          spaces = {
+            row_gap = 1;
+            rows = [
+              [
+                "state_icon"
+                {
+                  token = "workspace";
+                  bold = true;
+                }
+              ]
+              [
+                "branch"
+                "git_status"
+              ]
+            ];
+          };
+        };
+        show_agent_labels_on_pane_borders = true;
+        window_title = "{hostname}: {workspace} / {tab} / {pane}";
         toast.delivery = "system";
         sound.enabled = true;
       };
@@ -107,6 +160,9 @@ in
       theme = {
         name = "catppuccin";
         auto_switch = false;
+        # Make the active agent/workspace stand out from the sidebar background.
+        custom.active_row_bg = "#45475a";
+        custom.selection_bg = "#585b70";
       };
     };
   };
