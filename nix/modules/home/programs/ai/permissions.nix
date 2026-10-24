@@ -335,7 +335,10 @@ in
       extends = ":workspace";
       network = {
         enabled = true;
-        mode = "limited";
+        # Hosts outside the allowlist go through on-request approval. "limited"
+        # would also block non-GET methods and require HTTPS MITM, neither of
+        # which can be approved.
+        mode = "full";
         domains = lib.genAttrs sandboxNetworkDomains (_: "allow");
         allow_local_binding = false;
         allow_upstream_proxy = false;

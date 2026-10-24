@@ -49,7 +49,7 @@ without a prompt, but only inside the sandbox.
 | Reads | Denied outside the workspace, except tool paths and Codex's runtime set | Allowed everywhere except credential paths and `.env` files |
 | Writes | Workspace, `~/.cache/nix-agent`, `~/.cache/cargo-agent` | Working directory, `$TMPDIR`, `~/.cache/nix-agent` |
 | Read-only in the workspace | `.git/hooks`, `.git/config` | `.git/hooks`, `.git/config` |
-| Network | `sandboxNetworkDomains` through the Codex proxy | `sandboxNetworkDomains` plus WebFetch-allowed domains |
+| Network | `sandboxNetworkDomains` through the Codex proxy; other hosts ask for approval | `sandboxNetworkDomains` plus WebFetch-allowed domains |
 | Unix sockets | Nix daemon only | Nix daemon only |
 
 Git runs hooks and config outside the sandbox, so both are read-only to
