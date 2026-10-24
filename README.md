@@ -94,6 +94,8 @@ Only that directory and the tracked files of this repo are copied into the Nix s
 
 Use the same value for `<HOSTNAME>` in the `just` recipes as `hostName`; it defaults to `hostname`.
 
+The `just` recipes stop with a hint when the host data is missing. Until both machines have migrated, they instead create it from the old gitignored `local-config.nix`, `hardware.local.nix` and `zen-browser.local.nix` if those exist. The old files are left in place; delete them after a successful build.
+
 ## Validating and applying the configs
 
 1. Validate
