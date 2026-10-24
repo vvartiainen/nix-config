@@ -35,31 +35,52 @@ This selects separate standard directories, including `~/.config/nvim-nix`,
 would only select another config; the wrapper also selects the Nix binary.
 The default `EDITOR`, `VISUAL`, and integrations continue to use `nvim`.
 
-This first stage uses the existing LazyVim Lua configuration from `dotfiles/nvim`
-as an immutable Nix snapshot. Edits there still reach the original setup immediately;
-the experimental setup needs a rebuild and manual apply to pick them up.
-Lazy and Mason still download plugins and tools into the experimental data directory,
-so the first launch needs network access and installs them separately. External
-commands can still come from Homebrew or mise at this stage.
+The experimental setup packages the existing Lua settings, LazyVim extras, plugins,
+and Treesitter parsers in the Nix store. Lazy still handles plugin loading, but
+plugin installation, builds, update checks, Lua rocks, and project-local Lazy specs
+are disabled. Mason and its LSP/DAP integrations are disabled. Plugin versions come
+from `nixpkgs` in `flake.lock`, rather than the live editor's `lazy-lock.json`.
 
-The launcher seeds writable `lazy-lock.json` and `lazyvim.json` copies on first
-launch. Later launches and rebuilds preserve these experimental plugin pins and
-extras selections. To reseed them from the repository, close `nvim-nix` and move
-those two files out of its config directory before launching again. Lua changes
-should be made in the repository, since the experimental Lua files are read-only.
+Launch it inside a project dev shell so language servers, formatters, linters,
+debug adapters, and test runners come from that shell:
+
+```bash
+nix develop
+nvim-nix path/to/file
+# or, from outside the shell:
+nix develop --command nvim-nix path/to/file
+```
+
+The launcher inherits `PATH`; it does not install or prepend development tools.
+For example, a Nix project can supply `nil`, `nixfmt`, and `statix`; a Python
+project can supply `pyright`, `ruff`, `black`, and `debugpy`; a Go project can
+supply `gopls`, `go`, and `delve`. Debugging expects adapters on `PATH`, including
+`codelldb`, `debugpy-adapter`, and `dlv` as appropriate. Project tools such as
+Prettier/ESLint and test runners may still resolve from local `node_modules`.
+Missing tools must be added to the project shell. There is no Mason fallback.
+
+Edit Lua settings and extras in `dotfiles/nvim` and rebuild to update `nvim-nix`.
+The original editor still sees those edits immediately. The experimental extras
+list is the immutable `lazyvim.json` snapshot; use the repository file rather
+than `:LazyExtras` to change it. Add plugin packages or parser languages in
+`nix/modules/home/programs/neovim.nix` when enabling more extras. Nix-specific
+loading and tool overrides live beside that module under `neovim/`.
+Existing experimental writable JSON files and downloaded plugins are ignored;
+no cleanup of the old data directory is needed.
 
 Compare `:checkhealth`, file search, completion, formatting, LSP, tests, and debugging
-on the same projects. In either editor, inspect the executable and directories with:
+on the same projects, inside the same dev shell. In either editor, inspect:
 
 ```vim
 :echo v:progpath
 :lua for _, key in ipairs({ "config", "data", "state", "cache" }) do print(key, vim.fn.stdpath(key)) end
+:lua print(vim.fn.exepath("nil"))
 ```
 
-Next, migrate external tools and then plugins into
-`nix/modules/home/programs/neovim.nix` a few at a time, checking each change in
-`nvim-nix`. Once parity is verified, switch the default editor and integrations,
-then remove the Homebrew package and live Neovim dotfile links.
+In `nvim-nix`, `:Lazy` plugin directories should point into `/nix/store`.
+Use `:ConformInfo` and `:LspInfo` to check project tool resolution.
+After interactive parity is verified, the default editor and integrations can be
+switched and the Homebrew package and live Neovim dotfile links removed.
 
 ## Agent CLI keybindings
 
