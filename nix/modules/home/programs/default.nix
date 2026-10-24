@@ -10,6 +10,7 @@
     ./go.nix
     ./herdr.nix
     ./lazygit.nix
+    ./neovim.nix
     ./rust.nix
     ./starship.nix
     ./yazi.nix

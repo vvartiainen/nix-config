@@ -19,6 +19,48 @@ Don't expect this to work out of the box for you, but feel free to borrow anythi
   - Using `mkOutOfStoreSymlink` so updates in these files are reflected directly
   - Might want to move some of these to "more pure" / immutable configs at some point
 
+## Neovim migration
+
+After building and manually applying the configuration, run the two setups side by side:
+
+```bash
+nvim path/to/file       # existing Homebrew binary and live dotfiles
+nvim-nix path/to/file   # Nix binary and build-time config snapshot
+```
+
+`nvim-nix` sets [`NVIM_APPNAME=nvim-nix`](https://neovim.io/doc/user/starting/#%24NVIM_APPNAME).
+This selects separate standard directories, including `~/.config/nvim-nix`,
+`~/.local/share/nvim-nix`, `~/.local/state/nvim-nix`, and `~/.cache/nvim-nix`
+(or their XDG overrides). Setting `NVIM_APPNAME` alone on the Homebrew binary
+would only select another config; the wrapper also selects the Nix binary.
+The default `EDITOR`, `VISUAL`, and integrations continue to use `nvim`.
+
+This first stage uses the existing LazyVim Lua configuration from `dotfiles/nvim`
+as an immutable Nix snapshot. Edits there still reach the original setup immediately;
+the experimental setup needs a rebuild and manual apply to pick them up.
+Lazy and Mason still download plugins and tools into the experimental data directory,
+so the first launch needs network access and installs them separately. External
+commands can still come from Homebrew or mise at this stage.
+
+The launcher seeds writable `lazy-lock.json` and `lazyvim.json` copies on first
+launch. Later launches and rebuilds preserve these experimental plugin pins and
+extras selections. To reseed them from the repository, close `nvim-nix` and move
+those two files out of its config directory before launching again. Lua changes
+should be made in the repository, since the experimental Lua files are read-only.
+
+Compare `:checkhealth`, file search, completion, formatting, LSP, tests, and debugging
+on the same projects. In either editor, inspect the executable and directories with:
+
+```vim
+:echo v:progpath
+:lua for _, key in ipairs({ "config", "data", "state", "cache" }) do print(key, vim.fn.stdpath(key)) end
+```
+
+Next, migrate external tools and then plugins into
+`nix/modules/home/programs/neovim.nix` a few at a time, checking each change in
+`nvim-nix`. Once parity is verified, switch the default editor and integrations,
+then remove the Homebrew package and live Neovim dotfile links.
+
 ## Agent CLI keybindings
 
 See the [keybinding guide](docs/agent-keybindings.md) for shared shortcuts and the comparison matrix.
