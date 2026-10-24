@@ -30,9 +30,11 @@ The hostname is selected automatically, you should only need `just build` withou
 
 ## Working conventions
 
+- Check existing documentation, also using MCP if such exists
 - Keep module boundaries clear: when creating program specific zsh config for example, add it to the program module instead of the generic zsh.nix
 - Keep changes minimal and easy to review
 - Prefer updating existing modules/files over adding new abstractions
 - Only update `flake.lock` when dependency updates are intentional
 - `git commit` the changes you have made, but let user manually handle the push of the changes
   - use existing project commit style (conventional commits, short message, no long descriptions, no trailers such as Co-Authored-By or Claude-Session)
+- Update existing documentation, also using MCP if such exists
