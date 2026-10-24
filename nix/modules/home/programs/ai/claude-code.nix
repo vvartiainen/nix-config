@@ -104,8 +104,8 @@ let
           "**/.git/hooks"
           "**/.git/config"
         ];
-        # ~/.npmrc links to this tracked file; flake evaluation copies the
-        # whole repo, so nix must be able to read it.
+        # ~/.npmrc links to this tracked file; flake evaluation copies every
+        # tracked file, so nix must be able to read it.
         allowRead = [ "/${repoRoot}/dotfiles/.npmrc" ];
       };
       network = {

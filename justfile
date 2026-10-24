@@ -1,49 +1,72 @@
-flake_ref := "path:."
+flake_ref := "."
 system_profile := "/nix/var/nix/profiles/system"
 # Flake config name. `$HOST` when exported, otherwise this machine's hostname.
 default_host := `hostname`
 host := env("HOST", default_host)
+# Per-machine host data, kept outside the repo (see README).
+host_dir := home_directory() / ".config/nix-config-host"
+host_flags := "--override-input host 'path:" + host_dir + "'"
 
-# Create local host overrides if missing.
-generate-local-config host=host:
-    if [ ! -f local-config.nix ]; then printf '{\n  userName = "%s";\n  hostName = "%s";\n  repoRoot = "%s";\n}\n' "$USER" '{{ host }}' '{{ justfile_directory() }}' > local-config.nix; fi
-
-# Write hardware.local.nix; pure flake eval cannot probe the chip.
-# Nested virtualization needs M3+ and macOS 15+.
-detect-hardware:
-    @if ! brand="$(sysctl -n machdep.cpu.brand_string 2>/dev/null)"; then if [ -f hardware.local.nix ]; then echo "sysctl unavailable (sandbox?); keeping hardware.local.nix" >&2; exit 0; fi; echo "sysctl unavailable; cannot write hardware.local.nix" >&2; exit 1; fi; gen="$(printf '%s\n' "$brand" | sed -nE 's/^Apple M([0-9]+).*/\1/p')"; os="$(sw_vers -productVersion | cut -d. -f1)"; nested=false; if [ "${gen:-0}" -ge 3 ] && [ "$os" -ge 15 ]; then nested=true; fi; printf '{ nestedVirtualization = %s; }\n' "$nested" > hardware.local.nix
+# Create the host data file if missing.
+init-host host=host:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    file='{{ host_dir }}/default.nix'
+    if [ -e "$file" ]; then
+      echo "$file already exists" >&2
+      exit 0
+    fi
+    # Nested virtualization needs M3+ and macOS 15+.
+    nested=false
+    gen=$(sysctl -n machdep.cpu.brand_string 2>/dev/null | sed -nE 's/^Apple M([0-9]+).*/\1/p' || true)
+    os=$(sw_vers -productVersion | cut -d. -f1)
+    if [ "${gen:-0}" -ge 3 ] && [ "$os" -ge 15 ]; then
+      nested=true
+    fi
+    mkdir -p "$(dirname "$file")"
+    cat > "$file" <<EOF
+    {
+      userName = "$USER";
+      hostName = "{{ host }}";
+      repoRoot = "{{ justfile_directory() }}";
+      nestedVirtualization = $nested;
+      # Private modules that stay out of the repo.
+      darwinModules = [ ];
+      homeModules = [ ];
+    }
+    EOF
+    echo "Wrote $file"
 
 # Bootstrap nix-darwin from this flake.
-bootstrap host=host: detect-hardware
-    just generate-local-config '{{ host }}'
-    sudo nix run nix-darwin -- switch --flake '{{ flake_ref }}#{{ host }}'
+bootstrap host=host: (init-host host)
+    sudo nix run nix-darwin -- switch --flake '{{ flake_ref }}#{{ host }}' {{ host_flags }}
 
 # Show flake outputs.
 show:
-    nix flake show
+    nix flake show {{ host_flags }}
 
 # Run flake checks and lint nix files.
-check: detect-hardware
+check:
     statix check .
-    nix flake check
+    nix flake check {{ host_flags }}
 
 # Evaluate the darwin system derivation.
-eval-system host=host: detect-hardware
-    nix eval '{{ flake_ref }}#darwinConfigurations.{{ host }}.system'
+eval-system host=host:
+    nix eval '{{ flake_ref }}#darwinConfigurations.{{ host }}.system' {{ host_flags }}
 
 # Build the darwin system derivation.
-build-system host=host: detect-hardware
-    nix build '{{ flake_ref }}#darwinConfigurations.{{ host }}.system'
+build-system host=host:
+    nix build '{{ flake_ref }}#darwinConfigurations.{{ host }}.system' {{ host_flags }}
 
 # Build the nix-darwin activation package without applying it.
-build host=host: detect-hardware
-    darwin-rebuild build --flake '{{ flake_ref }}#{{ host }}'
+build host=host:
+    darwin-rebuild build --flake '{{ flake_ref }}#{{ host }}' {{ host_flags }}
 
 # Apply the nix-darwin configuration.
 # SKIP_HOMEBREW=1 skips brew bundle during activation.
-switch host=host: detect-hardware
+switch host=host:
     printf '%s\n' "${SKIP_HOMEBREW:-0}" | sudo tee /tmp/nix-darwin-skip-homebrew >/dev/null
-    sudo darwin-rebuild switch --flake '{{ flake_ref }}#{{ host }}'
+    sudo darwin-rebuild switch --flake '{{ flake_ref }}#{{ host }}' {{ host_flags }}
 
 # Roll back to the previous nix-darwin generation.
 rollback:

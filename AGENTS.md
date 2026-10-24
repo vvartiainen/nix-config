@@ -28,6 +28,8 @@ Do not run apply commands (for example `just switch <hostName>`); user applies m
 
 The hostname is selected automatically, you should only need `just build` without anything else.
 
+Host identity comes from `~/.config/nix-config-host` through the `host` flake input (see README "Host data"). Never commit host names, usernames or work-specific config to this repo. New files must be `git add`ed before a build sees them.
+
 ## Working conventions
 
 - Check existing documentation, also using MCP if such exists

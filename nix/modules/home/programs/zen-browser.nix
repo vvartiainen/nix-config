@@ -15,12 +15,11 @@ let
   };
 in
 {
-  # Work-specific containers, essentials and spaces are kept in a gitignored file. It is only
-  # visible to builds using the `path:.` flake ref from the justfile.
+  # Work-specific containers, essentials and spaces go in the host data's
+  # `homeModules` (see README.md), not in this repo.
   imports = [
     inputs.zen-browser.homeModules.beta
-  ]
-  ++ lib.optional (builtins.pathExists ./zen-browser.local.nix) ./zen-browser.local.nix;
+  ];
 
   # Zen must be able to write profiles.ini to record its install, so the read-only store symlink
   # is replaced with a writable copy. https://github.com/0xc000022070/zen-browser-flake/issues/285

@@ -42,7 +42,7 @@ softwareupdate --install-rosetta --agree-to-license
 
 Rosetta is required for `x86_64-linux` builds on the VZ linux-builder. The Xcode license must be accepted before `xcodebuild` and some Homebrew formulas work.
 
-The linux-builder enables nested virtualization so the guest gets a real `/dev/kvm` and can run NixOS tests (`kvm` and `nixos-test` features). This needs an M3 or newer chip and macOS 15+; the `just` recipes detect the chip and write the gitignored `hardware.local.nix`, which turns nested virtualization and the `kvm`/`nixos-test` features off on older Macs. Only `aarch64-linux` guests are accelerated; `x86_64-linux` NixOS tests still fall back to slow emulation.
+The linux-builder enables nested virtualization so the guest gets a real `/dev/kvm` and can run NixOS tests (`kvm` and `nixos-test` features). This needs an M3 or newer chip and macOS 15+; `nestedVirtualization` in the [host data](#host-data) turns nested virtualization and the `kvm`/`nixos-test` features off on older Macs. Only `aarch64-linux` guests are accelerated; `x86_64-linux` NixOS tests still fall back to slow emulation.
 
 ## Installation
 
@@ -60,33 +60,39 @@ The linux-builder enables nested virtualization so the guest gets a real `/dev/k
 
 1. Clone this repository and `cd` into it.
 
-1. Create local host overrides:
+1. Create the [host data](#host-data) from the current user, host name, chip and repository path, then check it:
 
     ```bash
-    cp ./local-config.nix.example ./local-config.nix
+    just init-host <HOSTNAME>
     ```
 
-    Or generate it from the current user, host name, and repository path:
-
-    ```bash
-    just generate-local-config <HOSTNAME>
-    ```
-
-    Then edit `local-config.nix` and set or verify any values you want to override:
-
-    - `userName`
-    - `hostName`
-    - `repoRoot`
-
-    When using the gitignored `local-config.nix`, use `path:.#...` flake references so untracked local files are included.
-
-    Use the same value for `<HOSTNAME>` as the `hostName` you set in `local-config.nix`.
-
-1. Bootstrap `nix-darwin` from this flake (first activation). If `local-config.nix` does not exist yet, this command calls `just generate-local-config <HOSTNAME>` first:
+1. Bootstrap `nix-darwin` from this flake (first activation). This runs `just init-host <HOSTNAME>` first if the host data does not exist yet:
 
 ```bash
 just bootstrap <HOSTNAME>
 ```
+
+## Host data
+
+Machine identity is kept out of this repo, so a work machine's host name, user and private config are never committed. Each machine has `~/.config/nix-config-host/default.nix`:
+
+```nix
+{
+  userName = "your-user";
+  hostName = "YOUR-HOSTNAME"; # also the darwinConfigurations name
+  repoRoot = "/Users/your-user/prog/nix-config";
+  nestedVirtualization = true; # M3+ and macOS 15+
+  # Private modules, e.g. work-only Zen containers or casks.
+  darwinModules = [ ];
+  homeModules = [ ./zen-work.nix ];
+}
+```
+
+The flake reads it through its `host` input, which points at a stub that fails with an error. The `just` recipes pass the real directory with `--override-input host path:$HOME/.config/nix-config-host`. That flag implies `--no-write-lock-file`, so the path never ends up in `flake.lock`. Run raw `nix` or `darwin-rebuild` commands with the same flag.
+
+Only that directory and the tracked files of this repo are copied into the Nix store. New files in this repo need `git add` before a build sees them.
+
+Use the same value for `<HOSTNAME>` in the `just` recipes as `hostName`; it defaults to `hostname`.
 
 ## Validating and applying the configs
 
