@@ -40,3 +40,11 @@ Host identity comes from `~/.config/nix-config-host` through the `host` flake in
 - `git commit` the changes you have made, but let user manually handle the push of the changes
   - use existing project commit style (conventional commits, short message, no long descriptions, no trailers such as Co-Authored-By or Claude-Session)
 - Update existing documentation, also using MCP if such exists
+
+## Backlog
+
+Ideas and open work are tracked in a Backlog.md backlog through the `backlog-nix-config` MCP server, not in the repo.
+
+- Read `backlog://workflow/overview` or call `get_backlog_instructions` first
+- Search for an existing task before creating one
+- Keep the task status and notes current while working
