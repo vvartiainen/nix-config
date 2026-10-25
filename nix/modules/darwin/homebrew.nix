@@ -11,25 +11,21 @@
     brews = [
       "ansible"
       "awscli"
-      "azure-cli"
       "bat"
       "btop"
       "cmake"
-      "cocoapods"
       "composer"
       "coreutils"
       "cpm"
       "delve"
       "docker"
       "duckdb"
-      "eugene1g/safehouse/agent-safehouse"
       "fastfetch"
       "fd"
       "felixkratz/formulae/sketchybar"
       "ffmpeg"
       "ffmpegthumbnailer"
       "figlet"
-      "fish"
       "gh"
       "ghostscript"
       "git"
@@ -37,18 +33,11 @@
       "git-lfs"
       "gnu-sed"
       "gnumeric"
-      "hunk"
       "imagemagick"
       "jq"
       "julia"
       "just"
       "asmvik/formulae/skhd"
-      # Kept as a rollback target; /opt/yabai/bin is ahead of Homebrew when the Nix fork is active.
-      # Ref. ./yabai.nix
-      {
-        name = "asmvik/formulae/yabai";
-        args = [ "HEAD" ];
-      }
       "kubernetes-cli"
       "lazydocker"
       "libpq"
@@ -60,8 +49,6 @@
       "neovim"
       "nixfmt"
       "opencode"
-      "oven-sh/bun/bun"
-      "pgformatter"
       "pkgconf"
       "pnpm"
       "podman"
@@ -69,34 +56,28 @@
       "ripgrep"
       "scc"
       "sevenzip"
-      "shellcheck"
-      "sqlc"
-      "sqlfluff"
+      "shellcheck" # TODO: Move to nix
       "sqlite"
       "tectonic"
       "thefuck"
       "tlrc"
       "tmux"
-      "tree-sitter"
       "unar"
       "uv"
-      "valkey"
       "wget"
       "yt-dlp"
-      "zig"
     ];
 
     taps = [
       "felixkratz/formulae"
       "jesseduffield/lazydocker"
       "asmvik/formulae"
-      "oven-sh/bun"
     ];
 
     casks = [
       "1password-cli"
+      "azure-cli"
       "brave-browser"
-      "calibre"
       "chatgpt"
       "claude"
       "codex"
@@ -114,9 +95,7 @@
       "font-symbols-only-nerd-font"
       "font-ubuntu-mono-nerd-font"
       "ghostty"
-      "github"
       "kitty"
-      "linear"
       "localsend"
       "moonlight"
       "obsidian"
@@ -128,7 +107,6 @@
       "spotify"
       "tidal"
       "visual-studio-code"
-      "zed"
     ];
 
     masApps = {
