@@ -30,6 +30,37 @@ The hostname is selected automatically, you should only need `just build` withou
 
 Host identity comes from `~/.config/nix-config-host` through the `host` flake input (see README "Host data"). Never commit host names, usernames or work-specific config to this repo. New files must be `git add`ed before a build sees them.
 
+## Validation in a restricted agent session
+
+- Try the normal `just` recipes first. A missing-file result for private host
+  data can mean the session cannot read it; do not run `just init-host` or
+  migrate host files just to get validation working.
+- If real host data remains unavailable after requesting access, create a
+  temporary directory outside the repo with a minimal `default.nix`: generic
+  `userName`/`hostName`, this checkout's `repoRoot`, and
+  `nestedVirtualization = false`. No private modules or real machine identity
+  belong in that fixture or in committed files.
+- Run the same recipes with
+  `just --set host_dir <temporary-directory> --set host <fixture-hostName> <recipe>`.
+  This preserves the repository's host override/bootstrap logic. Report that
+  the result validates the public configuration with a fixture, not the real
+  machine's private configuration. Do not change `flake.lock` for the fixture.
+- If `darwin-rebuild` is missing from PATH, check the installed command at
+  `/nix/var/nix/profiles/system/sw/bin/darwin-rebuild`. Add its resolved store
+  directory to PATH for `just build`; do not fetch an unrelated nix-darwin
+  version. `just build-system` also builds the system derivation directly.
+- Use small temporary consumer flakes for testing direct Home Manager imports
+  on Linux or macOS. Pin their inputs to this checkout and its existing inputs;
+  keep temporary locks, results and generic users outside this repo.
+- Temporary fixtures support evaluation/build testing. They do not grant
+  access to restricted private files or replace actual host validation.
+  Request access when needed and clearly report any remaining limitation.
+- Do not rerun a permission-blocked formatter when the user has asked to skip
+  formatting. Keep edits readable and run `git diff --check`.
+- For helper scripts, check `type -a python3` and prefer an already-installed
+  Python executable over a mise shim when it emits unrelated cache/state
+  permission warnings. Do not change tool-manager permissions just to hide logs.
+
 ## Working conventions
 
 - Check existing documentation, also using MCP if such exists

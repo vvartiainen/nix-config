@@ -1,4 +1,8 @@
-_: {
+{ pkgs, ... }:
+{
+  # The configured diff renderer invokes delta, including when imported alone.
+  home.packages = [ pkgs.delta ];
+
   programs.lazygit = {
     enable = true;
 

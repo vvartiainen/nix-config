@@ -135,6 +135,15 @@ The linux-builder enables nested virtualization so the guest gets a real `/dev/k
 just bootstrap <HOSTNAME>
 ```
 
+## Reusing individual Home Manager modules
+
+Other flakes can import selected files directly from this flake's source, for
+example `${inputs.nix-config}/nix/modules/home/programs/lazygit.nix` in a
+Home Manager `imports` list. No workstation configuration needs to be imported.
+The lazygit module installs delta alongside lazygit because its diff renderer
+uses it. Its Neovim remote editor preset still expects a configured `nvim` on
+PATH; `neovim.nix` provides the separate `nvim-nix` launcher described above.
+
 ## Host data
 
 Machine identity is kept out of this repo, so a work machine's host name, user and private config are never committed. Each machine has `~/.config/nix-config-host/default.nix`:
