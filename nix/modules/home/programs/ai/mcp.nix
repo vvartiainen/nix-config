@@ -10,6 +10,9 @@
   # Opt-in servers for the `ct agents` catalog (agents-catalog.nix); projects
   # enable them with `ct agents set mcp <name> enable`. Their commands end up
   # in committed project files, so they are names on PATH, not store paths.
+  # agent-sandbox's guests write the same `nixos` and `backlog-<project>`
+  # entries (its tests/vm-config.nix pins them); keep the two in step, or
+  # agents see two conflicting servers of one name.
   agents.mcpServers = {
     nixos.command = "mcp-nixos";
   }
