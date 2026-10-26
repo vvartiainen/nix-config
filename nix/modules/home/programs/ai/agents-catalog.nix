@@ -7,14 +7,6 @@
 let
   cfg = config.agents;
   rulesync = import ./rulesync.nix { inherit lib pkgs; };
-  targets = [
-    "codexcli"
-    "claudecode"
-    "opencode"
-    "cursor"
-    "copilotcli"
-    "pi"
-  ];
   # Generic skills that live in this repo; one directory per skill.
   skillsDir = ./skills;
   repoSkills = lib.optionalAttrs (builtins.pathExists skillsDir) (
@@ -55,21 +47,16 @@ in
     home.packages = [ rulesync ];
 
     # The `ct agents` catalog: everything a project can opt into. Choices live
-    # in each project's .cli-toolbox/, so no project paths are recorded here.
+    # outside the projects, so no project paths are recorded here, and agents
+    # get them through `ct agents launch`.
     xdg.configFile."cli-toolbox/agents/catalog.json".source =
       (pkgs.formats.json { }).generate "agents-catalog.json"
         {
           version = 1;
-          inherit targets;
           mcp = lib.mapAttrs (_: server: { type = "stdio"; } // server) cfg.mcpServers;
           sources = cfg.skillSources;
           # Interpolation copies path values into the store.
           localSkills = lib.mapAttrs (_: path: "${path}") (repoSkills // cfg.localSkills);
-          defaults = {
-            targets = lib.genAttrs targets (_: "enable");
-            mcp = { };
-            skills = { };
-          };
         };
   };
 }

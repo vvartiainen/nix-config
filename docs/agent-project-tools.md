@@ -1,33 +1,41 @@
 # Per-project MCP servers and skills
 
 MCP servers and skills are opt-in per project. Nix builds a catalog of
-everything available; `ct agents` (cli-toolbox) records each project's choices
-and generates the native files for Codex, Claude Code, OpenCode, Cursor,
-Copilot and Pi. See cli-toolbox's
-[agent tools guide](https://github.com/vvartiainen/cli-toolbox/blob/main/docs/agent-tools.md)
-for choices, ownership and conflicts.
+everything available; `ct agents` (cli-toolbox) records which ones each
+checkout uses, outside the checkout, and the agent commands start through
+`ct agents launch`, which hands them over as launch options. Nothing is written
+to the projects or to the agents' global configs, and what a project commits
+for its agents keeps working alongside. See cli-toolbox's
+[agent tools guide](https://github.com/vvartiainen/cli-toolbox/blob/main/docs/agent-tools.md).
 
 | Layer | Defined in | Reaches |
 |---|---|---|
 | Always on | `programs.mcp.servers` in `ai/mcp.nix` | Every project, through each CLI's global config |
 | Catalog | `agents.mcpServers`, `agents.skillSources`, `agents.localSkills` and `ai/skills/` (`ai/agents-catalog.nix`) | `~/.config/cli-toolbox/agents/catalog.json` |
-| Project choice | `.cli-toolbox/agents.json` (shared, committed) or personal choices in `~/.local/state/cli-toolbox/agents/` | That checkout only |
+| Project choice | `ct agents` or `ct tui` › Git › Agent tools | That checkout, via `~/.local/state/cli-toolbox/agents/` |
 
 The catalog holds `nixos` and one `backlog-<name>` server per backlog, with
-store-path commands. Project paths never enter this repository: choices live
-in each project.
+store-path commands.
 
 ```sh
-ct agents                              # pick choices interactively
-ct tui                                 # Git › Agent tools: see state, toggle, sync
-ct agents set mcp backlog-foo enable   # personal, kept outside the repo
-ct agents set mcp nixos enable --shared
-ct agents exclude enable               # keep generated files out of Git here
-ct agents sync --dry-run && ct agents sync
+ct agents                              # toggle choices interactively
+ct agents set mcp backlog-foo enable
+ct agents status
 ```
 
-Generated files contain store paths, so use `ct agents exclude enable` in
-repositories where they should not be committed, including this one.
+The `claude`, `codex`, `copilot` and `pi` zsh functions start the agent through
+`ct agents launch`:
+
+| Agent | MCP servers | Skills |
+|---|---|---|
+| Claude Code | yes (`ct-agents` plugin) | yes (`ct-agents:<skill>`) |
+| Codex | yes (`-c`) | no |
+| Copilot | yes | yes |
+| Pi | no | yes |
+| OpenCode, Cursor | no | no |
+
+Tools of catalog servers are allowed without prompting (`permissions.nix`); in
+Claude Code they are named `mcp__plugin_ct-agents_<server>__<tool>`.
 
 ## Skill library
 
@@ -36,6 +44,6 @@ repositories where they should not be committed, including this one.
 - Remote skills: add Rulesync sources to `agents.skillSources`, rebuild, then
   run `ct agents library install`.
 
-Then enable them per project with `ct agents set skills <name> enable` and sync.
+Then turn them on per project with `ct agents set skills <name> enable`.
 Servers dropped from `programs.mcp.servers` leave the global CLI configs on the
 next activation.

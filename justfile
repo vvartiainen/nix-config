@@ -174,6 +174,7 @@ cleanup-agent-config:
 
     edit "$HOME/.pi/agent/mcp.json" jq "$drop_stale"
     edit "$config_home/cursor/mcp.json" jq "$drop_stale"
+    edit "$HOME/.copilot/mcp-config.json" jq "$drop_stale"
     # Drop their [mcp_servers.*] tables and subtables; keep formatting.
     edit "$HOME/.codex/config.toml" awk '
       /^[[:space:]]*\[/ { skip = $0 ~ /^[[:space:]]*\[mcp_servers\."?(nixos"?[].]|backlog-)/ }
