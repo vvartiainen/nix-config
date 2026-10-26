@@ -11,7 +11,7 @@ for choices, ownership and conflicts.
 |---|---|---|
 | Always on | `programs.mcp.servers` in `ai/mcp.nix` | Every project, through each CLI's global config |
 | Catalog | `agents.mcpServers`, `agents.skillSources`, `agents.localSkills` and `ai/skills/` (`ai/agents-catalog.nix`) | `~/.config/cli-toolbox/agents/catalog.json` |
-| Project choice | `.cli-toolbox/agents.json` (shared) or `agents.local.json` (personal) | That checkout only |
+| Project choice | `.cli-toolbox/agents.json` (shared, committed) or personal choices in `~/.local/state/cli-toolbox/agents/` | That checkout only |
 
 The catalog holds `nixos` and one `backlog-<name>` server per backlog, with
 store-path commands. Project paths never enter this repository: choices live
@@ -20,7 +20,7 @@ in each project.
 ```sh
 ct agents                              # pick choices interactively
 ct tui                                 # Git › Agent tools: see state, toggle, sync
-ct agents set mcp backlog-foo enable   # personal, git-excluded
+ct agents set mcp backlog-foo enable   # personal, kept outside the repo
 ct agents set mcp nixos enable --shared
 ct agents exclude enable               # keep generated files out of Git here
 ct agents sync --dry-run && ct agents sync
