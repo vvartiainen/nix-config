@@ -6,8 +6,7 @@
   ...
 }:
 let
-  jsonFormat = pkgs.formats.json { };
-  jq = lib.getExe pkgs.jq;
+  mergeConfig = import ./merge-config.nix { inherit lib pkgs config; };
   permissions = import ./permissions.nix { inherit lib; };
 
   # Copilot CLI stores user-editable settings in settings.json and rewrites
@@ -68,8 +67,7 @@ let
     };
   };
 
-  staticSettings = jsonFormat.generate "github-copilot-cli-settings.json" settings;
-  staticLspSettings = jsonFormat.generate "github-copilot-cli-lsp.json" {
+  lspSettings = {
     lspServers.typescript = {
       # The mise shim execs /opt/homebrew/Cellar/mise, which the sandbox can't
       # read; the install's `latest` symlink stays within granted mise paths.
@@ -90,9 +88,7 @@ let
       };
     };
   };
-  staticPermissions = jsonFormat.generate "github-copilot-cli-permissions.json" {
-    locations.${repoRoot}.tool_approvals = [ { kind = "read"; } ];
-  };
+  permissionSettings.locations.${repoRoot}.tool_approvals = [ { kind = "read"; } ];
 
   # Copilot reads tool rules only from CLI flags.
   toolFlags =
@@ -108,6 +104,8 @@ in
 {
   programs.github-copilot-cli = {
     enable = true;
+    # Links the MCP servers from mcp.nix as mcp-config.json.
+    enableMcpIntegration = true;
     # The wrapper execs node, so the process is named `node` and herdr can't
     # detect Copilot. Exec node through a symlink named `copilot` instead;
     # macOS takes the process name from the exec'd path.
@@ -132,33 +130,21 @@ in
     }
   '';
 
-  home.activation.githubCopilotCliSettings = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-    merge_copilot_config() {
-      config_path="$1"
-      static_path="$2"
-      mkdir -p "$(dirname "$config_path")"
-      if [ -L "$config_path" ]; then
-        rm -f "$config_path"
-      fi
-      if [ ! -e "$config_path" ]; then
-        echo '{}' > "$config_path"
-      fi
-      if ! ${jq} -S '. * $static[0]' \
-        --slurpfile static "$static_path" \
-        "$config_path" > "$config_path.tmp" 2>/dev/null; then
-        ${jq} -S '.' "$static_path" > "$config_path.tmp"
-      fi
-      mv "$config_path.tmp" "$config_path"
+  home.activation.githubCopilotCliSettings = lib.hm.dag.entryAfter [ "linkGeneration" ] (
+    mergeConfig {
+      name = "github-copilot-cli-settings";
+      path = "${config.programs.github-copilot-cli.configDir}/settings.json";
+      inherit settings;
     }
-
-    merge_copilot_config \
-      "${config.programs.github-copilot-cli.configDir}/settings.json" \
-      ${staticSettings}
-    merge_copilot_config \
-      "${config.programs.github-copilot-cli.configDir}/lsp-config.json" \
-      ${staticLspSettings}
-    merge_copilot_config \
-      "${config.programs.github-copilot-cli.configDir}/permissions-config.json" \
-      ${staticPermissions}
-  '';
+    + mergeConfig {
+      name = "github-copilot-cli-lsp";
+      path = "${config.programs.github-copilot-cli.configDir}/lsp-config.json";
+      settings = lspSettings;
+    }
+    + mergeConfig {
+      name = "github-copilot-cli-permissions";
+      path = "${config.programs.github-copilot-cli.configDir}/permissions-config.json";
+      settings = permissionSettings;
+    }
+  );
 }

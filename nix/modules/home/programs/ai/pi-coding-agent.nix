@@ -1,4 +1,12 @@
-{ pkgs, ... }:
+{
+  lib,
+  pkgs,
+  config,
+  ...
+}:
+let
+  mergeConfig = import ./merge-config.nix { inherit lib pkgs config; };
+in
 {
   programs.pi-coding-agent = {
     enable = true;
@@ -7,7 +15,7 @@
     # available to both the package manager and extensions such as MCP.
     extraPackages = [ pkgs.nodejs ];
 
-    # MCP is built in and reads ~/.pi/agent/mcp.json (see mcp.nix).
+    # MCP is built in and reads ~/.pi/agent/mcp.json (see below).
     settings = {
       theme = "catppuccin-mocha";
       defaultProvider = "openai-codex";
@@ -35,4 +43,13 @@
 
   home.file.".pi/agent/themes/catppuccin-mocha.json".source =
     ../../../../../dotfiles/pi/themes/catppuccin-mocha.json;
+
+  # The MCP servers from mcp.nix.
+  home.activation.piMcpConfig = lib.hm.dag.entryAfter [ "linkGeneration" ] (mergeConfig {
+    name = "pi-mcp";
+    path = "${config.home.homeDirectory}/.pi/agent/mcp.json";
+    settings.mcpServers = lib.mapAttrs (
+      _: server: lib.hm.mcp.transformMcpServer { inherit server; }
+    ) config.programs.mcp.servers;
+  });
 }

@@ -5,8 +5,7 @@
   ...
 }:
 let
-  jsonFormat = pkgs.formats.json { };
-  jq = lib.getExe pkgs.jq;
+  mergeConfig = import ./merge-config.nix { inherit lib pkgs config; };
   permissions = import ./permissions.nix { inherit lib; };
   cursorConfigDir = "${config.xdg.configHome}/cursor";
 
@@ -33,8 +32,13 @@ let
     additionalReadonlyPaths = permissions.sandboxReadonlyPaths config;
   };
 
-  staticSettings = jsonFormat.generate "cursor-cli-config.json" settings;
-  staticSandbox = jsonFormat.generate "cursor-sandbox.json" sandboxSettings;
+  mcpSettings.mcpServers = lib.mapAttrs (
+    _: server:
+    lib.hm.mcp.transformMcpServer {
+      inherit server;
+      extraTransforms = [ lib.hm.mcp.addType ];
+    }
+  ) config.programs.mcp.servers;
 in
 {
   home = {
@@ -48,31 +52,22 @@ in
       '')
     ];
 
-    activation.cursorCliConfig = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-      merge_cursor_config() {
-        config_path="$1"
-        static_path="$2"
-        mkdir -p "$(dirname "$config_path")"
-        if [ -L "$config_path" ]; then
-          rm -f "$config_path"
-        fi
-        if [ ! -e "$config_path" ]; then
-          echo '{}' > "$config_path"
-        fi
-        if ! ${jq} -S '. * $static[0]' \
-          --slurpfile static "$static_path" \
-          "$config_path" > "$config_path.tmp" 2>/dev/null; then
-          ${jq} -S '.' "$static_path" > "$config_path.tmp"
-        fi
-        mv "$config_path.tmp" "$config_path"
+    activation.cursorCliConfig = lib.hm.dag.entryAfter [ "linkGeneration" ] (
+      mergeConfig {
+        name = "cursor-cli-config";
+        path = "${cursorConfigDir}/cli-config.json";
+        inherit settings;
       }
-
-      merge_cursor_config \
-        "${cursorConfigDir}/cli-config.json" \
-        ${staticSettings}
-      merge_cursor_config \
-        "${cursorConfigDir}/sandbox.json" \
-        ${staticSandbox}
-    '';
+      + mergeConfig {
+        name = "cursor-sandbox";
+        path = "${cursorConfigDir}/sandbox.json";
+        settings = sandboxSettings;
+      }
+      + mergeConfig {
+        name = "cursor-mcp";
+        path = "${cursorConfigDir}/mcp.json";
+        settings = mcpSettings;
+      }
+    );
   };
 }

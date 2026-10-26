@@ -5,43 +5,48 @@
   ...
 }:
 let
-  tomlFormat = pkgs.formats.toml { };
-  yq = lib.getExe pkgs.yq-go;
+  mergeConfig = import ./merge-config.nix { inherit lib pkgs config; };
   permissions = import ./permissions.nix { inherit lib; };
   commandRules = pkgs.writeText "codex-nix-config.rules" permissions.codexRules;
-  staticSettings = tomlFormat.generate "codex-config.toml" (
-    permissions.codexPermissions config
-    // {
-      shell_environment_policy.set = {
-        NIX_CACHE_HOME = "${config.home.homeDirectory}/.cache/nix-agent";
-        CARGO_HOME = "${config.xdg.cacheHome}/cargo-agent";
-      };
+  settings = permissions.codexPermissions config // {
+    shell_environment_policy.set = {
+      NIX_CACHE_HOME = "${config.home.homeDirectory}/.cache/nix-agent";
+      CARGO_HOME = "${config.xdg.cacheHome}/cargo-agent";
+    };
 
-      # Codex only supports built-in status line items (no custom command),
-      # so mirror claude-statusline.sh as closely as possible.
-      tui = {
-        theme = "catppuccin-mocha";
-        status_line_use_colors = true;
-        status_line = [
-          "model-with-reasoning"
-          "current-dir"
-          "git-branch"
-          "context-used"
-          "five-hour-limit"
-          "weekly-limit"
-          "estimated-thread-cost"
+    # Codex only supports built-in status line items (no custom command),
+    # so mirror claude-statusline.sh as closely as possible.
+    tui = {
+      theme = "catppuccin-mocha";
+      status_line_use_colors = true;
+      status_line = [
+        "model-with-reasoning"
+        "current-dir"
+        "git-branch"
+        "context-used"
+        "five-hour-limit"
+        "weekly-limit"
+        "estimated-thread-cost"
+      ];
+      keymap.global = {
+        open_transcript = [
+          "ctrl-o"
+          "ctrl-t"
         ];
-        keymap.global = {
-          open_transcript = [
-            "ctrl-o"
-            "ctrl-t"
-          ];
-          # Ctrl+O inspects output across the agent CLIs.
-          copy = "alt-y";
-        };
+        # Ctrl+O inspects output across the agent CLIs.
+        copy = "alt-y";
       };
-    }
-  );
+    };
+
+    mcp_servers = lib.mapAttrs (
+      _: server:
+      lib.hm.mcp.transformMcpServer { inherit server; }
+      // {
+        enabled = true;
+        default_tools_approval_mode = "approve";
+      }
+    ) config.programs.mcp.servers;
+  };
   profile = (permissions.codexPermissions config).default_permissions;
 in
 {
@@ -71,36 +76,20 @@ in
 
   # Codex writes project trust, MCP changes, and other runtime settings to
   # config.toml. Keep both it and the rules directory outside the Nix store.
-  # Replace the owned permission profile so removed grants do not survive a
-  # recursive merge. Other profiles and unrelated runtime settings persist.
-  home.activation.codexMutableConfig = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-    config_dir="${config.home.homeDirectory}/.codex"
-    config_path="$config_dir/config.toml"
-    rules_path="$config_dir/rules/nix-config.rules"
-
-    mkdir -p "$config_dir/rules"
-    if [ -L "$config_path" ]; then
-      config_tmp="$config_path.tmp"
-      cp -L "$config_path" "$config_tmp"
-      rm -f "$config_path"
-      mv "$config_tmp" "$config_path"
-    elif [ ! -e "$config_path" ]; then
-      touch "$config_path"
-    fi
-    chmod u+w "$config_path"
-
-    if ! ${yq} eval-all --exit-status \
-      --input-format toml \
-      --output-format toml \
-      '(select(fileIndex == 0) | del(.permissions."${profile}")) * select(fileIndex == 1)' \
-      "$config_path" ${staticSettings} > "$config_path.tmp" 2>/dev/null; then
-      cp ${staticSettings} "$config_path.tmp"
-    fi
-    mv "$config_path.tmp" "$config_path"
-
-    if [ -L "$rules_path" ]; then
-      rm -f "$rules_path"
-    fi
-    install -m 0644 ${commandRules} "$rules_path"
-  '';
+  home.activation.codexMutableConfig = lib.hm.dag.entryAfter [ "linkGeneration" ] (
+    mergeConfig {
+      name = "codex-config";
+      path = "${config.home.homeDirectory}/.codex/config.toml";
+      format = "toml";
+      inherit settings;
+    }
+    + ''
+      rules_path="${config.home.homeDirectory}/.codex/rules/nix-config.rules"
+      mkdir -p "$(dirname "$rules_path")"
+      if [ -L "$rules_path" ]; then
+        rm -f "$rules_path"
+      fi
+      install -m 0644 ${commandRules} "$rules_path"
+    ''
+  );
 }

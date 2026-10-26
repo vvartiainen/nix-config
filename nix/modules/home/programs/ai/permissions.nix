@@ -233,7 +233,7 @@ let
   ];
 
   # The MCP servers from mcp.nix, whose tools are allowed without prompting.
-  mcpServers = config: [ "nixos" ] ++ map (name: "backlog-${name}") config.backlog.projects;
+  mcpServers = config: lib.attrNames config.programs.mcp.servers;
 
   # Domains the agents may fetch pages from.
   fetchDomains = [
@@ -423,7 +423,8 @@ in
       ++ [ "Read(//nix/store/**)" ]
       # WebFetch allows also widen the Bash sandbox's network allowlist.
       ++ map (domain: "WebFetch(domain:${domain})") sandboxNetworkDomains
-      ++ map (name: "mcp__${name}__*") (mcpServers config);
+      # Home Manager serves these from its generated `hm` plugin.
+      ++ map (name: "mcp__plugin_hm_${name}__*") (mcpServers config);
     ask = map (cmd: "Bash(${commandString cmd}:*)") askCommands;
     deny =
       map (cmd: "Bash(${commandString cmd}:*)") deniedCommands

@@ -95,9 +95,10 @@ References:
 
 Native overrides live in Codex's `tui.keymap.global`, Pi's
 `~/.pi/agent/keybindings.json`, and OpenCode v2's
-`~/.config/opencode/cli.json`. Codex and OpenCode settings are merged into
-writable files on activation. The legacy OpenCode `tui.json` remains generated
-for compatibility. Claude, Copilot, and Cursor use their native defaults for
+`~/.config/opencode/cli.json`. Codex settings are merged into its writable
+config on activation; OpenCode loads its Nix settings as a separate Home
+Manager layer. The legacy OpenCode `tui.json` remains generated for
+compatibility. Claude, Copilot, and Cursor use their native defaults for
 the shared actions; general remapping is unconfirmed for Copilot and Cursor.
 
 After applying manually, check the bindings in Kitty through Herdr, including

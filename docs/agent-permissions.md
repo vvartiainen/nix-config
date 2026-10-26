@@ -79,6 +79,15 @@ agents from preferring scripts just to avoid prompts.
 - Cursor sandbox mode: `cursor-cli.nix`
 
 Copilot reads tool rules only from CLI flags, so a zsh wrapper adds them when
-a session starts. Copilot, Cursor, OpenCode, and Codex rewrite their own
-config files, so Nix merges its settings into them on activation instead of
-symlinking.
+a session starts. Claude, Copilot, Cursor, and Codex rewrite their own config
+files, so Nix merges its settings into them on activation instead of
+symlinking (`merge-config.nix`). The last applied settings are kept under
+`~/.local/state/nix-config/merged/`, so settings removed from Nix are removed
+from the files too. OpenCode loads its Nix settings as a separate Home Manager
+layer instead.
+
+MCP servers are declared once in `programs.mcp.servers` (`mcp.nix`). Claude
+Code, Copilot, and OpenCode get them through Home Manager's MCP integration,
+which keeps them in Nix-managed files; the others merge them as above. Claude
+Code serves them from a generated `hm` plugin, so their tools are named
+`mcp__plugin_hm_<server>__<tool>`.
