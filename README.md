@@ -107,6 +107,8 @@ Rosetta is required for `x86_64-linux` builds on the VZ linux-builder. The Xcode
 
 The linux-builder enables nested virtualization so the guest gets a real `/dev/kvm` and can run NixOS tests (`kvm` and `nixos-test` features). This needs an M3 or newer chip and macOS 15+; `nestedVirtualization` in the [host data](#host-data) turns nested virtualization and the `kvm`/`nixos-test` features off on older Macs. Only `aarch64-linux` guests are accelerated; `x86_64-linux` NixOS tests still fall back to slow emulation.
 
+The linux-builder does not start at boot. Run `just builder-start` before Linux builds and `just builder-stop` afterwards; an always-on VM can spin the host CPU after sleep/wake.
+
 ## Installation
 
 1. Install Nix (with flakes support):

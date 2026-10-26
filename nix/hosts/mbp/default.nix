@@ -75,4 +75,11 @@
       };
     };
   };
+
+  # Start the builder on demand (`just builder-start`). An always-on VM sits
+  # through host sleep/wake cycles and can spin the host CPU afterwards.
+  launchd.daemons.linux-builder.serviceConfig = {
+    KeepAlive = lib.mkForce false;
+    RunAtLoad = lib.mkForce false;
+  };
 }

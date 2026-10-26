@@ -83,6 +83,14 @@ switch host=host: require-host
     printf '%s\n' "${SKIP_HOMEBREW:-0}" | sudo tee /tmp/nix-darwin-skip-homebrew >/dev/null
     sudo darwin-rebuild switch --flake '{{ flake_ref }}#{{ host }}' {{ host_flags }}
 
+# Start the linux-builder VM.
+builder-start:
+    sudo launchctl kickstart system/org.nixos.linux-builder
+
+# Stop the linux-builder VM.
+builder-stop:
+    sudo launchctl kill SIGTERM system/org.nixos.linux-builder
+
 # Roll back to the previous nix-darwin generation.
 rollback:
     sudo darwin-rebuild switch --rollback
