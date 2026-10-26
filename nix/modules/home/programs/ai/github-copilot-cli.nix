@@ -30,7 +30,11 @@ let
         readonlyPaths = permissions.sandboxReadonlyPaths config ++ [
           "${config.programs.github-copilot-cli.configDir}/hooks"
         ];
-        readwritePaths = [ "${config.xdg.configHome}/herdr/herdr.sock" ];
+        readwritePaths = [
+          "${config.xdg.configHome}/herdr/herdr.sock"
+        ]
+        # The backlog MCP servers (`bl <project> mcp start`) edit tasks there.
+        ++ lib.optional (config.backlog.projects != [ ]) config.backlog.vault;
       };
     };
     footer = {
