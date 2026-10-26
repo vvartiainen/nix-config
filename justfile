@@ -128,7 +128,9 @@ gc:
 # Leftovers predate merge-config.nix tracking what Nix applied. Remove this
 # recipe once every machine has run it.
 # TEMPORARY: clean up old agent MCP config once, after `just switch`, CLIs closed.
-cleanup-agent-config:
+# Also clears earlier `ct agents` leftovers from the given repos (default: this one).
+[positional-arguments]
+cleanup-agent-config *repos:
     #!/usr/bin/env bash
     set -euo pipefail
     config_home=${XDG_CONFIG_HOME:-$HOME/.config}
@@ -188,6 +190,34 @@ cleanup-agent-config:
     edit "$config_home/opencode/cli.json" jq '
       del(."$schema", .theme.name, .keybinds."prompt.editor", .keybinds."session.first", .keybinds."model.list")
       | with_entries(select(.value != {}))'
+
+    # State of earlier `ct agents` versions: launch plugins or ownership
+    # records. The current version keeps locks/ instead.
+    state_home=${XDG_STATE_HOME:-$HOME/.local/state}
+    for dir in "$state_home"/cli-toolbox/agents/projects/*/; do
+      [[ -d $dir/launch || -f $dir/state.json ]] || continue
+      rm -rf "$dir"
+      echo "removed old ct agents state ${dir%/}"
+      changed=1
+    done
+
+    # Their files in repos: untracked personal choices and ownership, and the
+    # Git exclude lines for them and for generated files.
+    (( $# )) || set -- '{{ justfile_directory() }}'
+    for repo in "$@"; do
+      for file in .cli-toolbox/agents.local.json .cli-toolbox/agents.state.json; do
+        if [[ -f $repo/$file ]] && ! git -C "$repo" ls-files --error-unmatch "$file" >/dev/null 2>&1; then
+          rm "$repo/$file"
+          echo "removed $repo/$file"
+          changed=1
+        fi
+      done
+      rmdir "$repo/.cli-toolbox" 2>/dev/null || true
+      edit "$(git -C "$repo" rev-parse --path-format=absolute --git-path info/exclude)" awk '
+        /^# cli-toolbox agents: generated files$/ { skip = 1 }
+        !skip && $0 != "/.cli-toolbox/agents.local.json" && $0 != "/.cli-toolbox/agents.state.json"
+        /^# end cli-toolbox agents$/ { skip = 0 }'
+    done
 
     if [[ $changed == 0 ]]; then
       echo "nothing to clean"
