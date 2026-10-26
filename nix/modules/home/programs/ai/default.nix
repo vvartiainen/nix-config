@@ -1,6 +1,7 @@
 { ... }:
 {
   imports = [
+    ./agents-catalog.nix
     ./backlog.nix
     ./claude.nix
     ./claude-code.nix

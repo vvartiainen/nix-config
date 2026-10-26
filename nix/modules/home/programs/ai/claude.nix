@@ -13,6 +13,6 @@ in
   home.activation.claudeDesktopConfig = lib.hm.dag.entryAfter [ "linkGeneration" ] (mergeConfig {
     name = "claude-desktop-config";
     path = "${config.home.homeDirectory}/Library/Application Support/Claude/claude_desktop_config.json";
-    settings.mcpServers.nixos.command = config.programs.mcp.servers.nixos.command;
+    settings.mcpServers.nixos.command = config.agents.mcpServers.nixos.command;
   });
 }

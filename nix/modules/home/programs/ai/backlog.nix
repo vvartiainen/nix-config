@@ -64,7 +64,7 @@ in
       type = lib.types.listOf lib.types.str;
       # Machines have different backlogs, so the host data sets this.
       default = [ ];
-      description = "Backlogs: folder names in the vault. Each gets an MCP server in the agent CLIs (mcp.nix).";
+      description = "Backlogs: folder names in the vault. Each gets an opt-in MCP server in the ct agents catalog (mcp.nix).";
     };
   };
 

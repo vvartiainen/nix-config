@@ -12,7 +12,7 @@ Don't expect this to work out of the box for you, but feel free to borrow anythi
 - `nix/modules/shared/`: system-level modules that are not platform-specific (`nix`, `networking`)
 - `nix/modules/home/`: Home Manager user base and CLI program modules
   - `programs/`: one Home Manager module per program (`zsh`, `fzf`, `starship`, etc.)
-  - `programs/ai/`: AI CLI utilities (`cursor-cli`, `codex`, `opencode`, Copilot CLI, Pi) plus shared MCP servers (`programs.mcp`) and config merging
+  - `programs/ai/`: AI CLI utilities (`cursor-cli`, `codex`, `opencode`, Copilot CLI, Pi) plus always-on MCP servers (`programs.mcp`), the opt-in `ct agents` catalog, and config merging
 - `nix/modules/darwin/`: macOS system modules (`homebrew`, `system-settings`) and macOS HM programs
   - `programs/`: macOS-specific Home Manager modules (`yabai`, `skhd`, `sketchybar`, `onepassword`)
 - `dotfiles/`: actual config files for apps (`nvim`, `tmux`, `yabai`, `skhd`, etc.)
@@ -87,6 +87,8 @@ switched and the Homebrew package and live Neovim dotfile links removed.
 See the [keybinding guide](docs/agent-keybindings.md) for shared shortcuts and the comparison matrix.
 
 See the [permission guide](docs/agent-permissions.md) for command rules, sandboxes, and approval behavior.
+
+See the [project tools guide](docs/agent-project-tools.md) for per-project MCP servers and the skill library.
 
 ## Prerequisites
 
