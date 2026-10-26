@@ -272,6 +272,8 @@ let
   # uploads, so access to them needs approval. This is a host boundary, not
   # a guarantee against every possible data channel to an allowed service.
   sandboxNetworkDomains = [
+    # Nix's global flake registry, fetched to resolve `nixpkgs#…`.
+    "channels.nixos.org"
     "pypi.org"
     "files.pythonhosted.org"
     "index.crates.io"
