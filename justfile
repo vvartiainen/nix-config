@@ -132,24 +132,19 @@ cleanup-agent-config:
     #!/usr/bin/env bash
     set -euo pipefail
     config_home=${XDG_CONFIG_HOME:-$HOME/.config}
-    # Servers Nix manages now, from programs.mcp.
-    if [[ ! -f $config_home/mcp/mcp.json ]]; then
-      echo "No $config_home/mcp/mcp.json; run \`just switch\` first." >&2
+    # Projects opt into these servers with `ct agents` now.
+    if [[ ! -e $config_home/cli-toolbox/agents/catalog.json ]]; then
+      echo "No ct agents catalog; run \`just switch\` first." >&2
       exit 1
     fi
-    keep=$(jq -c '.mcpServers | keys' "$config_home/mcp/mcp.json")
     changed=0
 
-    # edit <file> <jq|awk> <program>: rewrite the file, back up if it changed.
+    # edit <file> <command...>: rewrite the file with the command, back up if it changed.
     edit() {
-      local file=$1 tool=$2 program=$3 tmp
+      local file=$1 tmp
       [[ -f $file && ! -L $file ]] || return 0
       tmp=$(mktemp "$file.XXXXXX")
-      if [[ $tool == awk ]]; then
-        awk -v keep=" $(jq -r 'join(" ")' <<<"$keep") " "$program" "$file" >"$tmp"
-      else
-        jq --argjson keep "$keep" "$program" "$file" >"$tmp"
-      fi
+      "${@:2}" "$file" >"$tmp"
       if cmp -s "$file" "$tmp"; then
         rm -f "$tmp"
         return 0
@@ -161,42 +156,34 @@ cleanup-agent-config:
       changed=1
     }
 
-    # Backlog servers whose project is no longer configured.
-    drop_stale='if .mcpServers then .mcpServers |= with_entries(select((.key | startswith("backlog-") | not) or (.key | IN($keep[])))) else . end'
+    # The servers Nix used to add to every CLI.
+    stale='.key == "nixos" or (.key | startswith("backlog-"))'
+    drop_stale="if .mcpServers then .mcpServers |= with_entries(select($stale | not)) else . end"
 
-    # Claude Code now gets the Nix servers from the generated `hm` plugin.
     claude_json=$HOME/.claude.json
-    claude_filter='(.key | IN($keep[])) or (.key | startswith("backlog-"))'
     if [[ -f $claude_json ]]; then
       if command -v claude >/dev/null; then
-        for name in $(jq -r --argjson keep "$keep" ".mcpServers // {} | to_entries[] | select($claude_filter) | .key" "$claude_json"); do
+        for name in $(jq -r ".mcpServers // {} | to_entries[] | select($stale) | .key" "$claude_json"); do
           claude mcp remove "$name" -s user
           changed=1
         done
       else
-        edit "$claude_json" jq "if .mcpServers then .mcpServers |= with_entries(select($claude_filter | not)) else . end"
+        edit "$claude_json" jq "$drop_stale"
       fi
     fi
 
     edit "$HOME/.pi/agent/mcp.json" jq "$drop_stale"
     edit "$config_home/cursor/mcp.json" jq "$drop_stale"
-    # Drop stale [mcp_servers.backlog-*] tables and subtables; keep formatting.
+    # Drop their [mcp_servers.*] tables and subtables; keep formatting.
     edit "$HOME/.codex/config.toml" awk '
-      /^[[:space:]]*\[/ {
-        skip = 0
-        if (match($0, /^[[:space:]]*\[mcp_servers\."?backlog-[^]".]*/)) {
-          name = substr($0, RSTART, RLENGTH)
-          sub(/^[[:space:]]*\[mcp_servers\."?/, "", name)
-          skip = index(keep, " " name " ") == 0
-        }
-      }
+      /^[[:space:]]*\[/ { skip = $0 ~ /^[[:space:]]*\[mcp_servers\."?(nixos"?[].]|backlog-)/ }
       !skip'
 
     # OpenCode loads these from the home-manager.json / cli layers now.
-    edit "$config_home/opencode/opencode.json" jq '
-      del(."$schema", .model, .lsp.typescript, .permission)
-      | if .mcp then .mcp |= with_entries(select((.key | IN($keep[])) or (.key | startswith("backlog-")) | not)) else . end
-      | with_entries(select(.value != {}))'
+    edit "$config_home/opencode/opencode.json" jq "
+      del(.\"\$schema\", .model, .lsp.typescript, .permission)
+      | if .mcp then .mcp |= with_entries(select($stale | not)) else . end
+      | with_entries(select(.value != {}))"
     edit "$config_home/opencode/cli.json" jq '
       del(."$schema", .theme.name, .keybinds."prompt.editor", .keybinds."session.first", .keybinds."model.list")
       | with_entries(select(.value != {}))'
