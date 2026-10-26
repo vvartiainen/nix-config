@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "backlog-cli-toolbox": {
+      "args": [
+        "cli-toolbox",
+        "mcp",
+        "start"
+      ],
+      "command": "bl"
+    },
+    "backlog-nix-config": {
+      "args": [
+        "nix-config",
+        "mcp",
+        "start"
+      ],
+      "command": "bl"
+    },
+    "nixos": {
+      "command": "mcp-nixos"
+    }
+  }
+}
