@@ -19,6 +19,7 @@ in each project.
 
 ```sh
 ct agents                              # pick choices interactively
+ct tui                                 # Git › Agent tools: see state, toggle, sync
 ct agents set mcp backlog-foo enable   # personal, git-excluded
 ct agents set mcp nixos enable --shared
 ct agents exclude enable               # keep generated files out of Git here
