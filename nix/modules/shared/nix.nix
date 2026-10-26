@@ -9,6 +9,9 @@ _: {
         "nix-command"
         "flakes"
       ];
+      # nix-darwin pins `nixpkgs` in the system registry to this flake's
+      # input. Skip the global registry so `nixpkgs#…` resolves offline.
+      flake-registry = "";
     };
 
     gc = {
