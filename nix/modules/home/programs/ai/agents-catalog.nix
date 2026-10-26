@@ -22,7 +22,7 @@ in
       default = { };
       description = ''
         Opt-in stdio MCP servers ({ command; args; env; }), enabled per project
-        with `ct agents`. Servers every project needs go in programs.mcp.servers.
+        with `ct agents`.
       '';
     };
     localSkills = lib.mkOption {

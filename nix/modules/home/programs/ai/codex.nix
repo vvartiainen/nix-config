@@ -37,15 +37,6 @@ let
         copy = "alt-y";
       };
     };
-
-    mcp_servers = lib.mapAttrs (
-      _: server:
-      lib.hm.mcp.transformMcpServer { inherit server; }
-      // {
-        enabled = true;
-        default_tools_approval_mode = "approve";
-      }
-    ) config.programs.mcp.servers;
   };
   profile = (permissions.codexPermissions config).default_permissions;
 in

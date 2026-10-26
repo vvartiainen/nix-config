@@ -86,8 +86,8 @@ symlinking (`nix/modules/home/merge-config.py`). The last applied settings are k
 from the files too. OpenCode loads its Nix settings as a separate Home Manager
 layer instead.
 
-MCP servers are declared once in `programs.mcp.servers` (`mcp.nix`). Claude
-Code, Copilot, and OpenCode get them through Home Manager's MCP integration,
-which keeps them in Nix-managed files; the others merge them as above. Claude
-Code serves them from a generated `hm` plugin, so their tools are named
-`mcp__plugin_hm_<server>__<tool>`.
+No MCP server is configured globally. Projects list theirs in each agent's
+project files through `ct agents` (see
+[agent-project-tools.md](agent-project-tools.md)); the catalog's servers
+(`mcp.nix`) have their tools allowed without prompting, in Claude Code as
+`mcp__<server>__<tool>`.

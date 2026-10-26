@@ -108,8 +108,6 @@ in
 {
   programs.github-copilot-cli = {
     enable = true;
-    # Links the MCP servers from mcp.nix as mcp-config.json.
-    enableMcpIntegration = true;
     # The wrapper execs node, so the process is named `node` and herdr can't
     # detect Copilot. Exec node through a symlink named `copilot` instead;
     # macOS takes the process name from the exec'd path.

@@ -7,11 +7,6 @@
 {
   home.packages = [ pkgs.mcp-nixos ];
 
-  # Stdio MCP servers every project gets, in every agent CLI. Each program
-  # module turns these into its own config, through Home Manager's MCP
-  # integration when it has one.
-  programs.mcp.enable = true;
-
   # Opt-in servers for the `ct agents` catalog (agents-catalog.nix); projects
   # enable them with `ct agents set mcp <name> enable`. Their commands end up
   # in committed project files, so they are names on PATH, not store paths.

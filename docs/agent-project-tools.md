@@ -10,7 +10,6 @@ cli-toolbox's
 
 | Layer | Defined in | Reaches |
 |---|---|---|
-| Always on | `programs.mcp.servers` in `ai/mcp.nix` (empty) | Every project, through each CLI's global config |
 | Catalog | `agents.mcpServers`, `agents.skillSources`, `agents.localSkills` and `ai/skills/` (`ai/agents-catalog.nix`) | `~/.config/cli-toolbox/agents/catalog.json` |
 | Project | `ct agents` or `ct tui` › Git › Agent tools | The project's committed agent files |
 

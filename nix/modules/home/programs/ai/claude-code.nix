@@ -120,9 +120,6 @@ in
 {
   programs.claude-code = {
     enable = true;
-    # MCP servers from mcp.nix go to a generated `hm` plugin, so their tools
-    # are named `mcp__plugin_hm_<server>__<tool>`.
-    enableMcpIntegration = true;
     # Global ~/.claude/CLAUDE.md; repo instructions add to or narrow these.
     context = ''
       # Global instructions

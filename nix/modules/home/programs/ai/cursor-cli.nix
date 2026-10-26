@@ -31,14 +31,6 @@ let
   sandboxSettings = {
     additionalReadonlyPaths = permissions.sandboxReadonlyPaths config;
   };
-
-  mcpSettings.mcpServers = lib.mapAttrs (
-    _: server:
-    lib.hm.mcp.transformMcpServer {
-      inherit server;
-      extraTransforms = [ lib.hm.mcp.addType ];
-    }
-  ) config.programs.mcp.servers;
 in
 {
   home = {
@@ -62,11 +54,6 @@ in
         name = "cursor-sandbox";
         path = "${cursorConfigDir}/sandbox.json";
         settings = sandboxSettings;
-      }
-      + mergeConfig {
-        name = "cursor-mcp";
-        path = "${cursorConfigDir}/mcp.json";
-        settings = mcpSettings;
       }
     );
   };

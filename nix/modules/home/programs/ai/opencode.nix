@@ -63,9 +63,8 @@ in
     package = null;
     # OpenCode updates opencode.json and cli.json through commands such as
     # `opencode mcp add`. Keep them app-owned; Home Manager loads these
-    # settings, including the MCP servers from mcp.nix, as separate layers.
+    # settings as separate layers.
     mutableSettings = true;
-    enableMcpIntegration = true;
     inherit settings;
     cli = cliSettings;
   };
