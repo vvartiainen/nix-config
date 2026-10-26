@@ -56,7 +56,8 @@ def load(path, fmt, default):
 def dump(value, fmt):
     if fmt == "toml":
         return tomli_w.dumps(value)
-    return json.dumps(value, indent=2, sort_keys=True) + "\n"
+    text = json.dumps(value, indent=2, sort_keys=True, ensure_ascii=False)
+    return text + "\n"
 
 
 def write(path, text, mode):
@@ -64,7 +65,7 @@ def write(path, text, mode):
     directory = os.path.dirname(path) or "."
     fd, tmp = tempfile.mkstemp(prefix=".merge-config-", dir=directory)
     try:
-        with os.fdopen(fd, "w") as f:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
             f.write(text)
         os.chmod(tmp, mode)
         os.replace(tmp, path)
