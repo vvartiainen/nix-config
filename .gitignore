@@ -1,5 +1,1 @@
-# Pre-host-input local overrides; kept ignored so leftover copies with
-# private host data can't be committed.
-local-config.nix
-*.local.nix
 result
