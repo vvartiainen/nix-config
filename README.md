@@ -156,7 +156,11 @@ Machine identity is kept out of this repo, so a work machine's host name, user a
   nestedVirtualization = true; # M3+ and macOS 15+
   # Private modules, e.g. work-only Zen containers or casks.
   darwinModules = [ ];
-  homeModules = [ ./zen-work.nix ];
+  homeModules = [
+    ./zen-work.nix
+    # Backlog.md folders in the Obsidian vault; each gets an agent MCP server.
+    { backlog.projects = [ "nix-config" ]; }
+  ];
 }
 ```
 
