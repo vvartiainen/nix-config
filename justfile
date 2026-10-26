@@ -124,3 +124,83 @@ clean:
 gc:
     sudo nix-collect-garbage
     nix-collect-garbage
+
+# Leftovers predate merge-config.nix tracking what Nix applied. Remove this
+# recipe once every machine has run it.
+# TEMPORARY: clean up old agent MCP config once, after `just switch`, CLIs closed.
+cleanup-agent-config:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    config_home=${XDG_CONFIG_HOME:-$HOME/.config}
+    # Servers Nix manages now, from programs.mcp.
+    if [[ ! -f $config_home/mcp/mcp.json ]]; then
+      echo "No $config_home/mcp/mcp.json; run \`just switch\` first." >&2
+      exit 1
+    fi
+    keep=$(jq -c '.mcpServers | keys' "$config_home/mcp/mcp.json")
+    changed=0
+
+    # edit <file> <jq|awk> <program>: rewrite the file, back up if it changed.
+    edit() {
+      local file=$1 tool=$2 program=$3 tmp
+      [[ -f $file && ! -L $file ]] || return 0
+      tmp=$(mktemp "$file.XXXXXX")
+      if [[ $tool == awk ]]; then
+        awk -v keep=" $(jq -r 'join(" ")' <<<"$keep") " "$program" "$file" >"$tmp"
+      else
+        jq --argjson keep "$keep" "$program" "$file" >"$tmp"
+      fi
+      if cmp -s "$file" "$tmp"; then
+        rm -f "$tmp"
+        return 0
+      fi
+      cp -p "$file" "$file.pre-cleanup"
+      chmod "$(stat -f %Lp "$file")" "$tmp"
+      mv "$tmp" "$file"
+      echo "cleaned $file (backup: $file.pre-cleanup)"
+      changed=1
+    }
+
+    # Backlog servers whose project is no longer configured.
+    drop_stale='if .mcpServers then .mcpServers |= with_entries(select((.key | startswith("backlog-") | not) or (.key | IN($keep[])))) else . end'
+
+    # Claude Code now gets the Nix servers from the generated `hm` plugin.
+    claude_json=$HOME/.claude.json
+    claude_filter='(.key | IN($keep[])) or (.key | startswith("backlog-"))'
+    if [[ -f $claude_json ]]; then
+      if command -v claude >/dev/null; then
+        for name in $(jq -r --argjson keep "$keep" ".mcpServers // {} | to_entries[] | select($claude_filter) | .key" "$claude_json"); do
+          claude mcp remove "$name" -s user
+          changed=1
+        done
+      else
+        edit "$claude_json" jq "if .mcpServers then .mcpServers |= with_entries(select($claude_filter | not)) else . end"
+      fi
+    fi
+
+    edit "$HOME/.pi/agent/mcp.json" jq "$drop_stale"
+    edit "$config_home/cursor/mcp.json" jq "$drop_stale"
+    # Drop stale [mcp_servers.backlog-*] tables and subtables; keep formatting.
+    edit "$HOME/.codex/config.toml" awk '
+      /^[[:space:]]*\[/ {
+        skip = 0
+        if (match($0, /^[[:space:]]*\[mcp_servers\."?backlog-[^]".]*/)) {
+          name = substr($0, RSTART, RLENGTH)
+          sub(/^[[:space:]]*\[mcp_servers\."?/, "", name)
+          skip = index(keep, " " name " ") == 0
+        }
+      }
+      !skip'
+
+    # OpenCode loads these from the home-manager.json / cli layers now.
+    edit "$config_home/opencode/opencode.json" jq '
+      del(."$schema", .model, .lsp.typescript, .permission)
+      | if .mcp then .mcp |= with_entries(select((.key | IN($keep[])) or (.key | startswith("backlog-")) | not)) else . end
+      | with_entries(select(.value != {}))'
+    edit "$config_home/opencode/cli.json" jq '
+      del(."$schema", .theme.name, .keybinds."prompt.editor", .keybinds."session.first", .keybinds."model.list")
+      | with_entries(select(.value != {}))'
+
+    if [[ $changed == 0 ]]; then
+      echo "nothing to clean"
+    fi
