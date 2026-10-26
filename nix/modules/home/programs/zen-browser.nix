@@ -13,6 +13,8 @@ let
   extensionShortcuts = {
     "addon@darkreader.org".addSite = "MacCtrl+Shift+D";
   };
+
+  mergeConfig = import ../merge-config.nix { inherit lib pkgs config; };
 in
 {
   # Work-specific containers, essentials and spaces go in the host data's
@@ -41,23 +43,28 @@ in
         requiresLock = true;
         skipSubject = "extension shortcuts";
         text = ''
-          file="${extensionSettings}"
-          if [ -d "$(dirname "$file")" ]; then
-            tmp="$(mktemp)"
-            { [ -f "$file" ] && cat "$file" || echo '{"version":3}'; } \
-              | ${lib.getExe pkgs.jq} --argjson shortcuts ${lib.escapeShellArg (builtins.toJSON extensionShortcuts)} '
-                  reduce ($shortcuts | to_entries[]) as $ext (.;
-                    reduce ($ext.value | to_entries[]) as $cmd (.;
-                      .commands[$cmd.key] = {
-                        precedenceList: [{
-                          id: $ext.key,
-                          installDate: 0,
-                          value: { shortcut: $cmd.value },
-                          enabled: true
-                        }]
-                      }))' > "$tmp"
-            run install -m 644 "$tmp" "$file"
-            rm -f "$tmp"
+          # The profile directory exists once Zen has created the profile.
+          if [ -d "$(dirname "${extensionSettings}")" ]; then
+            ${mergeConfig {
+              name = "zen-extension-shortcuts";
+              path = extensionSettings;
+              initial.version = 3;
+              settings.commands = lib.concatMapAttrs (
+                id:
+                lib.mapAttrs (
+                  _: shortcut: {
+                    precedenceList = [
+                      {
+                        inherit id;
+                        installDate = 0;
+                        value = { inherit shortcut; };
+                        enabled = true;
+                      }
+                    ];
+                  }
+                )
+              ) extensionShortcuts;
+            }}
           fi
         '';
       }

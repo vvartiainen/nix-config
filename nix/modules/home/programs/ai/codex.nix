@@ -5,7 +5,7 @@
   ...
 }:
 let
-  mergeConfig = import ./merge-config.nix { inherit lib pkgs config; };
+  mergeConfig = import ../../merge-config.nix { inherit lib pkgs config; };
   permissions = import ./permissions.nix { inherit lib; };
   commandRules = pkgs.writeText "codex-nix-config.rules" permissions.codexRules;
   settings = permissions.codexPermissions config // {

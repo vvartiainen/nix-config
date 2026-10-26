@@ -81,7 +81,7 @@ agents from preferring scripts just to avoid prompts.
 Copilot reads tool rules only from CLI flags, so a zsh wrapper adds them when
 a session starts. Claude, Copilot, Cursor, and Codex rewrite their own config
 files, so Nix merges its settings into them on activation instead of
-symlinking (`merge-config.nix`). The last applied settings are kept under
+symlinking (`nix/modules/home/merge-config.py`). The last applied settings are kept under
 `~/.local/state/nix-config/merged/`, so settings removed from Nix are removed
 from the files too. OpenCode loads its Nix settings as a separate Home Manager
 layer instead.

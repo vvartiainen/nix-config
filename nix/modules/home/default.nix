@@ -36,6 +36,7 @@ in
       gdu
       lnav
       statix
+      yq-go
     ];
   };
 

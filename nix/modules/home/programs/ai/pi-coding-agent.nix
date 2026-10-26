@@ -5,7 +5,7 @@
   ...
 }:
 let
-  mergeConfig = import ./merge-config.nix { inherit lib pkgs config; };
+  mergeConfig = import ../../merge-config.nix { inherit lib pkgs config; };
 in
 {
   programs.pi-coding-agent = {
