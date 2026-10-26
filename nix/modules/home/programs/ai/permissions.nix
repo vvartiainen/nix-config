@@ -426,8 +426,8 @@ in
       ++ [ "Read(//nix/store/**)" ]
       # WebFetch allows also widen the Bash sandbox's network allowlist.
       ++ map (domain: "WebFetch(domain:${domain})") sandboxNetworkDomains
-      # `ct agents launch` serves these from its `ct-agents` plugin.
-      ++ map (name: "mcp__plugin_ct-agents_${name}__*") (mcpServers config);
+      # Projects list these in .mcp.json (`ct agents sync`).
+      ++ map (name: "mcp__${name}__*") (mcpServers config);
     ask = map (cmd: "Bash(${commandString cmd}:*)") askCommands;
     deny =
       map (cmd: "Bash(${commandString cmd}:*)") deniedCommands

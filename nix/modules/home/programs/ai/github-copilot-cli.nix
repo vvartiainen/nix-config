@@ -118,15 +118,14 @@ in
     });
   };
 
-  # The flags break subcommands, so only add them when starting a session,
-  # with this repository's opt-in MCP servers and skills (agents-catalog.nix).
+  # The flags break subcommands, so only add them when starting a session.
   programs.zsh.initContent = ''
     copilot() {
       case "$1" in
         app|login|help|init|update|version|workflow|sessions|memories|plugin|mcp|skill|instruction|lsp|sandbox|completion)
           command copilot "$@" ;;
         *)
-          cli-toolbox agents launch copilot -- ${lib.escapeShellArgs toolFlags} "$@" ;;
+          command copilot ${lib.escapeShellArgs toolFlags} "$@" ;;
       esac
     }
   '';

@@ -13,6 +13,7 @@ in
   home.activation.claudeDesktopConfig = lib.hm.dag.entryAfter [ "linkGeneration" ] (mergeConfig {
     name = "claude-desktop-config";
     path = "${config.home.homeDirectory}/Library/Application Support/Claude/claude_desktop_config.json";
-    settings.mcpServers.nixos.command = config.agents.mcpServers.nixos.command;
+    # Apps launched from the Dock get no Nix PATH, so name the store path.
+    settings.mcpServers.nixos.command = lib.getExe pkgs.mcp-nixos;
   });
 }

@@ -132,13 +132,6 @@ in
     '';
   };
 
-  # Start with this repository's opt-in MCP servers and skills (agents-catalog.nix).
-  programs.zsh.initContent = ''
-    claude() {
-      cli-toolbox agents launch claude -- "$@"
-    }
-  '';
-
   home = {
     # claude ships no zsh completion; this one is derived from `--help` output.
     packages = [

@@ -57,8 +57,7 @@ in
   # A linked worktree's git dirs live in the main repo, outside the workspace,
   # and Codex keeps the gitdir read-only unless it's named exactly. Grant them
   # per launch. Config keys split on dots, so key the rule on the nearest
-  # dot-free ancestor and pass the git dirs as subpaths. Codex starts with this
-  # repository's opt-in MCP servers (agents-catalog.nix).
+  # dot-free ancestor and pass the git dirs as subpaths.
   programs.zsh.initContent = ''
     codex() {
       local git_dir common_dir base
@@ -68,9 +67,9 @@ in
         base=''${common_dir:h}
         while [[ $base == *.* ]]; do base=''${base:h}; done
         local c=''${common_dir#$base/} g=''${git_dir#$base/}
-        cli-toolbox agents launch codex -- -c "permissions.${profile}.filesystem.$base={\"$c\"=\"write\", \"$c/hooks\"=\"read\", \"$c/config\"=\"read\", \"$g\"=\"write\"}" "$@"
+        command codex -c "permissions.${profile}.filesystem.$base={\"$c\"=\"write\", \"$c/hooks\"=\"read\", \"$c/config\"=\"read\", \"$g\"=\"write\"}" "$@"
       else
-        cli-toolbox agents launch codex -- "$@"
+        command codex "$@"
       fi
     }
   '';

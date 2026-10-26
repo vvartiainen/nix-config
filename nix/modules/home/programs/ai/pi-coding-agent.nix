@@ -8,14 +8,6 @@ let
   mergeConfig = import ../../merge-config.nix { inherit lib pkgs config; };
 in
 {
-  # Start with this repository's opt-in skills (agents-catalog.nix). Pi takes
-  # no MCP servers at launch.
-  programs.zsh.initContent = ''
-    pi() {
-      cli-toolbox agents launch pi -- "$@"
-    }
-  '';
-
   programs.pi-coding-agent = {
     enable = true;
 
