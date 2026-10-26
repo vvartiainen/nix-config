@@ -53,12 +53,12 @@ in
       default = backlog;
       description = "The Backlog.md command.";
     };
-    # The agent backlogs are folders of an Obsidian vault in iCloud, so they
-    # sync to the phone. Each project folder is its own Backlog.md root.
+    # Each project folder is its own Backlog.md root. Where they live differs
+    # per machine (e.g. an Obsidian vault in iCloud), so the host data sets
+    # this; it is only read when projects are set.
     vault = lib.mkOption {
       type = lib.types.str;
-      default = "${config.home.homeDirectory}/Library/Mobile Documents/iCloud~md~obsidian/Documents/Agents";
-      description = "Obsidian vault that holds one folder per backlog.";
+      description = "Directory that holds one folder per backlog.";
     };
     projects = lib.mkOption {
       type = lib.types.listOf lib.types.str;
@@ -68,8 +68,5 @@ in
     };
   };
 
-  config.home.packages = [
-    cfg.package
-    bl
-  ];
+  config.home.packages = [ cfg.package ] ++ lib.optional (cfg.projects != [ ]) bl;
 }

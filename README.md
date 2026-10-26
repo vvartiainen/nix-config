@@ -158,8 +158,12 @@ Machine identity is kept out of this repo, so a work machine's host name, user a
   darwinModules = [ ];
   homeModules = [
     ./zen-work.nix
-    # Backlog.md folders in the Obsidian vault; each gets an agent MCP server.
-    { backlog.projects = [ "nix-config" ]; }
+  homeModules = [ ./zen-work.nix ];
+    # Backlog.md folders under vault; each gets an agent MCP server.
+    {
+      backlog.vault = "/Users/your-user/backlogs";
+      backlog.projects = [ "nix-config" ];
+    }
   ];
 }
 ```
