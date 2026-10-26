@@ -115,6 +115,7 @@
       "Keynote" = 361285480;
       "Numbers" = 361304891;
       "Pages" = 361309726;
+      "Tailscale" = 1475387142;
       "uBlock Origin Lite" = 6745342698;
       "WhatsApp" = 310633997;
       "Windows App" = 1295203466;
