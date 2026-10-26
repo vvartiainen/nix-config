@@ -1,6 +1,6 @@
 {
   "LazyVim": { "branch": "main", "commit": "999700997f72227187d49d8b92667183dc7fc809" },
-  "SchemaStore.nvim": { "branch": "main", "commit": "0065b39e82ce104b7d90ad1b9eb3670203bf26ea" },
+  "SchemaStore.nvim": { "branch": "main", "commit": "067b472f6dbc04520982acc9ab14f27c68195c70" },
   "async.nvim": { "branch": "main", "commit": "4182ab361c09ff251ac159c4a4110ec8e7723215" },
   "blink-copilot": { "branch": "main", "commit": "7ad8209b2f880a2840c94cdcd80ab4dc511d4f39" },
   "blink.cmp": { "branch": "main", "commit": "78336bc89ee5365633bcf754d93df01678b5c08f" },
@@ -66,6 +66,6 @@
   "vim-startuptime": { "branch": "master", "commit": "5f33e50f1e2e2a80370c9094e4c303ea54cd2aea" },
   "which-key.nvim": { "branch": "main", "commit": "3aab2147e74890957785941f0c1ad87d0a44c15a" },
   "yanky.nvim": { "branch": "main", "commit": "adcabd8512bead30184916fa9277e73c021ef099" },
-  "yazi.nvim": { "branch": "main", "commit": "969ef006fb8b6d3c1384eb6755c6d7060100837a" },
+  "yazi.nvim": { "branch": "main", "commit": "a14c5f09552fcdc66c5b16b74ac5525271cccd24" },
   "zig.vim": { "branch": "master", "commit": "1a1112eec20e28c832a06ddb1d0060f6ce652372" }
 }
