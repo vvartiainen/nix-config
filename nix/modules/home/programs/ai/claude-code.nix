@@ -98,10 +98,16 @@ let
       autoAllowBashIfSandboxed = true;
       # Go CLIs can't verify TLS under Seatbelt, so these run outside the
       # sandbox through the normal permission flow: allow rules run without
-      # prompting, deny rules still apply, everything else asks.
+      # prompting, deny rules still apply, everything else asks. Only Go's
+      # module downloads leave; builds and tests run project code.
       excludedCommands = [
         "gh *"
         "terraform *"
+        "go get *"
+        "go mod download"
+        "go mod download *"
+        "go mod tidy"
+        "go mod tidy *"
       ];
       # Would let Go tools reach trustd inside the sandbox, at the cost of a
       # possible exfiltration channel through it.

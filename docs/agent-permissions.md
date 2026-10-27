@@ -73,7 +73,7 @@ gets `sandboxNetworkDomains` instead of `fetchDomains` there.
 
 | CLI | Setting | Contents |
 |---|---|---|
-| Claude | `sandbox.excludedCommands` | `gh *`, `terraform *`: run outside the sandbox through the normal permission flow |
+| Claude | `sandbox.excludedCommands` | `gh *`, `terraform *`, `go get *`, `go mod download`, `go mod tidy`: run outside the sandbox through the normal permission flow |
 | Claude | `sandbox.filesystem.denyWrite` | `**/.git/hooks`, `**/.git/config` |
 | Claude | `sandbox.filesystem.allowRead` | The repo's `dotfiles/.npmrc`, which `~/.npmrc` links to |
 | Claude | `sandbox.network.allowUnixSockets` | Nix daemon socket |
@@ -91,7 +91,7 @@ gets `sandboxNetworkDomains` instead of `fetchDomains` there.
 | Writes | Workspace, agent caches | Working directory, `$TMPDIR`, agent caches | Workspace, agent caches | Working directory, temp, agent caches, dev-tool caches (`allowDevToolAccess`) |
 | Read-only in the workspace | `.git/hooks`, `.git/config` | `.git/hooks`, `.git/config` | — | — |
 | Network | `sandboxNetworkDomains`; other hosts ask for approval | `sandboxNetworkDomains`; other hosts prompt | `sandboxNetworkDomains` plus Cursor's default list | Open |
-| Unsandboxed | Approved escalations | `gh`, `terraform`, approved retries | Approved escapes | Approved bypasses |
+| Unsandboxed | Approved escalations | `gh`, `terraform`, Go module downloads, approved retries | Approved escapes | Approved bypasses |
 | Unix sockets | Nix daemon only | Nix daemon only | — | — |
 
 Git runs hooks and config outside the sandbox, so both are read-only to
@@ -158,8 +158,12 @@ sandbox: macOS certificate checks need `trustd`, which the sandbox blocks
 - `enableWeakerNetworkIsolation = true` would open `trustd` to the sandbox
   instead, at the cost of a possible exfiltration channel. It is explicitly
   off in `claude-code.nix`.
-- Sandboxed `go get` hits the same failure and needs an unsandboxed retry.
-  Builds and tests using modules already in `~/.cache/go-agent` work.
+- Go module downloads (`go get`, `go mod download`, `go mod tidy`) hit the
+  same failure, so Claude excludes them too. They aren't allowlisted, so they
+  prompt, and the agent cache env still puts modules in `~/.cache/go-agent`.
+  `go build` and `go test` stay sandboxed because they run project code;
+  they work with modules already in the cache, but a toolchain download
+  (`GOTOOLCHAIN=auto`) or a missing module still needs an unsandboxed retry.
 - Codex and Cursor have no exclusion list; a failing command goes through
   their escalation prompt. Copilot authenticates sandboxed `gh` through its
   masking proxy. Neither path is verified for the TLS failure.
