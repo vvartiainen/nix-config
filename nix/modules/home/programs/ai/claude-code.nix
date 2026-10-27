@@ -96,6 +96,16 @@ let
     sandbox = {
       enabled = true;
       autoAllowBashIfSandboxed = true;
+      # Go CLIs can't verify TLS under Seatbelt, so these run outside the
+      # sandbox through the normal permission flow: allow rules run without
+      # prompting, deny rules still apply, everything else asks.
+      excludedCommands = [
+        "gh *"
+        "terraform *"
+      ];
+      # Would let Go tools reach trustd inside the sandbox, at the cost of a
+      # possible exfiltration channel through it.
+      enableWeakerNetworkIsolation = false;
       filesystem = {
         allowWrite = (permissions.agentCaches config).writePaths;
         # Git hooks and config run outside the sandbox.
@@ -109,6 +119,9 @@ let
       };
       network = {
         allowedDomains = permissions.sandboxNetworkDomains;
+        # Other hosts prompt instead of failing (auto mode still refuses them
+        # unless the command declares the host).
+        strictAllowlist = false;
         # Let sandboxed nix commands reach the daemon; the user is not a
         # trusted nix user, so builds run unprivileged as nixbld.
         allowUnixSockets = [ "/nix/var/nix/daemon-socket/socket" ];

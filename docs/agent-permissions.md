@@ -50,7 +50,8 @@ without a prompt, but only inside the sandbox.
 | Reads | Denied outside the workspace, except tool paths and Codex's runtime set | Allowed everywhere except credential paths and `.env` files |
 | Writes | Workspace, agent caches | Working directory, `$TMPDIR`, agent caches |
 | Read-only in the workspace | `.git/hooks`, `.git/config` | `.git/hooks`, `.git/config` |
-| Network | `sandboxNetworkDomains` through the Codex proxy; other hosts ask for approval | `sandboxNetworkDomains` plus WebFetch-allowed domains |
+| Network | `sandboxNetworkDomains` through the Codex proxy; other hosts ask for approval | `sandboxNetworkDomains` plus WebFetch-allowed domains; other hosts prompt (refused in auto mode unless the command declares them) |
+| Unsandboxed | — | `gh`, `terraform` (`excludedCommands`), through the normal permission flow |
 | Unix sockets | Nix daemon only | Nix daemon only |
 
 Git runs hooks and config outside the sandbox, so both are read-only to
@@ -61,6 +62,15 @@ managers get their own writable caches under `~/.cache/<tool>-agent` instead
 (`agentCaches`): Nix, Cargo, Go (`GOCACHE`, `GOMODCACHE`), mise
 (`MISE_CACHE_DIR`) and npm (`npm_config_cache`). Only Codex and Claude set
 them. mise installs stay read-only; run `mise install` outside the sandbox.
+
+Go CLIs such as `gh` and `terraform` can't verify TLS under Claude's
+Seatbelt sandbox: macOS certificate checks need `trustd`, which the sandbox
+blocks. Claude runs them outside the sandbox instead, so allow rules (`gh pr
+view`, `terraform fmt`) run without prompting, deny rules (`gh auth`, `gh
+api`) still apply and everything else asks. `enableWeakerNetworkIsolation`
+would open `trustd` to the sandbox instead; it is explicitly off in
+`claude-code.nix`. Sandboxed `go get` hits the same TLS failure and needs an
+unsandboxed retry.
 
 Claude's sandbox can read most of the disk; the network allowlist limits where
 that data could go. Matching Codex would mean denying reads under `~` and

@@ -281,6 +281,8 @@ let
     "static.crates.io"
     "proxy.golang.org"
     "sum.golang.org"
+    # mise's version index; installs still run outside the sandbox.
+    "mise-versions.jdx.dev"
   ];
 
   # Sandboxed package managers get their own writable caches. Unsandboxed
