@@ -199,3 +199,90 @@ project files through `ct agents` (see
 [agent-project-tools.md](agent-project-tools.md)); the catalog's servers
 (`mcp.nix`) have their tools allowed without prompting, in Claude Code as
 `mcp__<server>__<tool>`.
+
+## Working in the sandboxes
+
+What an agent (or a person reading its transcript) should expect inside the
+Codex, Claude, Cursor, and Copilot sandboxes. A denial here is usually the
+boundary working, not a bug to work around.
+
+### What works
+
+- **Writes:** the workspace, `$TMPDIR`, and `~/.cache/<tool>-agent`. Use
+  `$TMPDIR` for scratch files, not `/tmp` or the home directory.
+- **Package caches:** Nix, Cargo, Go, mise, and npm already point at the
+  agent caches through env vars. Builds and tests that only need cached
+  dependencies run without prompts. The first build in a session's cache
+  downloads dependencies again.
+- **Network:** hosts in `sandboxNetworkDomains` (Nix registry, PyPI, crates
+  index, Go proxy and checksum DB, mise version index).
+- **Git:** status, diff, add, and commit. Hooks and `.git/config` are
+  read-only.
+- **Nix:** evaluation, and builds through the daemon after approval
+  (`nix build`, `just`).
+
+### What needs approval
+
+| Action | What happens |
+|---|---|
+| Other hosts (npm registry, GitHub, docs sites) | Codex and Claude prompt; in Claude's auto mode the command must declare the host |
+| `gh`, `terraform`, `go get`, `go mod download`, `go mod tidy` | Claude runs them outside the sandbox after a prompt unless an allow rule matches; other CLIs need an escalation |
+| `go build` or `go test` that downloads a toolchain or missing module | Escalation, because Go TLS fails in the sandbox |
+| `just`, `nix build`, `nix fmt`, `npm run`, `npx`, `cargo test`, `terraform validate` | Always prompt: they run project code or build outside the sandbox |
+| `mise install`, `mise trust` | Run outside the sandbox; `mise trust` is denied for agents, so ask the user |
+
+### What fails on purpose
+
+- Reading credentials: `~/.ssh`, `~/.aws`, `~/.gnupg`, `~/.config/gh`,
+  `~/.config/op`, `~/.netrc`, `~/.npmrc`, `.env` files, `*.pem`, `*.key`.
+- Writing the normal caches and tool installs: `~/Library/Caches`,
+  `~/.cache/<tool>`, `~/golang`, `~/.cargo`, `~/.npm`, `~/.local/share/mise`,
+  `~/.local/state/mise`.
+- `op`, `security`, `sudo`, `gh auth`, `gh api`, `darwin-rebuild`,
+  `just switch`, `git push --force`.
+- Interactive programs that need `/dev/tty` (lazygit, editors, pagers), and
+  `open` or `osascript` in Claude.
+
+### Error signatures
+
+| Error | Cause | Do instead |
+|---|---|---|
+| `Operation not permitted` on a write | Path outside the writable set | Write to the workspace or `$TMPDIR`; don't retarget caches |
+| `x509: OSStatus -26276` | Go TLS can't reach `trustd` in Seatbelt | Run the command outside the sandbox, or `go mod download` first |
+| `Forbidden`, `CONNECT tunnel failed, response 403` | Host not on the sandbox list | Request approval for that host |
+| `failed to copy trust settings of system certificate` | Same `trustd` block, printed by Node tools | Harmless when the command otherwise succeeds |
+| `device not configured` on `/dev/tty` | No terminal in the sandbox | Use a non-interactive flag (`--no-pager`, `-y`, `GIT_EDITOR=true`) |
+
+### Rules of thumb
+
+- Retry a failed command once, with escalation, only when the error matches
+  the sandbox; don't loop or try variants.
+- Don't work around a denial: no `sh -c` or absolute paths to dodge a
+  command rule, no `GOINSECURE`, `GONOSUMDB`, `GOPROXY=direct`, or
+  `NODE_TLS_REJECT_UNAUTHORIZED=0`, and no copying credentials into the
+  workspace.
+- Don't override the agent cache variables (`GOCACHE`, `GOMODCACHE`,
+  `CARGO_HOME`, `MISE_CACHE_DIR`, `npm_config_cache`, `NIX_CACHE_HOME`), or
+  `GOROOT`.
+- When something genuinely needs the user's access (installs, credentials,
+  applying the system config), stop and say what to run.
+
+### For AGENTS.md
+
+A short block for a project's `AGENTS.md`, pointing back here for details:
+
+```markdown
+## Agent sandbox
+
+Commands run in an OS sandbox (see nix-config `docs/agent-permissions.md`).
+
+- Writable: the workspace, `$TMPDIR`, and `~/.cache/<tool>-agent`; package
+  caches already point there. Use `$TMPDIR` for scratch files.
+- Network: package download hosts only; other hosts need approval.
+- `Operation not permitted`, `403`/`Forbidden`, or `x509: OSStatus -26276`
+  mean the sandbox blocked it: retry once with escalation or ask, don't try
+  variants or work around it.
+- Credentials (`~/.ssh`, `~/.aws`, `.env`, keys) and tool installs
+  (`mise install`) are off-limits; ask the user.
+- Avoid interactive commands; pass non-interactive flags.
+```
