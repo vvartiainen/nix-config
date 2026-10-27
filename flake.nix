@@ -34,6 +34,7 @@
     };
 
     # Per-machine identity, kept out of this repo; see nix/host-unset.
+    # TODO: Should probably be required in some default location instead of override in justfile?
     host = {
       url = "path:./nix/host-unset";
       flake = false;

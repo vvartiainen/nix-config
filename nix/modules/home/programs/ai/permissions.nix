@@ -279,7 +279,35 @@ let
     "files.pythonhosted.org"
     "index.crates.io"
     "static.crates.io"
+    "proxy.golang.org"
+    "sum.golang.org"
   ];
+
+  # Sandboxed package managers get their own writable caches. Unsandboxed
+  # builds trust the user's normal caches, so writes there would escape the
+  # sandbox.
+  agentCaches =
+    config:
+    let
+      dir = name: "${config.home.homeDirectory}/.cache/${name}-agent";
+    in
+    {
+      env = {
+        NIX_CACHE_HOME = dir "nix";
+        CARGO_HOME = dir "cargo";
+        GOCACHE = "${dir "go"}/build";
+        GOMODCACHE = "${dir "go"}/mod";
+        MISE_CACHE_DIR = dir "mise";
+        npm_config_cache = dir "npm";
+      };
+      writePaths = map dir [
+        "nix"
+        "cargo"
+        "go"
+        "mise"
+        "npm"
+      ];
+    };
 
   commandString = concatStringsSep " ";
 
@@ -323,7 +351,12 @@ let
   ];
 in
 {
-  inherit fetchDomains sandboxNetworkDomains sandboxReadonlyPaths;
+  inherit
+    agentCaches
+    fetchDomains
+    sandboxNetworkDomains
+    sandboxReadonlyPaths
+    ;
 
   # Codex sandboxes read the whole disk by default; deny everything outside
   # the workspace except Codex's runtime set and the tool paths above.
@@ -367,6 +400,7 @@ in
         // lib.genAttrs secretFilePatterns (_: "deny");
       }
       // lib.genAttrs (sandboxReadonlyPaths config) (_: "read")
+      // lib.genAttrs (agentCaches config).writePaths (_: "write")
       // (
         let
           home = config.home.homeDirectory;
@@ -388,13 +422,6 @@ in
           # Nix probes the socket before selecting the daemon store. The
           # network allowlist above permits connecting, not filesystem probes.
           "/nix/var/nix/daemon-socket/socket" = "read";
-
-          # Dependency sources must not poison the user's normal Cargo cache.
-          "${config.xdg.cacheHome}/cargo-agent" = "write";
-
-          # Match Claude Code's dedicated cache without granting writes to
-          # the user's normal Nix cache.
-          "${home}/.cache/nix-agent" = "write";
         }
       );
     };

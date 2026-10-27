@@ -9,10 +9,7 @@ let
   permissions = import ./permissions.nix { inherit lib; };
   commandRules = pkgs.writeText "codex-nix-config.rules" permissions.codexRules;
   settings = permissions.codexPermissions config // {
-    shell_environment_policy.set = {
-      NIX_CACHE_HOME = "${config.home.homeDirectory}/.cache/nix-agent";
-      CARGO_HOME = "${config.xdg.cacheHome}/cargo-agent";
-    };
+    shell_environment_policy.set = (permissions.agentCaches config).env;
 
     # Codex only supports built-in status line items (no custom command),
     # so mirror claude-statusline.sh as closely as possible.

@@ -37,6 +37,7 @@ OS sandbox, so its rules are the only boundary.
 | `fetchDomains` | Docs and registry sites the web-fetch tools may read |
 | `sandboxNetworkDomains` | Package download hosts sandboxed commands may reach; upload-capable registries are excluded |
 | `sandboxReadonlyPaths` | Tool paths outside the sandboxes' built-in grants (`/nix/store`, mise, Homebrew, git config) |
+| `agentCaches` | Separate writable package manager caches and the env vars pointing tools at them |
 
 Prefix denies are not a hard boundary: `sh -c '…'` or an absolute path does
 not match them. With sandboxed commands auto-approved, those forms now run
@@ -47,14 +48,19 @@ without a prompt, but only inside the sandbox.
 | | Codex | Claude |
 |---|---|---|
 | Reads | Denied outside the workspace, except tool paths and Codex's runtime set | Allowed everywhere except credential paths and `.env` files |
-| Writes | Workspace, `~/.cache/nix-agent`, `~/.cache/cargo-agent` | Working directory, `$TMPDIR`, `~/.cache/nix-agent` |
+| Writes | Workspace, agent caches | Working directory, `$TMPDIR`, agent caches |
 | Read-only in the workspace | `.git/hooks`, `.git/config` | `.git/hooks`, `.git/config` |
 | Network | `sandboxNetworkDomains` through the Codex proxy; other hosts ask for approval | `sandboxNetworkDomains` plus WebFetch-allowed domains |
 | Unix sockets | Nix daemon only | Nix daemon only |
 
 Git runs hooks and config outside the sandbox, so both are read-only to
-prevent an escape. Sandboxed Nix uses `~/.cache/nix-agent` instead of the
-normal Nix cache, and builds run unprivileged through the daemon.
+prevent an escape. Nix builds run unprivileged through the daemon.
+
+Unsandboxed builds trust the user's normal caches, so sandboxed package
+managers get their own writable caches under `~/.cache/<tool>-agent` instead
+(`agentCaches`): Nix, Cargo, Go (`GOCACHE`, `GOMODCACHE`), mise
+(`MISE_CACHE_DIR`) and npm (`npm_config_cache`). Only Codex and Claude set
+them. mise installs stay read-only; run `mise install` outside the sandbox.
 
 Claude's sandbox can read most of the disk; the network allowlist limits where
 that data could go. Matching Codex would mean denying reads under `~` and
