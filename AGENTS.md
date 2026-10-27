@@ -30,6 +30,23 @@ The hostname is selected automatically, you should only need `just build` withou
 
 Host identity comes from `~/.config/nix-config-host` through the `host` flake input (see README "Host data"). Never commit host names, usernames or work-specific config to this repo. New files must be `git add`ed before a build sees them.
 
+## Agent sandbox
+
+Commands run in an OS sandbox (see `docs/agent-permissions.md`, "Working in
+the sandboxes").
+
+- Writable: the workspace, `$TMPDIR`, and `~/.cache/<tool>-agent`; package
+  caches already point there. Use `$TMPDIR` for scratch files.
+- Network: package download hosts only; other hosts need approval. `just`
+  recipes always prompt, and a build that fetches flake inputs from GitHub
+  needs `github.com` approved.
+- `Operation not permitted`, `403`/`Forbidden`, or `x509: OSStatus -26276`
+  mean the sandbox blocked it: retry once with escalation or ask, don't try
+  variants or work around it.
+- Credentials (`~/.ssh`, `~/.aws`, `.env`, keys) and tool installs
+  (`mise install`) are off-limits; ask the user.
+- Avoid interactive commands; pass non-interactive flags.
+
 ## Validation in a restricted agent session
 
 - Try the normal `just` recipes first. A missing-file result for private host
