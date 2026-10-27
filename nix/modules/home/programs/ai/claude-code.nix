@@ -144,6 +144,9 @@ in
 
       - Never add trailers to git commit messages or PR descriptions, such as
         Co-Authored-By or Claude-Session.
+      - In Bash commands, avoid shell variables, `$(...)` and backticks: Claude
+        Code can't check them against permission rules and prompts. Use literal
+        absolute paths and split dependent steps into separate tool calls.
     '';
   };
 

@@ -230,6 +230,7 @@ boundary working, not a bug to work around.
 | `go build` or `go test` that downloads a toolchain or missing module | Escalation, because Go TLS fails in the sandbox |
 | `just`, `nix build`, `nix fmt`, `npm run`, `npx`, `cargo test`, `terraform validate` | Always prompt: they run project code or build outside the sandbox |
 | `mise install`, `mise trust` | Run outside the sandbox; `mise trust` is denied for agents, so ask the user |
+| Claude commands with `$VAR`, `$(...)` or backticks | Prompt ("A variable in this command can't be checked"), since the expansion could match an ask or excluded command; the global `CLAUDE.md` tells Claude to use literal paths instead |
 
 ### What fails on purpose
 
