@@ -232,6 +232,10 @@ let
     "**/*.key"
   ];
 
+  # homeSecretPaths as plain paths, for sandboxes that don't take globs.
+  sandboxDeniedPaths =
+    config: map (path: "${config.home.homeDirectory}/${lib.removeSuffix "/**" path}") homeSecretPaths;
+
   # The catalog's MCP servers (mcp.nix), whose tools are allowed without
   # prompting where a project turns them on.
   mcpServers = config: lib.attrNames config.agents.mcpServers;
@@ -356,6 +360,7 @@ in
   inherit
     agentCaches
     fetchDomains
+    sandboxDeniedPaths
     sandboxNetworkDomains
     sandboxReadonlyPaths
     ;

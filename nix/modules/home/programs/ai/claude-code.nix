@@ -92,7 +92,7 @@ let
       # prompts; ask rules and sandbox escapes still prompt.
       defaultMode = "acceptEdits";
     };
-    env = (permissions.agentCaches config).env;
+    inherit (permissions.agentCaches config) env;
     sandbox = {
       enabled = true;
       autoAllowBashIfSandboxed = true;

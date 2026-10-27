@@ -33,9 +33,15 @@ let
         readwritePaths = [
           "${config.xdg.configHome}/herdr/herdr.sock"
         ]
+        # allowDevToolAccess grants a moved cache instead of its default
+        # location, but only to its own ecosystem; mise has none.
+        ++ (permissions.agentCaches config).writePaths
         # The backlog MCP servers (`bl <project> mcp start`) edit tasks there.
         ++ lib.optional (config.backlog.projects != [ ]) config.backlog.vault;
+        deniedPaths = permissions.sandboxDeniedPaths config;
       };
+      # No allowedHosts: a non-empty list blocks other hosts without a
+      # prompt, and Copilot already prompts for every unlisted command.
     };
     footer = {
       showModelEffort = true;
@@ -104,6 +110,12 @@ let
       "--deny-tool"
       tool
     ]) (permissions.copilot config).denyTools;
+
+  cacheEnv = lib.concatStringsSep " " (
+    lib.mapAttrsToList (name: value: "${name}=${lib.escapeShellArg value}") (
+      permissions.agentCaches config
+    ).env
+  );
 in
 {
   programs.github-copilot-cli = {
@@ -121,13 +133,14 @@ in
   };
 
   # The flags break subcommands, so only add them when starting a session.
+  # Sessions also get the agent caches; Copilot has no env setting.
   programs.zsh.initContent = ''
     copilot() {
       case "$1" in
         app|login|help|init|update|version|workflow|sessions|memories|plugin|mcp|skill|instruction|lsp|sandbox|completion)
           command copilot "$@" ;;
         *)
-          command copilot ${lib.escapeShellArgs toolFlags} "$@" ;;
+          ${cacheEnv} command copilot ${lib.escapeShellArgs toolFlags} "$@" ;;
       esac
     }
   '';

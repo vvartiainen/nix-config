@@ -19,7 +19,9 @@ let
     };
     sandbox = {
       mode = "enabled";
+      # The allowlist below plus Cursor's defaults.
       networkAccess = "user_config_with_defaults";
+      networkAllowlist = permissions.sandboxNetworkDomains;
     };
     attribution = {
       attributeCommitsToAgent = false;
@@ -30,19 +32,31 @@ let
 
   sandboxSettings = {
     additionalReadonlyPaths = permissions.sandboxReadonlyPaths config;
+    additionalReadwritePaths = (permissions.agentCaches config).writePaths;
+  };
+
+  # Cursor has no env setting, so its binary sets the agent caches.
+  cursorCli = pkgs.symlinkJoin {
+    name = "cursor-cli-agent-caches";
+    paths = [ pkgs.cursor-cli ];
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      wrapProgram $out/bin/cursor-agent ${
+        lib.concatStringsSep " " (
+          lib.mapAttrsToList (name: value: "--set ${name} ${lib.escapeShellArg value}") (
+            permissions.agentCaches config
+          ).env
+        )
+      }
+      ln -s $out/bin/cursor-agent $out/bin/agent
+    '';
   };
 in
 {
   home = {
     sessionVariables.CURSOR_CONFIG_DIR = cursorConfigDir;
 
-    packages = [
-      pkgs.cursor-cli
-      (pkgs.runCommand "cursor-cli-agent" { } ''
-        mkdir -p $out/bin
-        ln -s ${lib.getExe pkgs.cursor-cli} $out/bin/agent
-      '')
-    ];
+    packages = [ cursorCli ];
 
     activation.cursorCliConfig = lib.hm.dag.entryAfter [ "linkGeneration" ] (
       mergeConfig {
