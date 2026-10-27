@@ -100,9 +100,12 @@ let
   };
   permissionSettings.locations.${repoRoot}.tool_approvals = [ { kind = "read"; } ];
 
-  # Copilot reads tool rules only from CLI flags.
-  toolFlags =
-    lib.concatMap (tool: [
+  # Copilot reads tool rules only from CLI flags. MCP servers come from the
+  # projects (`ct agents`), not the built-in GitHub ones.
+  toolFlags = [
+    "--disable-builtin-mcps"
+  ]
+  ++ lib.concatMap (tool: [
       "--allow-tool"
       tool
     ]) (permissions.copilot config).allowTools

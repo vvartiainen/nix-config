@@ -10,6 +10,22 @@ let
   commandRules = pkgs.writeText "codex-nix-config.rules" permissions.codexRules;
   settings = permissions.codexPermissions config // {
     shell_environment_policy.set = (permissions.agentCaches config).env;
+    # MCP servers come from the projects (`ct agents`), not ChatGPT apps.
+    features.apps = false;
+    # Bundled plugins start off. One enabled in Codex stays on until the next
+    # switch; drop it from this list to keep it.
+    plugins = lib.genAttrs [
+      "codex-app-tools@openai-bundled"
+      "browser@openai-bundled"
+      "unified-computer-use@openai-bundled"
+      "computer-use@openai-bundled"
+      "visualize@openai-bundled"
+      "documents@openai-primary-runtime"
+      "pdf@openai-primary-runtime"
+      "spreadsheets@openai-primary-runtime"
+      "presentations@openai-primary-runtime"
+      "template-creator@openai-primary-runtime"
+    ] (_: { enabled = false; });
 
     # Codex only supports built-in status line items (no custom command),
     # so mirror claude-statusline.sh as closely as possible.

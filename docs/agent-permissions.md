@@ -198,7 +198,14 @@ No MCP server is configured globally. Projects list theirs in each agent's
 project files through `ct agents` (see
 [agent-project-tools.md](agent-project-tools.md)); the catalog's servers
 (`mcp.nix`) have their tools allowed without prompting, in Claude Code as
-`mcp__<server>__<tool>`.
+`mcp__<server>__<tool>`. The CLIs' own servers are off: Claude's claude.ai
+connectors (`disableClaudeAiConnectors`), Codex's ChatGPT apps
+(`features.apps`) and bundled plugins (`plugins.<name>.enabled`), and
+Copilot's GitHub servers (`--disable-builtin-mcps`). A Codex plugin enabled
+by hand stays on until the next switch; remove it from `codex.nix` to keep
+it.
+The Claude desktop app delivers its connectors itself; disconnect them at
+claude.ai.
 
 ## Working in the sandboxes
 

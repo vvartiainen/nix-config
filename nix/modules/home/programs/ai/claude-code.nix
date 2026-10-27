@@ -93,6 +93,8 @@ let
       defaultMode = "acceptEdits";
     };
     inherit (permissions.agentCaches config) env;
+    # MCP servers come from the projects (`ct agents`), not claude.ai.
+    disableClaudeAiConnectors = true;
     sandbox = {
       enabled = true;
       autoAllowBashIfSandboxed = true;
