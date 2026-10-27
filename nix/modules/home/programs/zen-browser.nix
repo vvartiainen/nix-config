@@ -90,6 +90,15 @@ in
       "https://outlook.cloud.microsoft"
     ];
 
+    # Cookie protection drops the session cookies set during the Microsoft SSO redirects, causing the same login loop.
+    policies.Cookies.Allow = [
+      "https://login.microsoftonline.com"
+      "https://login.live.com"
+      "https://outlook.office.com"
+      "https://outlook.cloud.microsoft"
+      "https://office.com"
+    ];
+
     profiles.default = {
       id = 0;
       isDefault = true;
