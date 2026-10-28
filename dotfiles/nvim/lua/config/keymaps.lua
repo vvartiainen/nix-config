@@ -16,8 +16,10 @@ vim.api.nvim_set_keymap("s", "€", "$", { silent = true, desc = "End of line" }
 vim.api.nvim_set_keymap("v", "€", "$", { silent = true, desc = "End of line" })
 
 -- ä and ö for easier next function/method/etc navigation
-vim.api.nvim_set_keymap("n", "ä", "]", {})
-vim.api.nvim_set_keymap("n", "ö", "[", {})
+-- The key after [ or ] is read unmapped, so the pairs need their own mappings
+for lhs, rhs in pairs({ ["ä"] = "]", ["ö"] = "[", ["ää"] = "]]", ["öö"] = "[[", ["äö"] = "][", ["öä"] = "[]" }) do
+  vim.keymap.set({ "n", "x", "o" }, lhs, rhs, { remap = true })
+end
 
 -- floating terminal toggle
 -- vim.keymap.set("n", "<C-t>", function()
