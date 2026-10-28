@@ -10,6 +10,7 @@ let
 
   settings = {
     model = "openai/gpt-6.1-sol";
+    provider.openai.models."gpt-6.1-sol".options.reasoningEffort = "medium";
     lsp.typescript = {
       command = [
         "${config.xdg.dataHome}/mise/shims/tsc"

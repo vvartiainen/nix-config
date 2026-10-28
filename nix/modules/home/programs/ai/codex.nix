@@ -9,6 +9,9 @@ let
   permissions = import ./permissions.nix { inherit lib; };
   commandRules = pkgs.writeText "codex-nix-config.rules" permissions.codexRules;
   settings = permissions.codexPermissions config // {
+    model = "gpt-6.1-sol";
+    model_reasoning_effort = "medium";
+    plan_mode_reasoning_effort = "high";
     shell_environment_policy.set = (permissions.agentCaches config).env;
     # MCP servers come from the projects (`ct agents`), not ChatGPT apps.
     features.apps = false;
