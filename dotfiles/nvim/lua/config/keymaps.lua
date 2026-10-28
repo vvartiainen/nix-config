@@ -15,9 +15,20 @@ vim.api.nvim_set_keymap("x", "€", "$", { silent = true, desc = "End of line" }
 vim.api.nvim_set_keymap("s", "€", "$", { silent = true, desc = "End of line" })
 vim.api.nvim_set_keymap("v", "€", "$", { silent = true, desc = "End of line" })
 
--- ä and ö for easier next function/method/etc navigation
+-- ä and ö for easier next function/method/etc navigation, Ä and Ö for } and {
 -- The key after [ or ] is read unmapped, so the pairs need their own mappings
-for lhs, rhs in pairs({ ["ä"] = "]", ["ö"] = "[", ["ää"] = "]]", ["öö"] = "[[", ["äö"] = "][", ["öä"] = "[]" }) do
+for lhs, rhs in pairs({
+  ["ä"] = "]",
+  ["ö"] = "[",
+  ["ää"] = "]]",
+  ["öö"] = "[[",
+  ["äö"] = "][",
+  ["öä"] = "[]",
+  ["Ä"] = "}",
+  ["Ö"] = "{",
+  ["äÄ"] = "]}",
+  ["öÖ"] = "[{",
+}) do
   vim.keymap.set({ "n", "x", "o" }, lhs, rhs, { remap = true })
 end
 

@@ -50,7 +50,7 @@
             "<ctrl+d>"
             "<ctrl+f>"
           ];
-          # ö and ä match the nvim [ and ] mappings on the Finnish layout
+          # ö/ä and Ö/Ä match the nvim [ ] and { } mappings on the Finnish layout
           prevTab = [
             "["
             "ö"
@@ -58,6 +58,14 @@
           nextTab = [
             "]"
             "ä"
+          ];
+          decreaseContextInDiffView = [
+            "{"
+            "Ö"
+          ];
+          increaseContextInDiffView = [
+            "}"
+            "Ä"
           ];
         };
         # Files panel defaults would shadow the ctrl+f/ctrl+b scrolling above
