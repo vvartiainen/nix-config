@@ -22,9 +22,19 @@
         editPreset = "nvim-remote";
       };
 
+      # Updates come through nix
+      update.method = "never";
+      promptToReturnFromSubprocess = false;
+
       gui = {
         switchTabsWithPanelJumpKeys = true;
         showDivergenceFromBaseBranch = "arrowAndNumber";
+        nerdFontsVersion = "3";
+        showNumstatInFilesView = true;
+        expandFocusedSidePanel = true;
+        shrinkSidePanelsToContent = true;
+        showCommandLog = false;
+        showRandomTip = false;
         theme = {
           activeBorderColor = [
             "#fab387"
