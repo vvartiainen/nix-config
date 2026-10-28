@@ -15,6 +15,8 @@ let
     shell_environment_policy.set = (permissions.agentCaches config).env;
     # MCP servers come from the projects (`ct agents`), not ChatGPT apps.
     features.apps = false;
+    # Skills come from the projects too, not the bundled system skills.
+    skills.bundled.enabled = false;
     # Bundled plugins start off. One enabled in Codex stays on until the next
     # switch; drop it from this list to keep it.
     plugins = lib.genAttrs [

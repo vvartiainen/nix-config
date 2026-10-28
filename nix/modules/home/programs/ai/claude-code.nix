@@ -95,6 +95,27 @@ let
     inherit (permissions.agentCaches config) env;
     # MCP servers come from the projects (`ct agents`), not claude.ai.
     disableClaudeAiConnectors = true;
+    # Skills and plugins come from the projects too: nothing syncs from
+    # claude.ai, and bundled skills stay out of context but typable with `/`.
+    # disableBundledSkills would also drop the artifact skills, which stay on.
+    syncClaudeAiPlugins = false;
+    syncClaudeAiSkills = false;
+    skillOverrides = lib.genAttrs [
+      "claude-api"
+      "claude-in-chrome"
+      "code-review"
+      "dataviz"
+      "fewer-permission-prompts"
+      "init"
+      "keybindings-help"
+      "loop"
+      "plugin-authoring"
+      "run"
+      "schedule"
+      "security-review"
+      "simplify"
+      "update-config"
+    ] (_: "user-invocable-only");
     sandbox = {
       enabled = true;
       autoAllowBashIfSandboxed = true;

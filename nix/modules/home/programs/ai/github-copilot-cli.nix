@@ -56,7 +56,11 @@ let
     };
     includeCoAuthoredBy = false;
     allowedUrls = permissions.fetchDomains;
-    disabledSkills = [ ];
+    # Skills come from the projects (`ct agents`), not the built-in ones.
+    disabledSkills = [
+      "customize-cloud-agent"
+      "github-pr-media"
+    ];
     theme = "github";
     beep = true;
     notifications = true;

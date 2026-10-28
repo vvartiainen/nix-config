@@ -207,6 +207,15 @@ it.
 The Claude desktop app delivers its connectors itself; disconnect them at
 claude.ai.
 
+Built-in skills are off as well. Claude syncs no plugins or skills from
+claude.ai (`syncClaudeAiPlugins`, `syncClaudeAiSkills`), and its bundled
+skills other than `artifact-*` are `user-invocable-only` through
+`skillOverrides`: hidden from the model, still typable with `/`. Bundled skills
+added in a newer Claude Code release are on until they're listed there. Codex
+turns off its system skills (`skills.bundled.enabled`), and Copilot lists its
+built-in skills in `disabledSkills`. Cursor syncs its built-in skills into
+`~/.cursor/skills-cursor` and has no setting that turns them off.
+
 ## Working in the sandboxes
 
 What an agent (or a person reading its transcript) should expect inside the
