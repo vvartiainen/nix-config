@@ -1,8 +1,46 @@
 {
+  config,
+  lib,
   userName,
   ...
 }:
+let
+  homeDir = config.users.users.${userName}.home;
+
+  # Caches, toolchains and VM disks that can be rebuilt or downloaded again.
+  timeMachineExcludedPaths = [
+    "/var/lib/linux-builder"
+    "${homeDir}/.cache"
+    "${homeDir}/.npm"
+    "${homeDir}/.rustup"
+    "${homeDir}/.local/share/mise"
+    "${homeDir}/.local/share/nvim"
+    "${homeDir}/golang/pkg" # GOPATH from go.nix
+    "${homeDir}/Library/Developer"
+  ];
+in
 {
+  # nix-darwin has no Time Machine options. The store can be rebuilt from this
+  # flake, so keep its volume out of backups too. A failure only warns, so it
+  # never stops activation.
+  system.activationScripts.postActivation.text = lib.mkAfter ''
+    if ! /usr/bin/tmutil isexcluded /nix | /usr/bin/grep -q '^\[Excluded\]'; then
+      /usr/bin/tmutil addexclusion -v /nix \
+        || echo "warning: failed to exclude /nix from Time Machine" >&2
+    fi
+
+    # -p excludes the path itself, so the exclusion survives the directory
+    # being deleted and recreated. Paths that don't exist yet are skipped
+    # until a later activation.
+    for path in ${lib.escapeShellArgs timeMachineExcludedPaths}; do
+      if [[ -e "$path" ]] \
+        && ! /usr/bin/tmutil isexcluded "$path" | /usr/bin/grep -q '^\[Excluded\]'; then
+        /usr/bin/tmutil addexclusion -p "$path" \
+          || echo "warning: failed to exclude $path from Time Machine" >&2
+      fi
+    done
+  '';
+
   security.pam.services.sudo_local = {
     enable = true;
     touchIdAuth = true;

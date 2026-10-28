@@ -107,6 +107,8 @@ softwareupdate --install-rosetta --agree-to-license
 
 Rosetta is required for `x86_64-linux` builds on the VZ linux-builder. The Xcode license must be accepted before `xcodebuild` and some Homebrew formulas work.
 
+Activation excludes the Nix store volume from Time Machine, since everything in it can be rebuilt from this flake. It also excludes the linux-builder disk and rebuildable caches and toolchains in the home directory (listed in `nix/modules/darwin/system-settings.nix`). Check it with `tmutil isexcluded /nix`, or exclude it by hand with `sudo tmutil addexclusion -v /nix`.
+
 The linux-builder enables nested virtualization so the guest gets a real `/dev/kvm` and can run NixOS tests (`kvm` and `nixos-test` features). This needs an M3 or newer chip and macOS 15+; `nestedVirtualization` in the [host data](#host-data) turns nested virtualization and the `kvm`/`nixos-test` features off on older Macs. Only `aarch64-linux` guests are accelerated; `x86_64-linux` NixOS tests still fall back to slow emulation.
 
 The linux-builder does not start at boot. Run `just builder-start` before Linux builds and `just builder-stop` afterwards; an always-on VM can spin the host CPU after sleep/wake.
@@ -162,7 +164,6 @@ Machine identity is kept out of this repo, so a work machine's host name, user a
   darwinModules = [ ];
   homeModules = [
     ./zen-work.nix
-  homeModules = [ ./zen-work.nix ];
     # Backlog.md folders under vault; each gets an agent MCP server.
     {
       backlog.vault = "/Users/your-user/backlogs";
