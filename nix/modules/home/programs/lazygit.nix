@@ -39,6 +39,33 @@
           authorColors."*" = "#b4befe";
         };
       };
+
+      keybinding = {
+        universal = {
+          scrollUpMain-alt2 = [
+            "<ctrl+u>"
+            "<ctrl+b>"
+          ];
+          scrollDownMain-alt2 = [
+            "<ctrl+d>"
+            "<ctrl+f>"
+          ];
+          # ö and ä match the nvim [ and ] mappings on the Finnish layout
+          prevTab = [
+            "["
+            "ö"
+          ];
+          nextTab = [
+            "]"
+            "ä"
+          ];
+        };
+        # Files panel defaults would shadow the ctrl+f/ctrl+b scrolling above
+        files = {
+          findBaseCommitForFixup = "<ctrl+x>";
+          openStatusFilter = "F";
+        };
+      };
     };
   };
 }
