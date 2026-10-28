@@ -271,6 +271,9 @@ let
     "registry.npmjs.org"
     "pypi.org"
     "crates.io"
+    # Schemas
+    "json.schemastore.org"
+    "www.schemastore.org"
   ];
 
   # Package download hosts only. npm's registry and crates.io also accept
@@ -287,6 +290,9 @@ let
     "sum.golang.org"
     # mise's version index; installs still run outside the sandbox.
     "mise-versions.jdx.dev"
+    # JSON schemas; json.schemastore.org redirects to www.
+    "json.schemastore.org"
+    "www.schemastore.org"
   ];
 
   # Sandboxed package managers get their own writable caches. Unsandboxed

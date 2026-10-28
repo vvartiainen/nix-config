@@ -40,7 +40,7 @@ All in `permissions.nix`.
 | `secretFilePatterns` | Key files denied everywhere (`**/*.pem`, `**/*.key`); `.env` files are denied per CLI |
 | `sandboxDeniedPaths` | `homeSecretPaths` as plain absolute paths, for sandboxes that don't take globs |
 | `fetchDomains` | Docs and registry sites the web-fetch tools may read |
-| `sandboxNetworkDomains` | Download-only hosts sandboxed commands may reach (Nix registry, PyPI, crates index, Go module proxy and checksum DB, mise version index). Upload-capable registries (`registry.npmjs.org`, `crates.io`, `api.github.com`) are excluded |
+| `sandboxNetworkDomains` | Download-only hosts sandboxed commands may reach (Nix registry, PyPI, crates index, Go module proxy and checksum DB, mise version index, SchemaStore). Upload-capable registries (`registry.npmjs.org`, `crates.io`, `api.github.com`) are excluded |
 | `sandboxReadonlyPaths` | Tool paths outside the sandboxes' built-in grants (`/nix/store`, Homebrew, mise data and config, aube store, git config) |
 | `agentCaches` | Separate writable package manager caches (`writePaths`) and the env vars pointing tools at them (`env`) |
 | `mcpServers` | Catalog MCP servers (`mcp.nix`) whose tools are allowed without prompting |
@@ -222,7 +222,7 @@ boundary working, not a bug to work around.
   dependencies run without prompts. The first build in a session's cache
   downloads dependencies again.
 - **Network:** hosts in `sandboxNetworkDomains` (Nix registry, PyPI, crates
-  index, Go proxy and checksum DB, mise version index).
+  index, Go proxy and checksum DB, mise version index, SchemaStore).
 - **Git:** status, diff, add, and commit. Hooks and `.git/config` are
   read-only.
 - **Nix:** evaluation, and builds through the daemon after approval
