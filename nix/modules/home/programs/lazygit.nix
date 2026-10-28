@@ -15,6 +15,7 @@
           }
         ];
         autoFetch = true;
+        parseEmoji = true;
       };
 
       os = {
@@ -23,6 +24,7 @@
 
       gui = {
         switchTabsWithPanelJumpKeys = true;
+        showDivergenceFromBaseBranch = "arrowAndNumber";
         theme = {
           activeBorderColor = [
             "#fab387"
