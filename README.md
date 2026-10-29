@@ -40,7 +40,10 @@ values are preserved. Trackpad settings captured only for the built-in device
 use its specific domain so they do not overwrite Bluetooth settings.
 Newly captured preferences contain only UI booleans, numbers, and fixed choices;
 no account data, device identifiers, recent items, or private paths are included.
-Missing or unreadable exported keys remain unmanaged unless already configured.
+Missing or unreadable exported keys remain unmanaged unless already configured
+or explicitly chosen later. Native edge-drag, top-edge fill, and Option-drag
+tiling are disabled so yabai handles window positioning. Inline text predictions
+are also explicitly disabled.
 
 ## Neovim migration
 

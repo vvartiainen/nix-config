@@ -107,6 +107,10 @@ in
         AutoHide = false;
         EnableStandardClickToShowDesktop = false;
         EnableTiledWindowMargins = false;
+        # Let yabai handle window positioning.
+        EnableTilingByEdgeDrag = false;
+        EnableTopTilingByEdgeDrag = false;
+        EnableTilingOptionAccelerator = false;
         GloballyEnabled = false; # Stage Manager
         HideDesktop = true;
         StageManagerHideWidgets = true;
@@ -147,6 +151,7 @@ in
 
         NSAutomaticCapitalizationEnabled = false; # disable auto capitalization
         NSAutomaticDashSubstitutionEnabled = false; # disable auto dash substitution
+        NSAutomaticInlinePredictionEnabled = false;
         NSAutomaticPeriodSubstitutionEnabled = false; # disable auto period substitution
         NSAutomaticQuoteSubstitutionEnabled = false; # disable auto quote substitution
         NSAutomaticSpellingCorrectionEnabled = false; # disable auto spelling correction
