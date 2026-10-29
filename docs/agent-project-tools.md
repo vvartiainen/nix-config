@@ -27,6 +27,39 @@ ct agents sync --dry-run && ct agents sync
 Tools of catalog servers are allowed without prompting (`permissions.nix`).
 Codex and Pi read project servers once you trust the project.
 
+## Backlog shortcuts
+
+`bl` selects an external backlog from `backlog.projects`; it does not create
+task files in the current repository. Inside a configured project's repository,
+including subdirectories and linked worktrees, omit the project name:
+
+```sh
+bl                         # task list
+bl review                  # all tickets tagged needs-review
+bl handoffs                # tickets tagged both handoff and needs-review
+bl review --plain          # list options pass through
+bl board                   # terminal board
+bl browser                 # browser interface
+bl task TASK-73             # open a ticket
+```
+
+Selection order is an explicit configured project name, the detected project,
+then `BACKLOG_PROJECT`. Detection matches the main checkout's directory name
+against `backlog.projects`, including when run from a linked worktree, then
+tries the current Git root's name. Outside Git, it uses the nearest ancestor
+directory whose name is a configured project. An unrelated Git repository does
+not inherit a matching parent directory's backlog. Unknown environment defaults
+are rejected.
+
+From elsewhere, use `bl nix-config review` or `bl cli-toolbox browser` if those
+projects are configured. Repositories whose names differ from their backlogs
+also need an explicit name or `BACKLOG_PROJECT`. `bl --help` shows wrapper help;
+`bl <project> --help` shows Backlog.md help. Other arguments pass through to
+Backlog.md, including the explicit `bl <project> mcp start` used by agents.
+
+The handoff queue is for user review. Agents leave these tasks open; the user
+checks the review criteria, removes `needs-review`, and marks accepted work Done.
+
 ## Skill library
 
 - Generic skills: add `nix/modules/home/programs/ai/skills/<name>/SKILL.md`.

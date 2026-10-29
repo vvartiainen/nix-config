@@ -22,25 +22,92 @@ let
     meta.mainProgram = "backlog";
   });
 
-  # `bl nix-config board` instead of cd-ing into the iCloud folder. Without a
-  # project it falls back to $BACKLOG_PROJECT.
+  # Keep explicit project selection for MCP; infer it for interactive use.
   bl = pkgs.writeShellApplication {
     name = "bl";
+    runtimeInputs = [ pkgs.git ];
     text = ''
       projects=(${lib.escapeShellArgs cfg.projects})
-      if [[ $# -gt 0 && " ''${projects[*]} " == *" $1 "* ]]; then
+
+      known_project() {
+        local candidate
+        for candidate in "''${projects[@]}"; do
+          if [[ $candidate == "$1" ]]; then
+            return 0
+          fi
+        done
+        return 1
+      }
+
+      usage() {
+        echo "usage: bl [project] [backlog args]   (default: task list)"
+        echo "       bl [project] review [list options]"
+        echo "       bl [project] handoffs [list options]"
+        echo "Project: explicit name, current directory, then BACKLOG_PROJECT."
+        echo "projects: ''${projects[*]}"
+      }
+
+      if [[ ''${1:-} == --help || ''${1:-} == -h ]]; then
+        usage
+        exit 0
+      fi
+
+      project=
+      if [[ $# -gt 0 ]] && known_project "$1"; then
         project=$1
         shift
-      elif [[ -n ''${BACKLOG_PROJECT:-} ]]; then
-        project=$BACKLOG_PROJECT
+      elif repo_root=$(git rev-parse --show-toplevel 2>/dev/null); then
+        # Prefer the main checkout, even if a worktree has another known name.
+        if common_dir=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null); then
+          if [[ $common_dir == */.git ]]; then
+            main_root=''${common_dir%/.git}
+            if known_project "''${main_root##*/}"; then
+              project=''${main_root##*/}
+            fi
+          fi
+        fi
+        if [[ -z $project ]] && known_project "''${repo_root##*/}"; then
+          project=''${repo_root##*/}
+        fi
       else
-        echo "usage: bl <project> [backlog args]   (default: task list)" >&2
-        echo "projects: ''${projects[*]}" >&2
+        # Also support a backlog folder or project directory without Git.
+        project_dir=$PWD
+        while [[ $project_dir != / ]]; do
+          if known_project "''${project_dir##*/}"; then
+            project=''${project_dir##*/}
+            break
+          fi
+          project_dir=''${project_dir%/*}
+          project_dir=''${project_dir:-/}
+        done
+      fi
+
+      if [[ -z $project && -n ''${BACKLOG_PROJECT:-} ]]; then
+        if ! known_project "$BACKLOG_PROJECT"; then
+          echo "bl: unknown BACKLOG_PROJECT: $BACKLOG_PROJECT" >&2
+          exit 2
+        fi
+        project=$BACKLOG_PROJECT
+      fi
+      if [[ -z $project ]]; then
+        echo "bl: could not detect a configured project; provide its name." >&2
+        usage >&2
         exit 2
       fi
+
       if [[ $# -eq 0 ]]; then
         set -- task list
       fi
+      case $1 in
+        review)
+          shift
+          set -- task list --labels needs-review "$@"
+          ;;
+        handoffs)
+          shift
+          set -- task list --labels handoff,needs-review "$@"
+          ;;
+      esac
       export BACKLOG_CWD=${lib.escapeShellArg cfg.vault}/$project
       exec ${lib.getExe cfg.package} "$@"
     '';
