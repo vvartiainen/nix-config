@@ -23,10 +23,6 @@ url = "https://download.java.net/java/GA/jdk27/55ce5470a6294008af0057ff4626d0e5/
 checksum = "sha256:41172837168dd25a8d9fe5eb253ac1efc568c5f9ff608144bcacadfdf50f876c"
 url = "https://download.java.net/java/GA/jdk27/55ce5470a6294008af0057ff4626d0e5/35/GPL/openjdk-27_windows-x64_bin.zip"
 
-[[tools.lua]]
-version = "5.1"
-backend = "asdf:lua"
-
 [[tools.node]]
 version = "24.22.1"
 backend = "core:node"
@@ -203,3 +199,35 @@ checksum = "sha256:ccec7508a07d9933d7cb1261880633efcf1f30d6e6eddab21823f1dae6f23
 url = "https://github.com/astral-sh/uv/releases/download/0.13.4/uv-x86_64-pc-windows-msvc.zip"
 url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/659693635"
 provenance = "github-attestations"
+
+[[tools."vfox:jdx/vfox-lua"]]
+version = "5.1"
+backend = "vfox:jdx/vfox-lua"
+
+[tools."vfox:jdx/vfox-lua"."platforms.linux-arm64"]
+checksum = "sha256:7f5bb9061eb3b9ba1e406a5aa68001a66cb82bac95748839dc02dd10048472c1"
+url = "https://www.lua.org/ftp/lua-5.1.tar.gz"
+
+[tools."vfox:jdx/vfox-lua"."platforms.linux-arm64-musl"]
+checksum = "sha256:7f5bb9061eb3b9ba1e406a5aa68001a66cb82bac95748839dc02dd10048472c1"
+url = "https://www.lua.org/ftp/lua-5.1.tar.gz"
+
+[tools."vfox:jdx/vfox-lua"."platforms.linux-x64"]
+checksum = "sha256:7f5bb9061eb3b9ba1e406a5aa68001a66cb82bac95748839dc02dd10048472c1"
+url = "https://www.lua.org/ftp/lua-5.1.tar.gz"
+
+[tools."vfox:jdx/vfox-lua"."platforms.linux-x64-musl"]
+checksum = "sha256:7f5bb9061eb3b9ba1e406a5aa68001a66cb82bac95748839dc02dd10048472c1"
+url = "https://www.lua.org/ftp/lua-5.1.tar.gz"
+
+[tools."vfox:jdx/vfox-lua"."platforms.macos-arm64"]
+checksum = "sha256:7f5bb9061eb3b9ba1e406a5aa68001a66cb82bac95748839dc02dd10048472c1"
+url = "https://www.lua.org/ftp/lua-5.1.tar.gz"
+
+[tools."vfox:jdx/vfox-lua"."platforms.macos-x64"]
+checksum = "sha256:7f5bb9061eb3b9ba1e406a5aa68001a66cb82bac95748839dc02dd10048472c1"
+url = "https://www.lua.org/ftp/lua-5.1.tar.gz"
+
+[tools."vfox:jdx/vfox-lua"."platforms.windows-x64"]
+checksum = "sha256:7f5bb9061eb3b9ba1e406a5aa68001a66cb82bac95748839dc02dd10048472c1"
+url = "https://www.lua.org/ftp/lua-5.1.tar.gz"
