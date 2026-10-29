@@ -17,7 +17,6 @@
       "composer"
       "coreutils"
       "cpm"
-      "delve"
       "docker"
       "duckdb"
       "fastfetch"
