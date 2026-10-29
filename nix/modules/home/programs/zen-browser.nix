@@ -70,34 +70,36 @@ in
       }
     ];
 
-    policies.ExtensionSettings =
-      builtins.mapAttrs
-        (_: slug: {
-          install_url = "https://addons.mozilla.org/firefox/downloads/latest/${slug}/latest.xpi";
-          installation_mode = "force_installed";
-        })
-        {
-          "uBlock0@raymondhill.net" = "ublock-origin";
-          "addon@darkreader.org" = "darkreader";
-          "{d634138d-c276-4fc8-924b-40a0ea21d284}" = "1password-x-password-manager";
-          "idcac-pub@guus.ninja" = "istilldontcareaboutcookies";
-          "{d7742d87-e61d-4b78-b8a1-b469842139fa}" = "vimium-ff";
-        };
+    policies = {
+      ExtensionSettings =
+        builtins.mapAttrs
+          (_: slug: {
+            install_url = "https://addons.mozilla.org/firefox/downloads/latest/${slug}/latest.xpi";
+            installation_mode = "force_installed";
+          })
+          {
+            "uBlock0@raymondhill.net" = "ublock-origin";
+            "addon@darkreader.org" = "darkreader";
+            "{d634138d-c276-4fc8-924b-40a0ea21d284}" = "1password-x-password-manager";
+            "idcac-pub@guus.ninja" = "istilldontcareaboutcookies";
+            "{d7742d87-e61d-4b78-b8a1-b469842139fa}" = "vimium-ff";
+          };
 
-    # Tracking protection blocks Outlook Web's background sign-in, which signs it out right after login.
-    policies.EnableTrackingProtection.Exceptions = [
-      "https://outlook.office.com"
-      "https://outlook.cloud.microsoft"
-    ];
+      # Tracking protection blocks Outlook Web's background sign-in, which signs it out right after login.
+      EnableTrackingProtection.Exceptions = [
+        "https://outlook.office.com"
+        "https://outlook.cloud.microsoft"
+      ];
 
-    # Cookie protection drops the session cookies set during the Microsoft SSO redirects, causing the same login loop.
-    policies.Cookies.Allow = [
-      "https://login.microsoftonline.com"
-      "https://login.live.com"
-      "https://outlook.office.com"
-      "https://outlook.cloud.microsoft"
-      "https://office.com"
-    ];
+      # Cookie protection drops the session cookies set during the Microsoft SSO redirects, causing the same login loop.
+      Cookies.Allow = [
+        "https://login.microsoftonline.com"
+        "https://login.live.com"
+        "https://outlook.office.com"
+        "https://outlook.cloud.microsoft"
+        "https://office.com"
+      ];
+    };
 
     profiles.default = {
       id = 0;

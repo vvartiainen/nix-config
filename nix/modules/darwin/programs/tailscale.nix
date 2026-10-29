@@ -1,4 +1,3 @@
-{ ... }:
 {
   # The Mac App Store variant bundles the CLI inside the app but does not
   # install a standalone `tailscale` launcher on PATH.
