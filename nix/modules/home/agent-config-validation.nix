@@ -42,36 +42,47 @@ let
   manifest = pkgs.writeText "agent-config-schemas.json" (
     builtins.toJSON (builtins.mapAttrs (name: _: "${bundle}/${name}.json") schemas)
   );
+  validation = pkgs.python3Packages.buildPythonPackage {
+    pname = "agent-config-validation";
+    version = "1";
+    format = "other";
+    dontUnpack = true;
+    dependencies = with pkgs.python3Packages; [
+      jsonschema
+      json5
+    ];
+    doCheck = true;
+    nativeCheckInputs = with pkgs.python3Packages; [
+      tomli-w
+      tomlkit
+    ];
+    checkPhase = ''
+      cp ${./agent_config_validation.py} agent_config_validation.py
+      cp ${manifest} agent-config-schemas.json
+      cp ${./programs/ai/cleanup-agent-config.py} cleanup-agent-config.py
+      cp ${./programs/ai/test_cleanup_agent_config.py} test_cleanup_agent_config.py
+      cp ${./programs/ai/test_agent_config_validation.py} test_agent_config_validation.py
+      export PYTHONPATH="$PWD''${PYTHONPATH:+:$PYTHONPATH}"
+      export MERGE_CONFIG=${./merge-config.py}
+      ${pkgs.python3.interpreter} -m unittest discover -v
+    '';
+    pythonImportsCheck = [ "agent_config_validation" ];
+    passthru.validator =
+      pkgs.writers.writePython3Bin "validate-agent-config"
+        {
+          libraries = [ validation ];
+        }
+        ''
+          from agent_config_validation import main
+
+          main()
+        '';
+    installPhase = ''
+      mkdir -p "$out/${pkgs.python3.sitePackages}"
+      cp ${./agent_config_validation.py} "$out/${pkgs.python3.sitePackages}/agent_config_validation.py"
+      cp ${manifest} \
+        "$out/${pkgs.python3.sitePackages}/agent-config-schemas.json"
+    '';
+  };
 in
-pkgs.python3Packages.buildPythonPackage {
-  pname = "agent-config-validation";
-  version = "1";
-  format = "other";
-  dontUnpack = true;
-  dependencies = with pkgs.python3Packages; [
-    jsonschema
-    json5
-  ];
-  doCheck = true;
-  nativeCheckInputs = with pkgs.python3Packages; [
-    tomli-w
-    tomlkit
-  ];
-  checkPhase = ''
-    cp ${./agent_config_validation.py} agent_config_validation.py
-    cp ${manifest} agent-config-schemas.json
-    cp ${./programs/ai/cleanup-agent-config.py} cleanup-agent-config.py
-    cp ${./programs/ai/test_cleanup_agent_config.py} test_cleanup_agent_config.py
-    cp ${./programs/ai/test_agent_config_validation.py} test_agent_config_validation.py
-    export PYTHONPATH="$PWD''${PYTHONPATH:+:$PYTHONPATH}"
-    export MERGE_CONFIG=${./merge-config.py}
-    ${pkgs.python3.interpreter} -m unittest discover -v
-  '';
-  pythonImportsCheck = [ "agent_config_validation" ];
-  installPhase = ''
-    mkdir -p "$out/${pkgs.python3.sitePackages}"
-    cp ${./agent_config_validation.py} "$out/${pkgs.python3.sitePackages}/agent_config_validation.py"
-    cp ${manifest} \
-      "$out/${pkgs.python3.sitePackages}/agent-config-schemas.json"
-  '';
-}
+validation

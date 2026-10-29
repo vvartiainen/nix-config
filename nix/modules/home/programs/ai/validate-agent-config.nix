@@ -1,15 +1,6 @@
 { lib, pkgs, ... }:
 let
-  validator =
-    pkgs.writers.writePython3Bin "validate-agent-config"
-      {
-        libraries = [ (import ../../agent-config-validation.nix { inherit pkgs; }) ];
-      }
-      ''
-        from agent_config_validation import main
-
-        main()
-      '';
+  inherit (import ../../agent-config-validation.nix { inherit pkgs; }) validator;
 in
 {
   home = {

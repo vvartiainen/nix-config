@@ -51,12 +51,12 @@ bootstrap host=host: (init-host host)
 check host=host: require-host
     statix check .
     nix eval --raw '.#darwinConfigurations.{{ host }}.system.drvPath' {{ host_flags }}
-    validate-agent-config
+    just validate-agent-config
 
 # Build the darwin system derivation without applying it.
 build host=host: require-host
     nix build '.#darwinConfigurations.{{ host }}.system' {{ host_flags }}
-    validate-agent-config
+    just validate-agent-config
 
 # Apply the nix-darwin configuration (skip_homebrew=1 skips brew bundle).
 switch host=host skip_homebrew="0": require-host
@@ -66,11 +66,11 @@ switch host=host skip_homebrew="0": require-host
 # Reset global agent tools (also runs automatically during switch).
 cleanup-agent-config *args:
     cleanup-agent-config {{ args }}
-    validate-agent-config
+    just validate-agent-config
 
-# Check installed global agent settings without changing them.
+# Check global agent settings, using this checkout's validator even before a switch.
 validate-agent-config *args:
-    validate-agent-config {{ args }}
+    nix run '.#validate-agent-config' --override-input host 'path:{{ justfile_directory() }}/nix/fixtures/host' -- {{ args }}
 
 # Start the linux-builder VM.
 builder-start:

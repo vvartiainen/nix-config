@@ -111,12 +111,16 @@ its `skills-cursor` built-ins and has no supported setting to disable them.
 
 ## Configuration validation
 
-After installing the validator with a switch, check global agent configuration
-without modifying it:
+Check global agent configuration without modifying it:
 
 ```sh
 just validate-agent-config
 ```
+
+The recipe builds and runs the validator from this checkout, so it works before
+the first switch. It uses the synthetic host input only to build the helper;
+the helper reads your actual global config files. Activation also installs a
+`validate-agent-config` command for direct use.
 
 `just check` and `just build` also check the installed files. Nix builds check
 the generated Home Manager files and schema-backed merge settings. During
