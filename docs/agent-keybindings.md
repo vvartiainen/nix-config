@@ -3,6 +3,24 @@
 The shared shortcuts use native CLI settings. In Kitty, **Alt means Right
 Option**; Left Option remains available for keyboard-layout characters.
 
+## Shortcut layers
+
+| Layer | Purpose |
+|---|---|
+| Ctrl+1–6 / Left / Right | yabai space selection / previous / next space |
+| Ctrl+Alt+H/J/K/L | yabai directional window focus |
+| Ctrl+Alt+P/N | yabai previous / next window, including stack navigation |
+| Ctrl+Alt+Cmd | yabai swaps, window moves, layouts and space management; T opens the quick-access terminal |
+| Cmd+Left Option+H/J/K/L | yabai window resizing |
+| Ctrl+Shift (`kitty_mod`) | Kitty controls, including tabs 1–9 |
+| F7 → key | Kitty sessions and tools |
+| Right Option / Ctrl+B → key | Herdr direct shortcuts / prefix commands |
+
+yabai leaves plain Alt+P/N available for CLI model selection and Herdr's new
+tab action. Ctrl+Down has no skhd binding. Cmd+Tab intentionally cycles yabai
+windows; Herdr keeps its Ctrl+B prefix. Kitty also retains its Cmd shortcuts,
+and Zen uses Ctrl+Shift shortcuts in its own application context.
+
 ## Shared actions
 
 | Action | Binding | Coverage and exceptions |

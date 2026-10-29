@@ -50,10 +50,9 @@ ctrl + alt - l : yabai -m window --focus east
 
 # Stack layout support
 cmd - tab : yabai -m window --focus stack.next || yabai -m window --focus stack.prev || yabai -m window --focus next || yabai -m window --focus first
-alt - p : yabai -m window --focus stack.prev || yabai -m window --focus stack.last || yabai -m window --focus prev || yabai -m window --focus last
-alt - n : yabai -m window --focus stack.next || yabai -m window --focus stack.first || yabai -m window --focus next || yabai -m window --focus first
+ctrl + alt - p : yabai -m window --focus stack.prev || yabai -m window --focus stack.last || yabai -m window --focus prev || yabai -m window --focus last
+ctrl + alt - n : yabai -m window --focus stack.next || yabai -m window --focus stack.first || yabai -m window --focus next || yabai -m window --focus first
 
-ctrl - down : yabai -m window --focus stack.next || yabai -m window --focus stack.prev || yabai -m window --focus next || yabai -m window --focus first
 ctrl + alt - down : yabai -m space --rotate 90
 
 # Resize
