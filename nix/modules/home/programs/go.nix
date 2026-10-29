@@ -6,6 +6,7 @@ in
 {
   programs.go = {
     enable = true;
+    telemetry.mode = "off";
     env = {
       GOPATH = goPath;
       GOBIN = goBin;

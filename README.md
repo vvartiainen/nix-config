@@ -19,6 +19,10 @@ Don't expect this to work out of the box for you, but feel free to borrow anythi
   - Using `mkOutOfStoreSymlink` so updates in these files are reflected directly
   - Might want to move some of these to "more pure" / immutable configs at some point
 
+Go telemetry is disabled, including local collection, through
+`programs.go.telemetry.mode = "off"` in `nix/modules/home/programs/go.nix`.
+After applying the configuration, `go telemetry` should report `off`.
+
 ## Neovim migration
 
 After building and manually applying the configuration, run the two setups side by side:
