@@ -41,6 +41,10 @@ supply `gopls`, `go`, and `delve`. Debugging expects adapters on `PATH`, includi
 Prettier/ESLint and test runners may resolve from local `node_modules`. Add
 missing tools to the project shell; there is no Mason fallback.
 
+Go is the exception: [`go.nix`](../nix/modules/home/programs/go.nix) installs
+`gopls`, `golangci-lint`, and `delve` globally to match the Go toolchain, so
+both editors find them without a dev shell. The live editor's Mason skips them.
+
 ## Change the configuration
 
 Edit Lua settings and extras in [`dotfiles/nvim`](../dotfiles/nvim) and rebuild

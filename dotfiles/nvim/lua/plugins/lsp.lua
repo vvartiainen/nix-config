@@ -13,7 +13,7 @@ return {
       bashls = {},
       svelte = {},
       sourcekit = {},
-      gopls = {},
+      gopls = { mason = false }, -- from Nix, see go.nix
       tailwindcss = {},
       terraformls = {},
       tombi = {},

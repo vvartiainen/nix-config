@@ -14,6 +14,14 @@ in
     };
   };
 
-  home.sessionPath = [ goBin ];
-  home.sessionVariables.GOPATH = goPath;
+  home = {
+    # Editor tooling comes from Nix so it matches the Go toolchain above.
+    packages = with pkgs; [
+      delve
+      golangci-lint
+      gopls
+    ];
+    sessionPath = [ goBin ];
+    sessionVariables.GOPATH = goPath;
+  };
 }
