@@ -3,7 +3,7 @@ minimum_release_age = "7d"
 lockfile = true
 
 [tools]
-java = "latest"
+java = "26"
 "vfox:jdx/vfox-lua" = "5.1"
 node = "24"
 "npm:@mermaid-js/mermaid-cli" = "11.17.0"
