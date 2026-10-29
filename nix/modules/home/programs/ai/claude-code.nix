@@ -187,6 +187,17 @@ in
     file."${config.programs.claude-code.configDir}/themes/catppuccin-mocha.json".source =
       catppuccinMocha;
 
+    file."${config.programs.claude-code.configDir}/keybindings.json".source =
+      jsonFormat.generate "claude-code-keybindings.json" {
+        "$schema" = "https://www.schemastore.org/claude-code-keybindings.json";
+        bindings = [
+          {
+            context = "Chat";
+            bindings."alt+t" = "command:effort";
+          }
+        ];
+      };
+
     # Claude Code persists /config changes here, so merge defaults into a
     # regular file instead of using the Home Manager settings symlink.
     activation.claudeCodeConfig = lib.hm.dag.entryAfter [ "linkGeneration" ] (mergeConfig {

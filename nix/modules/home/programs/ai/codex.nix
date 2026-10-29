@@ -54,6 +54,10 @@ let
       resume_cwd = "current";
       # Notify from background Herdr panes even while the terminal has focus.
       notification_condition = "always";
+      presets."0" = {
+        label = "Model";
+        input = "/model";
+      };
       presets."1" = {
         label = "Review";
         input = "/review";
@@ -75,6 +79,19 @@ let
         ];
         # Ctrl+O inspects output across the agent CLIs.
         copy = "alt-y";
+      };
+      keymap.chat = {
+        open_presets = "alt-p";
+        increase_reasoning_effort = [
+          "alt-t"
+          "alt-."
+          "shift-up"
+        ];
+        decrease_reasoning_effort = [
+          "alt-shift-t"
+          "alt-,"
+          "shift-down"
+        ];
       };
     };
   };
