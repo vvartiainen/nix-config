@@ -73,7 +73,7 @@ def config_files(home, xdg):
         (home / ".claude/settings.json", "json", "claude"),
         (home / ".claude.json", "json", None),
         (home / ".copilot/settings.json", "jsonc", None),
-        (home / ".copilot/config.json", "json", None),
+        (home / ".copilot/config.json", "jsonc", None),
         (home / ".copilot/lsp-config.json", "json", None),
         (home / ".copilot/permissions-config.json", "json", None),
         (xdg / "cursor/cli-config.json", "json", None),

@@ -86,6 +86,27 @@ class ValidationTest(unittest.TestCase):
             "model": "keep", "effortLevel": "medium",
         })
 
+    def test_copilot_generated_config_comments_are_valid_and_preserved(self):
+        original = '''// User settings belong in settings.json.
+// This file is managed automatically.
+{
+  "firstLaunchAt": "2026-03-11T00:00:00.000Z"
+}
+'''
+        path = self.write(self.home / ".copilot/config.json", original)
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            failures = validation.check_files(self.home, self.xdg)
+        self.assertEqual(failures, [])
+        self.assertIn(f"ok (parse only; no schema): {path}", output.getvalue())
+        self.assertEqual(path.read_text(), original)
+
+        path.write_text(original + "broken {")
+        with contextlib.redirect_stdout(io.StringIO()):
+            failures = validation.check_files(self.home, self.xdg)
+        self.assertEqual(failures, [f"{path}: invalid jsonc syntax"])
+        self.assertEqual(path.read_text(), original + "broken {")
+
     def test_invalid_candidate_does_not_replace_symlink(self):
         target = self.write(self.root / "target.json", '{"model":"keep"}')
         link = self.home / "settings.json"

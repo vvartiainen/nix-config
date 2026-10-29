@@ -144,9 +144,10 @@ already have been written when a later merge fails.
 The command reports the schema used for each existing file, labels limited
 coverage as `parse only; no schema`, and reports missing files explicitly.
 OpenCode's mutable global files and Home Manager layers are checked separately
-and together. JSONC is accepted for Copilot settings and OpenCode files; TOML
-is parsed before Codex schema validation. Unknown keys are rejected only where
-the upstream schema rejects them; permissive schemas cannot catch every typo.
+and together. JSONC is accepted for Copilot `settings.json`, its auto-managed
+`config.json` (including the generated comment header), and OpenCode files.
+TOML is parsed before Codex schema validation. Unknown keys are rejected only
+where the upstream schema rejects them; permissive schemas cannot catch every typo.
 
 Schemas are bundled through
 [`agent-config-validation.nix`](../nix/modules/home/agent-config-validation.nix).
