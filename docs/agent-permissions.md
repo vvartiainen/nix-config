@@ -42,6 +42,8 @@ All in `permissions.nix`.
 | `fetchDomains` | Docs and registry sites the web-fetch tools may read |
 | `sandboxNetworkDomains` | Download-only hosts sandboxed commands may reach (Nix registry, PyPI, crates index, Go module proxy and checksum DB, mise version index, SchemaStore). Upload-capable registries (`registry.npmjs.org`, `crates.io`, `api.github.com`) are excluded |
 | `sandboxReadonlyPaths` | Tool paths outside the sandboxes' built-in grants (`/nix/store`, Homebrew, mise data and config, aube store, git config) |
+| `toolRuntimePaths` | Paths git and Nix probe at startup (`~/.gitconfig`, Nix profile symlinks, `/etc/nix`), for sandboxes that deny reads outside their grants |
+| `nixDaemonSocket` | The Nix daemon socket sandboxed `nix` commands connect to |
 | `agentCaches` | Separate writable package manager caches (`writePaths`) and the env vars pointing tools at them (`env`) |
 | `mcpServers` | Catalog MCP servers (`mcp.nix`) whose tools are allowed without prompting |
 
@@ -59,15 +61,24 @@ a prompt, but only inside the sandbox.
 | `deniedCommands` | `forbidden` rule | deny | deny | `--deny-tool` | deny |
 | `homeSecretPaths` | — (reads outside the workspace denied) | `Read(…)` deny, also a sandbox read deny | `Read(…)` deny | sandbox `deniedPaths` | — |
 | `secretFilePatterns` | workspace deny | `Read(…)` deny | `Read(…)` deny | — | — |
-| `.env` files | workspace deny | `Read`/`Edit` deny | `Read` deny | — | `read` deny |
+| `.env` files | workspace deny | `Read`/`Edit` deny | `Read` deny | `write(.env)` deny | `read` deny |
 | `fetchDomains` | — | — | `WebFetch(…)` allow | `allowedUrls` | — |
 | `sandboxNetworkDomains` | proxy `domains` | `allowedDomains` and `WebFetch(domain:…)` allow | `networkAllowlist` | — (open network) | — |
-| `sandboxReadonlyPaths` | `read` | — (reads allowed) | `additionalReadonlyPaths` | `readonlyPaths` | — |
+| `sandboxReadonlyPaths` | `read` | — (reads allowed) | `additionalReadonlyPaths` | `readonlyPaths`, `--add-dir` | — |
+| `toolRuntimePaths` | `read` | — (reads allowed) | — (reads allowed) | `readonlyPaths` | — |
+| `nixDaemonSocket` | `unix_sockets`, `read` | `allowUnixSockets` | — | `readwritePaths` | — |
 | `agentCaches` | `shell_environment_policy`, `write` | `env`, `allowWrite` | wrapped binary, `additionalReadwritePaths` | wrapper env, `readwritePaths` | — |
 | `mcpServers` | — | `mcp__<server>__*` allow | `Mcp(…)` allow | `--allow-tool` | — |
 
 Claude's WebFetch allow rules also widen its Bash sandbox network, so Claude
 gets `sandboxNetworkDomains` instead of `fetchDomains` there.
+
+Copilot checks the paths of its own file tools separately from the sandbox:
+anything outside the working directory prompts. `--add-dir` lifts that for
+`sandboxReadonlyPaths` and also trusts any `.github/skills` and
+`.github/agents` there. Its `write()` rules match trailing path components,
+and it has no `read()` rule, so `secretFilePatterns` and `.env` reads are not
+denied for Copilot.
 
 ### CLI-specific lists
 
@@ -79,9 +90,9 @@ gets `sandboxNetworkDomains` instead of `fetchDomains` there.
 | Claude | `sandbox.network.allowUnixSockets` | Nix daemon socket |
 | Claude | `sandbox.enableWeakerNetworkIsolation` | `false`; see [Go CLIs and TLS](#go-clis-and-tls) |
 | Claude | `sandbox.network.strictAllowlist` | `false`: unlisted hosts prompt |
-| Codex | `filesystem` | Workspace `.git` writable, hooks and config read-only, `~/.codex/skills`, git and Nix profile paths, daemon socket |
-| Codex | `network.unix_sockets` | Nix daemon socket |
+| Codex | `filesystem` | Workspace `.git` writable, hooks and config read-only, `~/.codex/skills` |
 | Copilot | `readonlyPaths` / `readwritePaths` | Copilot hooks; herdr socket and backlog vault |
+| Copilot | `--deny-tool` | `write(.git/config)`, for its file tools only |
 
 ## Sandbox boundaries
 
@@ -89,10 +100,10 @@ gets `sandboxNetworkDomains` instead of `fetchDomains` there.
 |---|---|---|---|---|
 | Reads | Denied outside the workspace, except tool paths and Codex's runtime set | Allowed everywhere except credential paths and `.env` files | Allowed (system read boundary) | Working directory, PATH, temp, user profile, dev-tool paths; credential paths denied |
 | Writes | Workspace, agent caches | Working directory, `$TMPDIR`, agent caches | Workspace, agent caches | Working directory, temp, agent caches, dev-tool caches (`allowDevToolAccess`) |
-| Read-only in the workspace | `.git/hooks`, `.git/config` | `.git/hooks`, `.git/config` | — | — |
+| Read-only in the workspace | `.git/hooks`, `.git/config` | `.git/hooks`, `.git/config` | — | `.git/config` for file tools only |
 | Network | `sandboxNetworkDomains`; other hosts ask for approval | `sandboxNetworkDomains`; other hosts prompt | `sandboxNetworkDomains` plus Cursor's default list | Open |
 | Unsandboxed | Approved escalations | `gh`, `terraform`, Go module downloads, approved retries | Approved escapes | Approved bypasses |
-| Unix sockets | Nix daemon only | Nix daemon only | — | — |
+| Unix sockets | Nix daemon only | Nix daemon only | — | Nix daemon, herdr |
 
 Git runs hooks and config outside the sandbox, so both are read-only to
 prevent an escape. Nix builds run unprivileged through the daemon.

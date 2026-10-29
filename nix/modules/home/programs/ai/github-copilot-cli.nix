@@ -27,11 +27,17 @@ let
       # Hooks run inside the sandbox; herdr installs its hook script here and
       # the hook reports the session over herdr's socket (connect needs write).
       userPolicy.filesystem = {
-        readonlyPaths = permissions.sandboxReadonlyPaths config ++ [
-          "${config.programs.github-copilot-cli.configDir}/hooks"
-        ];
+        readonlyPaths =
+          permissions.sandboxReadonlyPaths config
+          ++ permissions.toolRuntimePaths config
+          ++ [
+            "${config.programs.github-copilot-cli.configDir}/hooks"
+          ];
+        # Connecting to a socket needs write. Nix builds run unprivileged
+        # through the daemon, outside the agent sandbox.
         readwritePaths = [
           "${config.xdg.configHome}/herdr/herdr.sock"
+          permissions.nixDaemonSocket
         ]
         # allowDevToolAccess grants a moved cache instead of its default
         # location, but only to its own ecosystem; mise has none.
@@ -116,7 +122,11 @@ let
     ++ lib.concatMap (tool: [
       "--deny-tool"
       tool
-    ]) (permissions.copilot config).denyTools;
+    ]) (permissions.copilot config).denyTools
+    ++ lib.concatMap (dir: [
+      "--add-dir"
+      dir
+    ]) (permissions.copilot config).addDirs;
 
   cacheEnv = lib.concatStringsSep " " (
     lib.mapAttrsToList (name: value: "${name}=${lib.escapeShellArg value}") (

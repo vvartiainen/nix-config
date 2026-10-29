@@ -361,14 +361,33 @@ let
     "${config.xdg.cacheHome}/aube/virtual-store"
     "${config.xdg.configHome}/git"
   ];
+
+  # Paths git and Nix probe at startup, for sandboxes that deny reads outside
+  # their grants.
+  toolRuntimePaths = config: [
+    # Git probes ~/.gitconfig even when Home Manager writes the config
+    # under ~/.config/git. A denied probe prevents all git commands.
+    "${config.home.homeDirectory}/.gitconfig"
+
+    # PATH entries reach Nix tools through these profile symlinks.
+    "${config.home.homeDirectory}/.nix-profile"
+    "/etc/profiles/per-user/${config.home.username}"
+    "/run/current-system"
+    "/nix/var/nix/profiles"
+    "/etc/nix"
+  ];
+
+  nixDaemonSocket = "/nix/var/nix/daemon-socket/socket";
 in
 {
   inherit
     agentCaches
     fetchDomains
+    nixDaemonSocket
     sandboxDeniedPaths
     sandboxNetworkDomains
     sandboxReadonlyPaths
+    toolRuntimePaths
     ;
 
   # Codex sandboxes read the whole disk by default; deny everything outside
@@ -392,7 +411,7 @@ in
         allow_local_binding = false;
         allow_upstream_proxy = false;
         # Nix builds run through the daemon, outside the agent sandbox.
-        unix_sockets."/nix/var/nix/daemon-socket/socket" = "allow";
+        unix_sockets.${nixDaemonSocket} = "allow";
       };
 
       filesystem = {
@@ -412,31 +431,15 @@ in
         }
         // lib.genAttrs secretFilePatterns (_: "deny");
       }
-      // lib.genAttrs (sandboxReadonlyPaths config) (_: "read")
+      // lib.genAttrs (sandboxReadonlyPaths config ++ toolRuntimePaths config) (_: "read")
       // lib.genAttrs (agentCaches config).writePaths (_: "write")
-      // (
-        let
-          home = config.home.homeDirectory;
-        in
-        {
-          "${home}/.codex/skills" = "read";
+      // {
+        "${config.home.homeDirectory}/.codex/skills" = "read";
 
-          # Git probes ~/.gitconfig even when Home Manager writes the config
-          # under ~/.config/git. A denied probe prevents all git commands.
-          "${home}/.gitconfig" = "read";
-
-          # PATH entries reach Nix tools through these profile symlinks.
-          "${home}/.nix-profile" = "read";
-          "/etc/profiles/per-user/${config.home.username}" = "read";
-          "/run/current-system" = "read";
-          "/nix/var/nix/profiles" = "read";
-          "/etc/nix" = "read";
-
-          # Nix probes the socket before selecting the daemon store. The
-          # network allowlist above permits connecting, not filesystem probes.
-          "/nix/var/nix/daemon-socket/socket" = "read";
-        }
-      );
+        # Nix probes the socket before selecting the daemon store. The
+        # network allowlist above permits connecting, not filesystem probes.
+        ${nixDaemonSocket} = "read";
+      };
     };
   };
 
@@ -481,14 +484,22 @@ in
       ++ map (pattern: "Read(${pattern})") secretFilePatterns;
   };
 
-  # Copilot has no config file setting for tool rules, only the
-  # `--allow-tool` / `--deny-tool` CLI flags.
+  # Copilot has no config file setting for tool rules or file tool paths,
+  # only the `--allow-tool` / `--deny-tool` / `--add-dir` CLI flags.
   copilot = config: {
     allowTools =
       map (cmd: "shell(${commandString cmd}:*)") allowedCommands
       ++ map (cmd: "shell(${commandString cmd})") exactCommands
       ++ mcpServers config;
-    denyTools = map (cmd: "shell(${commandString cmd}:*)") deniedCommands;
+    # A relative write() path matches trailing components in any directory.
+    # Copilot has no read() rule, so reads can't be denied this way.
+    denyTools = map (cmd: "shell(${commandString cmd}:*)") deniedCommands ++ [
+      "write(.env)"
+      "write(.git/config)"
+    ];
+    # Reads there need no path prompt, like Claude's Read(//nix/store/**).
+    # Edits still prompt, and the sandbox keeps the paths read-only.
+    addDirs = sandboxReadonlyPaths config;
   };
 
   opencode = {
