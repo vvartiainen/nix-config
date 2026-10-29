@@ -54,10 +54,10 @@ enabled = true
 command = "test"
 [plugins."extra@market"]
 enabled = true
+[profiles.work]
+model = "keep"
 [profiles.work.mcp_servers.other]
 command = "other"
-[profiles.work.plugins."extra@market"]
-enabled = true
 ''')
         claude = self.write(self.home / ".claude/settings.json", json.dumps({
             "enabledPlugins": {"extra@market": True}, "model": "keep",
@@ -69,7 +69,7 @@ enabled = true
         opencode = self.write(self.xdg / "opencode/opencode.jsonc", '''{
 // comment accepted
 "mcp": {"global": {}}, "plugin": ["extra"],
-"skills": {"paths": ["/extra"]}, "model": "keep",
+"skills": {"paths": ["/extra"]}, "model": "test/keep",
 }''')
         mcp_files = [
             self.home / ".claude.json", self.home / ".pi/agent/mcp.json",
@@ -105,9 +105,6 @@ enabled = true
         self.assertFalse(data["skills"]["config"][0]["enabled"])
         self.assertNotIn("mcp_servers", data["profiles"]["work"])
         self.assertFalse(data["plugins"]["extra@market"]["enabled"])
-        self.assertFalse(
-            data["profiles"]["work"]["plugins"]["extra@market"]["enabled"]
-        )
         self.assertEqual(data["projects"]["/project"]["trust_level"], "trusted")
         self.assertIn("# keep comment", codex.read_text())
         self.assertFalse(json.loads(claude.read_text())["enabledPlugins"][
@@ -117,7 +114,7 @@ enabled = true
         self.assertEqual(data["installedPlugins"], [])
         self.assertEqual(data["loggedInUsers"], ["keep"])
         self.assertEqual(data["trustedFolders"], ["keep"])
-        self.assertEqual(json.loads(opencode.read_text()), {"model": "keep"})
+        self.assertEqual(json.loads(opencode.read_text()), {"model": "test/keep"})
         for path in mcp_files:
             self.assertEqual(json.loads(path.read_text()), {"keep": True})
         for path in [project, auth, history, system, *herdr]:

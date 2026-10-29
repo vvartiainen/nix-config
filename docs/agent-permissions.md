@@ -194,6 +194,14 @@ symlinking (`nix/modules/home/merge-config.py`). The last applied settings are k
 from the files too. OpenCode loads its Nix settings as a separate Home Manager
 layer instead.
 
+Agent merges validate the complete candidate against a bundled schema when one
+is available before replacing the config or merge state. Builds check generated
+settings, and activation checks the final global files. Run
+`just validate-agent-config` for a read-only check; its output distinguishes
+schema coverage, parsing-only checks and missing files. See
+[configuration validation](agent-project-tools.md#configuration-validation)
+for schema sources, cleanup checks and coverage limits.
+
 No MCP server is configured globally. Projects list theirs in each agent's
 project files through `ct agents` (see
 [agent-project-tools.md](agent-project-tools.md)); the catalog's servers

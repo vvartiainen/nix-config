@@ -112,6 +112,7 @@ in
       name = "codex-config";
       path = "${config.home.homeDirectory}/.codex/config.toml";
       format = "toml";
+      schema = "codex";
       inherit settings;
     }
     + ''

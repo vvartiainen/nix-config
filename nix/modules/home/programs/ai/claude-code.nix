@@ -186,6 +186,7 @@ in
     # regular file instead of using the Home Manager settings symlink.
     activation.claudeCodeConfig = lib.hm.dag.entryAfter [ "linkGeneration" ] (mergeConfig {
       name = "claude-code-settings";
+      schema = "claude";
       path = "${config.programs.claude-code.configDir}/settings.json";
       inherit settings;
     });

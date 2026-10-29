@@ -11,9 +11,9 @@ import json
 import os
 import sys
 import tempfile
-import tomllib
 
 import tomli_w
+from agent_config_validation import parse, validate
 
 
 def prune(current, old, new):
@@ -48,9 +48,7 @@ def load(path, fmt, default):
         return default
     if not data.strip():
         return default
-    if fmt == "toml":
-        return tomllib.loads(data.decode())
-    return json.loads(data)
+    return parse(data.decode(), fmt, path)
 
 
 def dump(value, fmt):
@@ -79,7 +77,10 @@ def main():
     parser.add_argument("config", help="config file to update")
     parser.add_argument("--settings", required=True, help="Nix settings")
     parser.add_argument("--state", required=True, help="last applied")
-    parser.add_argument("--format", choices=["json", "toml"], default="json")
+    parser.add_argument(
+        "--format", choices=["json", "jsonc", "toml"], default="json"
+    )
+    parser.add_argument("--schema", help="bundled schema name")
     parser.add_argument(
         "--initial",
         default="{}",
@@ -104,6 +105,10 @@ def main():
     old = load(args.state, "json", {})
 
     merged = merge(prune(current, old, new), new)
+    try:
+        validate(merged, args.schema, path)
+    except ValueError as error:
+        sys.exit(f"merge-config: {error}")
     # A link from an older Home Manager generation is replaced with a
     # regular file instead of being written through into the Nix store.
     write(path, dump(merged, args.format), mode)

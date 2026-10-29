@@ -11,6 +11,7 @@ import tempfile
 
 import json5
 import tomlkit
+from agent_config_validation import config_files, validate
 
 
 def clear_keys(data, keys):
@@ -89,6 +90,10 @@ class Cleanup:
             raise ValueError(f"expected an object in {path}")
         before = copy.deepcopy(data)
         transform(data)
+        schema = next((schema for file, _, schema in
+                       config_files(self.home, self.config_home)
+                       if file == path), None)
+        validate(data, schema, path)
         if check_only or data == before:
             return
         print(f"{'would clean' if self.dry_run else 'cleaning'} {path}")

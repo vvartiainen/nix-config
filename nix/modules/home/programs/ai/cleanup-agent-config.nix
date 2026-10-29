@@ -8,6 +8,7 @@ let
     libraries = [
       pkgs.python3Packages.json5
       pkgs.python3Packages.tomlkit
+      (import ../../agent-config-validation.nix { inherit pkgs; })
     ];
   } ./cleanup-agent-config.py;
 in

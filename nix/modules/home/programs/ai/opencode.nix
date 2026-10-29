@@ -74,6 +74,7 @@ in
 
   home.activation.opencodeConfig = lib.hm.dag.entryAfter [ "linkGeneration" ] (mergeConfig {
     name = "opencode-tui";
+    schema = "opencode-tui";
     path = "${config.xdg.configHome}/opencode/tui.json";
     settings = tuiSettings;
   });

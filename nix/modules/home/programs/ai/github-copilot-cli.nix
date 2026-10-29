@@ -155,6 +155,7 @@ in
   home.activation.githubCopilotCliSettings = lib.hm.dag.entryAfter [ "linkGeneration" ] (
     mergeConfig {
       name = "github-copilot-cli-settings";
+      format = "jsonc";
       path = "${config.programs.github-copilot-cli.configDir}/settings.json";
       inherit settings;
     }
