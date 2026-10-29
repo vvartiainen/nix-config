@@ -2,7 +2,6 @@
 
 import argparse
 import copy
-from datetime import datetime, timezone
 import json
 import os
 from pathlib import Path
@@ -69,10 +68,11 @@ class Cleanup:
 
     def backup_path(self, path):
         if self.backup is None:
-            root = self.state_home / "nix-config/agent-config-backups"
-            root.mkdir(parents=True, exist_ok=True, mode=0o700)
-            stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S-")
-            self.backup = Path(tempfile.mkdtemp(prefix=stamp, dir=root))
+            # Keep only the latest run that changed something.
+            self.backup = self.state_home / "nix-config/agent-config-backup"
+            if self.backup.exists():
+                shutil.rmtree(self.backup)
+            self.backup.mkdir(parents=True, mode=0o700)
         # Paths may live outside HOME through XDG. Mirror their absolute
         # location to avoid collisions without following directory symlinks.
         target = self.backup / str(path).lstrip("/")
@@ -119,6 +119,10 @@ class Cleanup:
         entries = [path] if path.is_symlink() else sorted(path.iterdir())
         for entry in entries:
             if keep_system and entry.name == ".system":
+                continue
+            # Herdr's state reporting (`herdr integration install`), not a
+            # tool for the agent.
+            if entry.name.startswith("herdr-agent-state."):
                 continue
             action = "would archive" if self.dry_run else "archiving"
             print(f"{action} {entry}")

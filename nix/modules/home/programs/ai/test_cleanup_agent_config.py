@@ -85,6 +85,13 @@ enabled = true
         system = self.write(
             self.home / ".codex/skills/.system/tool/SKILL.md", "keep"
         )
+        herdr = [
+            self.write(self.home / ".pi/agent/extensions/herdr-agent-state.ts",
+                       "keep"),
+            self.write(self.xdg / "opencode/plugins/herdr-agent-state.js",
+                       "keep"),
+        ]
+        plugin = self.write(self.xdg / "opencode/plugins/extra.js", "keep")
         original = codex.read_text()
         self.run_cleanup(dry_run=True)
         self.assertEqual(codex.read_text(), original)
@@ -113,13 +120,20 @@ enabled = true
         self.assertEqual(json.loads(opencode.read_text()), {"model": "keep"})
         for path in mcp_files:
             self.assertEqual(json.loads(path.read_text()), {"keep": True})
-        for path in [project, auth, history, system]:
+        for path in [project, auth, history, system, *herdr]:
             self.assertEqual(path.read_text(), "keep")
         self.assertFalse(skill.exists())
+        self.assertFalse(plugin.exists())
         backup = job.backup / str(codex).lstrip("/")
         self.assertEqual(backup.read_text(), original)
         self.assertEqual(backup.stat().st_mode & 0o777, 0o600)
         self.assertIsNone(self.run_cleanup().backup)
+        self.assertTrue(backup.exists())
+
+        # A later change replaces the previous backup.
+        self.write(self.home / ".claude/skills/new/SKILL.md", "new")
+        self.assertEqual(self.run_cleanup().backup, job.backup)
+        self.assertFalse(backup.exists())
 
     def test_invalid_config_stops_before_writes(self):
         first = self.write(self.home / ".codex/config.toml", "mcp_servers={}")

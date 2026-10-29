@@ -91,13 +91,14 @@ skill-path settings. It archives
 loose skills from `~/.agents/skills`, `~/.codex/skills` (except `.system`),
 `~/.claude/skills`, `~/.copilot/skills`, `~/.cursor/skills`, `~/.pi/agent/skills`,
 and `~/.config/opencode/skills`, plus Claude's global commands, Pi's loose
-extensions, and OpenCode's global plugins. XDG config and state directories
+extensions, and OpenCode's global plugins. Herdr's `herdr-agent-state`
+extension and plugin stay, since they only report agent state. XDG config and state directories
 are respected. This covers the default CLI locations managed by this repo;
 custom CLI home directories and administrator-managed tools need separate handling.
 
 Changed files and archived directories are backed up under
-`~/.local/state/nix-config/agent-config-backups/<run>/`, with the original
-absolute path mirrored inside. Config backups are private. Symlinked skill
+`~/.local/state/nix-config/agent-config-backup/`, with the original absolute
+path mirrored inside. Only the latest run that changed something is kept. Config backups are private. Symlinked skill
 directories are archived as links, leaving their targets intact. A repeat run
 with no new global tools makes no changes. Invalid config files stop cleanup
 before any config is changed.
