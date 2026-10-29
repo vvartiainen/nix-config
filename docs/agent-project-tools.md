@@ -78,6 +78,7 @@ The reusable workflow skills in this repo are:
 | `rebase-main` | Rebase a feature branch onto main with a recovery ref, conflict review and verification of linear history. |
 | `handoff` | Summarize changes, commits, permission issues, spec deviations, backlog activity, verification, manual checks and remaining risks. |
 | `backlog-task` | Capture a task with a short title, why and observable acceptance criteria; search for duplicates and follow the project's workflow. |
+| `work-on-task` | Give an agent work by task ID or title; resolve scope, dependencies and ownership, execute and hand off, or prepare a brief for another agent. |
 
 For example, after the user rebuilds/applies the catalog, select a skill in the
 target project and review the generated files:
@@ -94,6 +95,18 @@ The skills follow each project's instructions and backlog policy. Reviewing
 does not publish or rewrite commits; rebasing does not push. A useful finishing
 sequence is rebase, required checks, review the resulting outgoing history,
 then handoff. Run task creation whenever new work needs capturing.
+
+To give an already running agent a task, enable `work-on-task` in that project
+and invoke it with `work-on-task TASK-123` or `work-on-task "Exact task title"`.
+The agent resolves the current task, records its plan, implements and verifies
+it, then leaves the required review handoff. `work-on-task prepare TASK-123`
+produces a copyable brief without starting work or claiming the task.
+
+The skill includes an agent-sandbox integration section with the shared MCP
+entry shapes verified from `ai/mcp.nix`. Its provisioning/launch contract is a
+fill-in template: the sibling sandbox source was inaccessible during authoring,
+so no VM launch command, mount layout or skill delivery is assumed. Fill this
+section from your sandbox's documentation before using it for automatic launch.
 
 ## Global cleanup
 
