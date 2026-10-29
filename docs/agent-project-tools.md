@@ -36,3 +36,41 @@ Codex and Pi read project servers once you trust the project.
 
 Then turn them on per project with `ct agents set skills <name> enable` and
 sync; their files are copied into the project.
+
+## Global cleanup
+
+Every switch runs `cleanup-agent-config` before merging the CLI settings.
+It can also be run manually after the first switch that installs it:
+
+```sh
+just cleanup-agent-config --dry-run
+just cleanup-agent-config
+```
+
+Close the agent CLIs before switching or cleaning, then restart them so they
+load the updated settings. An open CLI can write its old settings back.
+
+The script removes user-level MCP registrations from Codex (including profiles),
+Claude Code, Copilot, Cursor, Pi, and OpenCode. It disables global Codex and
+Claude plugins, clears Copilot's installed-plugin registry and disables its
+declarative plugin choices, and removes OpenCode's global plugin and extra
+skill-path settings. It archives
+loose skills from `~/.agents/skills`, `~/.codex/skills` (except `.system`),
+`~/.claude/skills`, `~/.copilot/skills`, `~/.cursor/skills`, `~/.pi/agent/skills`,
+and `~/.config/opencode/skills`, plus Claude's global commands, Pi's loose
+extensions, and OpenCode's global plugins. XDG config and state directories
+are respected. This covers the default CLI locations managed by this repo;
+custom CLI home directories and administrator-managed tools need separate handling.
+
+Changed files and archived directories are backed up under
+`~/.local/state/nix-config/agent-config-backups/<run>/`, with the original
+absolute path mirrored inside. Config backups are private. Symlinked skill
+directories are archived as links, leaving their targets intact. A repeat run
+with no new global tools makes no changes. Invalid config files stop cleanup
+before any config is changed.
+
+Project files, authentication, session history, plugin caches and the `ct agents`
+catalog/library remain in place. Pi's Nix-declared packages remain enabled.
+Codex's cached `.system` skills stay on disk but are disabled in Nix; disabled
+skills can remain visible in `/skills` as disabled entries. Cursor recreates
+its `skills-cursor` built-ins and has no supported setting to disable them.

@@ -201,9 +201,9 @@ project files through `ct agents` (see
 `mcp__<server>__<tool>`. The CLIs' own servers are off: Claude's claude.ai
 connectors (`disableClaudeAiConnectors`), Codex's ChatGPT apps
 (`features.apps`) and bundled plugins (`plugins.<name>.enabled`), and
-Copilot's GitHub servers (`--disable-builtin-mcps`). A Codex plugin enabled
-by hand stays on until the next switch; remove it from `codex.nix` to keep
-it.
+Copilot's GitHub servers (`--disable-builtin-mcps`). Global tools enabled by
+hand are reset on the next switch by `cleanup-agent-config`; enable them in
+project files instead. See the [cleanup guide](agent-project-tools.md#global-cleanup).
 The Claude desktop app delivers its connectors itself; disconnect them at
 claude.ai.
 
@@ -212,8 +212,12 @@ claude.ai (`syncClaudeAiPlugins`, `syncClaudeAiSkills`), and its bundled
 skills other than `artifact-*` are `user-invocable-only` through
 `skillOverrides`: hidden from the model, still typable with `/`. Bundled skills
 added in a newer Claude Code release are on until they're listed there. Codex
-turns off its system skills (`skills.bundled.enabled`), and Copilot lists its
-built-in skills in `disabledSkills`. Cursor syncs its built-in skills into
+turns off its system skills (`skills.bundled.enabled`) and explicitly disables
+the cached `review-agent`, `skill-creator`, `skill-installer`, `openai-docs`,
+and `imagegen` paths through `skills.config`. Path selectors leave project
+skills with the same names available. The supported per-skill format is in
+the [Codex skills guide](https://developers.openai.com/codex/skills/).
+Copilot lists its built-in skills in `disabledSkills`. Cursor syncs its built-in skills into
 `~/.cursor/skills-cursor` and has no setting that turns them off.
 
 ## Working in the sandboxes

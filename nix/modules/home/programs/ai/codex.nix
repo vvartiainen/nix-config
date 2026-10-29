@@ -20,8 +20,20 @@ let
     features.apps = false;
     # Skills come from the projects too, not the bundled system skills.
     skills.bundled.enabled = false;
-    # Bundled plugins start off. One enabled in Codex stays on until the next
-    # switch; drop it from this list to keep it.
+    # Also record the individual choices shown by /skills. Use paths so a
+    # project's skill with the same name is still available.
+    skills.config = map (name: {
+      path = "${config.home.homeDirectory}/.codex/skills/.system/${name}/SKILL.md";
+      enabled = false;
+    }) [
+      "review-agent"
+      "skill-creator"
+      "skill-installer"
+      "openai-docs"
+      "imagegen"
+    ];
+    # Bundled plugins start off. The cleanup step resets global plugin choices
+    # on switch; projects can still declare their own plugins.
     plugins = lib.genAttrs [
       "codex-app-tools@openai-bundled"
       "browser@openai-bundled"

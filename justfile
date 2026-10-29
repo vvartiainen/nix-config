@@ -83,6 +83,10 @@ switch host=host: require-host
     printf '%s\n' "${SKIP_HOMEBREW:-0}" | sudo tee /tmp/nix-darwin-skip-homebrew >/dev/null
     sudo darwin-rebuild switch --flake '{{ flake_ref }}#{{ host }}' {{ host_flags }}
 
+# Reset global agent tools (also runs automatically during switch).
+cleanup-agent-config *args:
+    cleanup-agent-config {{ args }}
+
 # Start the linux-builder VM.
 builder-start:
     sudo launchctl kickstart system/org.nixos.linux-builder

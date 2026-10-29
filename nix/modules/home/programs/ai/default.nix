@@ -5,6 +5,7 @@
     ./backlog.nix
     ./claude.nix
     ./claude-code.nix
+    ./cleanup-agent-config.nix
     ./codex.nix
     ./cursor-cli.nix
     ./github-copilot-cli.nix
