@@ -70,6 +70,31 @@ checks the review criteria, removes `needs-review`, and marks accepted work Done
 Then turn them on per project with `ct agents set skills <name> enable` and
 sync; their files are copied into the project.
 
+The reusable workflow skills in this repo are:
+
+| Skill | Use |
+| --- | --- |
+| `review-before-push` | Review outgoing commits and working changes for secrets and internal material; request a full-history audit explicitly. Reports redacted findings and coverage gaps. |
+| `rebase-main` | Rebase a feature branch onto main with a recovery ref, conflict review and verification of linear history. |
+| `handoff` | Summarize changes, commits, permission issues, spec deviations, backlog activity, verification, manual checks and remaining risks. |
+| `backlog-task` | Capture a task with a short title, why and observable acceptance criteria; search for duplicates and follow the project's workflow. |
+
+For example, after the user rebuilds/applies the catalog, select a skill in the
+target project and review the generated files:
+
+```sh
+ct agents set skills review-before-push enable
+ct agents sync --dry-run
+ct agents sync
+```
+
+Select the other skills by name in the same way, then invoke them in a new agent
+session. Creating the library does not enable skills in projects automatically.
+The skills follow each project's instructions and backlog policy. Reviewing
+does not publish or rewrite commits; rebasing does not push. A useful finishing
+sequence is rebase, required checks, review the resulting outgoing history,
+then handoff. Run task creation whenever new work needs capturing.
+
 ## Global cleanup
 
 Every switch runs `cleanup-agent-config` before merging the CLI settings.
