@@ -144,6 +144,33 @@ location, but only to commands of the same ecosystem, so the agent caches are
 also in `readwritePaths`. Its default "user profile" grant may still reach the
 normal caches; that is not verified.
 
+## Claude Code certificate store
+
+After the eMudhra CA compromise, the nixpkgs wrapper sets
+`CLAUDE_CODE_CERT_STORE=system` ([nixpkgs#576509](https://github.com/NixOS/nixpkgs/pull/576509))
+so Claude Code stops trusting the Mozilla roots compiled into its binary. On
+macOS that store reads only the login and System keychains, not Apple's
+built-in roots, so TLS fails with `UNABLE_TO_GET_ISSUER_CERT_LOCALLY`
+([llm-agents.nix#11153](https://github.com/numtide/llm-agents.nix/issues/11153)).
+
+`claude-code.nix` keeps the `system` store and sets
+`env.NODE_EXTRA_CA_CERTS = "/etc/ssl/certs/ca-certificates.crt"`. That
+bundle comes from nixpkgs `cacert` with nix-darwin's `security.pki`
+distrust list, so it follows root removals. Avoid
+`CLAUDE_CODE_CERT_STORE = "bundled"`: it trusts whatever roots that Claude
+Code release ships.
+
+Apple's `/etc/ssl/cert.pem` is a separate store used by `/usr/bin/curl`, git
+and python3, and it still includes the affected roots. Apple's
+[support article](https://support.apple.com/en-us/149555) describes optional
+manual removal. This repository does not manage that file.
+
+If a network needs a private CA, set `NODE_EXTRA_CA_CERTS` in private host
+configuration to a bundle that contains both the private CA and
+`/etc/ssl/certs/ca-certificates.crt`, because the private value replaces this
+one. See Claude's [network configuration guide](https://code.claude.com/docs/en/network-config).
+Apply the configuration and restart Claude Code for the setting to take effect.
+
 ## Go CLIs and TLS
 
 Go CLIs such as `gh` and `terraform` can't verify TLS under Claude's Seatbelt

@@ -92,7 +92,12 @@ let
       # prompts; ask rules and sandbox escapes still prompt.
       defaultMode = "acceptEdits";
     };
-    inherit (permissions.agentCaches config) env;
+    env = (permissions.agentCaches config).env // {
+      # nixpkgs sets CLAUDE_CODE_CERT_STORE=system, which on macOS holds only
+      # keychain certificates, not Apple's roots. Add the Nix bundle, which
+      # follows cacert and nix-darwin distrust updates.
+      NODE_EXTRA_CA_CERTS = "/etc/ssl/certs/ca-certificates.crt";
+    };
     # MCP servers come from the projects (`ct agents`), not claude.ai.
     disableClaudeAiConnectors = true;
     # Skills and plugins come from the projects too: nothing syncs from
