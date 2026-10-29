@@ -56,9 +56,9 @@ check host=host: require-host
 build host=host: require-host
     nix build '.#darwinConfigurations.{{ host }}.system' {{ host_flags }}
 
-# Apply the nix-darwin configuration (SKIP_HOMEBREW=1 skips brew bundle).
-switch host=host: require-host
-    printf '%s\n' "${SKIP_HOMEBREW:-0}" | sudo tee /tmp/nix-darwin-skip-homebrew >/dev/null
+# Apply the nix-darwin configuration (skip_homebrew=1 skips brew bundle).
+switch host=host skip_homebrew="0": require-host
+    printf '%s\n' {{ quote(skip_homebrew) }} | sudo tee /tmp/nix-darwin-skip-homebrew >/dev/null
     sudo darwin-rebuild switch --flake '.#{{ host }}' {{ host_flags }}
 
 # Reset global agent tools (also runs automatically during switch).

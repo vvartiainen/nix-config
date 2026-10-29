@@ -158,7 +158,7 @@
     '';
   };
 
-  # SKIP_HOMEBREW=1 env var to skip homebrew on switch
+  # The just switch skip_homebrew parameter controls this one-shot flag.
   system.activationScripts.homebrew.text = lib.mkForce ''
     skipHomebrew=0
     if [[ -f /tmp/nix-darwin-skip-homebrew ]]; then
@@ -166,7 +166,7 @@
       rm -f /tmp/nix-darwin-skip-homebrew
     fi
     if [[ "$skipHomebrew" == 1 ]]; then
-      echo >&2 "Skipping Homebrew bundle (SKIP_HOMEBREW=1)"
+      echo >&2 "Skipping Homebrew bundle (skip_homebrew=1)"
     else
       echo >&2 "Homebrew bundle..."
       if [ -f "${config.homebrew.prefix}/bin/brew" ]; then

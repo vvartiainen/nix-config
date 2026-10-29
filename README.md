@@ -227,6 +227,13 @@ Validate your real host configuration manually before applying it:
     just switch <HOSTNAME>
     ```
 
+    To skip Homebrew bundle for this switch, pass `1` as the optional
+    `skip_homebrew` parameter (default: `0`):
+
+    ```bash
+    just switch <HOSTNAME> 1
+    ```
+
 ## Roll back to a previous version
 
 If a newly applied system generation causes problems, you can roll back to an earlier nix-darwin generation. Because Home Manager is integrated as a nix-darwin module here, rolling back the system generation also rolls back the Home Manager state from that generation.
