@@ -7,7 +7,35 @@
 }:
 let
   mergeConfig = import ../../merge-config.nix { inherit lib pkgs config; };
-  permissions = import ./permissions.nix { inherit lib; };
+  permissions = import ./permissions.nix { inherit lib config; };
+  inherit (permissions)
+    commands
+    paths
+    network
+    caches
+    ;
+
+  commandString = lib.concatStringsSep " ";
+
+  # Copilot has no config file setting for tool rules or file tool paths,
+  # only the `--allow-tool` / `--deny-tool` / `--add-dir` CLI flags.
+  toolPermissions = {
+    allowTools =
+      map (cmd: "shell(${commandString cmd}:*)") (
+        commands.allowed ++ commands.routine ++ [ [ "nixfmt" ] ]
+      )
+      ++ map (cmd: "shell(${commandString cmd})") commands.exact
+      ++ permissions.mcpServers;
+    # A relative write() path matches trailing components in any directory.
+    # Copilot has no read() rule, so reads can't be denied this way.
+    denyTools = map (cmd: "shell(${commandString cmd}:*)") commands.denied ++ [
+      "write(.env)"
+      "write(.git/config)"
+    ];
+    # Reads there need no path prompt, like Claude's Read(//nix/store/**).
+    # Edits still prompt, and the sandbox keeps the paths read-only.
+    addDirs = paths.readonly;
+  };
 
   # Copilot CLI stores user-editable settings in settings.json and rewrites
   # that file in place. A home-manager symlink into the Nix store gets
@@ -28,8 +56,8 @@ let
       # the hook reports the session over herdr's socket (connect needs write).
       userPolicy.filesystem = {
         readonlyPaths =
-          permissions.sandboxReadonlyPaths config
-          ++ permissions.toolRuntimePaths config
+          paths.readonly
+          ++ paths.runtime
           ++ [
             "${config.programs.github-copilot-cli.configDir}/hooks"
           ];
@@ -37,14 +65,14 @@ let
         # through the daemon, outside the agent sandbox.
         readwritePaths = [
           "${config.xdg.configHome}/herdr/herdr.sock"
-          permissions.nixDaemonSocket
+          paths.nixDaemonSocket
         ]
         # allowDevToolAccess grants a moved cache instead of its default
         # location, but only to its own ecosystem; mise has none.
-        ++ (permissions.agentCaches config).writePaths
+        ++ caches.writePaths
         # The backlog MCP servers (`bl <project> mcp start`) edit tasks there.
         ++ lib.optional (config.backlog.projects != [ ]) config.backlog.vault;
-        deniedPaths = permissions.sandboxDeniedPaths config;
+        deniedPaths = paths.denied;
         clearPolicyOnExit = true;
       };
       # No allowedHosts: a non-empty list blocks other hosts without a
@@ -62,7 +90,7 @@ let
       showCustom = true;
     };
     includeCoAuthoredBy = false;
-    allowedUrls = permissions.fetchDomains;
+    allowedUrls = network.fetch;
     # Skills come from the projects (`ct agents`), not the built-in ones.
     disabledSkills = [
       "customize-cloud-agent"
@@ -117,22 +145,20 @@ let
     "--disable-builtin-mcps"
   ]
   ++ lib.concatMap (tool: [
-      "--allow-tool"
-      tool
-    ]) (permissions.copilot config).allowTools
-    ++ lib.concatMap (tool: [
-      "--deny-tool"
-      tool
-    ]) (permissions.copilot config).denyTools
-    ++ lib.concatMap (dir: [
-      "--add-dir"
-      dir
-    ]) (permissions.copilot config).addDirs;
+    "--allow-tool"
+    tool
+  ]) toolPermissions.allowTools
+  ++ lib.concatMap (tool: [
+    "--deny-tool"
+    tool
+  ]) toolPermissions.denyTools
+  ++ lib.concatMap (dir: [
+    "--add-dir"
+    dir
+  ]) toolPermissions.addDirs;
 
   cacheEnv = lib.concatStringsSep " " (
-    lib.mapAttrsToList (name: value: "${name}=${lib.escapeShellArg value}") (
-      permissions.agentCaches config
-    ).env
+    lib.mapAttrsToList (name: value: "${name}=${lib.escapeShellArg value}") caches.env
   );
 in
 {

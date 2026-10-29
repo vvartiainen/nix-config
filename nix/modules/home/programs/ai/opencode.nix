@@ -6,7 +6,42 @@
 }:
 let
   mergeConfig = import ../../merge-config.nix { inherit lib pkgs config; };
-  permissions = import ./permissions.nix { inherit lib; };
+  permissions = import ./permissions.nix { inherit lib config; };
+  inherit (permissions) commands;
+
+  commandString = lib.concatStringsSep " ";
+  # OpenCode has no OS sandbox, so routine runners also need approval.
+  askCommands = commands.sandboxAsk ++ commands.routine;
+
+  toBashRules =
+    value: cmds:
+    builtins.listToAttrs (
+      map (cmd: {
+        name = "${commandString cmd} *";
+        inherit value;
+      }) cmds
+    );
+
+  permissionSettings = {
+    bash = {
+      "*" = "ask";
+    }
+    // toBashRules "allow" commands.allowed
+    // lib.genAttrs (map commandString commands.exact) (_: "allow")
+    // toBashRules "ask" askCommands
+    // lib.genAttrs (map commandString askCommands) (_: "ask")
+    // toBashRules "deny" commands.denied;
+    external_directory = {
+      "*" = "ask";
+      "/nix/store/**" = "allow";
+    };
+    read = {
+      "*" = "allow";
+      "*.env" = "deny";
+      "*.env.*" = "deny";
+      "*.env.example" = "allow";
+    };
+  };
 
   settings = {
     model = "openai/gpt-6.1-sol";
@@ -28,9 +63,7 @@ let
         ".cts"
       ];
     };
-    permission = {
-      inherit (permissions.opencode) bash external_directory read;
-    };
+    permission = permissionSettings;
   };
 
   tuiSettings = {

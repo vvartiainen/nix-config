@@ -24,7 +24,8 @@ ct agents set mcp nixos enable
 ct agents sync --dry-run && ct agents sync
 ```
 
-Tools of catalog servers are allowed without prompting (`permissions.nix`).
+Tools of catalog servers are allowed without prompting: `permissions.nix`
+exposes the catalog server names, and each CLI module renders its tool rules.
 Codex and Pi read project servers once you trust the project.
 
 ## Backlog shortcuts

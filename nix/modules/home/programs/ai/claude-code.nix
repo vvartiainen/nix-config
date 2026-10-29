@@ -8,7 +8,47 @@
 let
   jsonFormat = pkgs.formats.json { };
   mergeConfig = import ../../merge-config.nix { inherit lib pkgs config; };
-  permissions = import ./permissions.nix { inherit lib; };
+  permissions = import ./permissions.nix { inherit lib config; };
+  inherit (permissions)
+    commands
+    paths
+    network
+    caches
+    ;
+
+  commandString = lib.concatStringsSep " ";
+
+  permissionSettings = {
+    allow =
+      map (cmd: "Bash(${commandString cmd}:*)") commands.allowed
+      ++ map (cmd: "Bash(${commandString cmd})") commands.exact
+      ++ [ "Read(//nix/store/**)" ]
+      # WebFetch allows also widen the Bash sandbox's network allowlist.
+      ++ map (domain: "WebFetch(domain:${domain})") network.sandbox
+      # Projects list these in .mcp.json (`ct agents sync`).
+      ++ map (name: "mcp__${name}__*") permissions.mcpServers;
+    # Terraform is deliberately excluded from Claude's sandbox for macOS TLS
+    # compatibility, so validation still needs explicit review there.
+    ask = map (cmd: "Bash(${commandString cmd}:*)") (
+      commands.sandboxAsk
+      ++ [
+        [
+          "terraform"
+          "validate"
+        ]
+      ]
+    );
+    deny =
+      map (cmd: "Bash(${commandString cmd}:*)") commands.denied
+      ++ [
+        "Read(**/.env)"
+        "Read(**/.env.*)"
+        "Edit(**/.env)"
+        "Edit(**/.env.*)"
+      ]
+      ++ map (path: "Read(~/${path})") paths.homeSecrets
+      ++ map (pattern: "Read(${pattern})") paths.secretFiles;
+  };
 
   statusLine = pkgs.writeShellApplication {
     name = "claude-statusline";
@@ -87,12 +127,12 @@ let
       commit = "";
       pr = "";
     };
-    permissions = permissions.claude config // {
+    permissions = permissionSettings // {
       # Like Codex: workspace edits and sandboxed commands run without
       # prompts; ask rules and sandbox escapes still prompt.
       defaultMode = "acceptEdits";
     };
-    env = (permissions.agentCaches config).env // {
+    env = caches.env // {
       # nixpkgs sets CLAUDE_CODE_CERT_STORE=system, which on macOS holds only
       # keychain certificates, not Apple's roots. Add the Nix bundle, which
       # follows cacert and nix-darwin distrust updates.
@@ -141,7 +181,7 @@ let
       # possible exfiltration channel through it.
       enableWeakerNetworkIsolation = false;
       filesystem = {
-        allowWrite = (permissions.agentCaches config).writePaths;
+        allowWrite = caches.writePaths;
         # Git hooks and config run outside the sandbox.
         denyWrite = [
           "**/.git/hooks"
@@ -152,13 +192,13 @@ let
         allowRead = [ "/${repoRoot}/dotfiles/.npmrc" ];
       };
       network = {
-        allowedDomains = permissions.sandboxNetworkDomains;
+        allowedDomains = network.sandbox;
         # Other hosts prompt instead of failing (auto mode still refuses them
         # unless the command declares the host).
         strictAllowlist = false;
         # Let sandboxed nix commands reach the daemon; the user is not a
         # trusted nix user, so builds run unprivileged as nixbld.
-        allowUnixSockets = [ permissions.nixDaemonSocket ];
+        allowUnixSockets = [ paths.nixDaemonSocket ];
       };
     };
   };

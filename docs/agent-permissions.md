@@ -1,8 +1,11 @@
 # Agent CLI permissions
 
 Command rules, fetch domains, sandbox paths, and agent caches are defined once
-in `nix/modules/home/programs/ai/permissions.nix` and rendered into each CLI's
-native format. Each CLI module adds its own sandbox and approval settings.
+in `nix/modules/home/programs/ai/permissions.nix`, grouped under `commands`,
+`paths`, `network`, and `caches` in its `let` bindings. Each CLI module imports
+the policy with `lib` and `config`, renders its native permission format in
+local bindings, and adds its own sandbox and approval settings. The shared
+module also exposes the catalog's `mcpServers` names.
 
 The model follows Codex: **the sandbox is the boundary, and prompts are for
 leaving it.** Routine commands and workspace edits run without approval inside
@@ -31,25 +34,25 @@ normal access.
 
 ## Shared lists
 
-All in `permissions.nix`.
+These policy values live in `permissions.nix`. Paths and caches are resolved
+from the importing Home Manager configuration.
 
 | List | Purpose |
 |---|---|
-| `allowedCommands` | Read-only prefixes (`git status`, `nix eval`, `gh pr view`, `terraform fmt`, …) allowed everywhere, including outside a sandbox |
-| `exactCommands` | Allowed only as written (`git branch --show-current`); their prefixes would allow destructive forms |
-| `sandboxAskCommands` | Broad wrappers (`just`, `npm run`, `npx`) and daemon-backed Nix commands (`nix fmt`, `nix build`); prompt in Codex and Claude, unlisted in Copilot |
-| `routineCommands` | `npm test`, `cargo test`, and `terraform validate`; sandbox approval in Codex/Claude (except Claude Terraform), narrow allows in Copilot |
-| `askCommands` | Includes `sandboxAskCommands` plus `routineCommands`; OpenCode's ask list |
-| `deniedCommands` | Never auto-approved (`op`, `security`, `gh auth`, `gh api`, `sudo`, `darwin-rebuild`, `just switch`, `git push --force`, `mise trust`) |
-| `homeSecretPaths` | Credential paths under `~` denied for reads (`.ssh`, `.config/op`, `.config/gh`, `.aws`, `.gnupg`, `.netrc`, `.npmrc`) |
-| `secretFilePatterns` | Key files denied everywhere (`**/*.pem`, `**/*.key`); `.env` files are denied per CLI |
-| `sandboxDeniedPaths` | `homeSecretPaths` as plain absolute paths, for sandboxes that don't take globs |
-| `fetchDomains` | Docs and registry sites the web-fetch tools may read |
-| `sandboxNetworkDomains` | Download-only hosts sandboxed commands may reach (Nix registry, PyPI, crates index, Go module proxy and checksum DB, mise version index, SchemaStore). Upload-capable registries (`registry.npmjs.org`, `crates.io`, `api.github.com`) are excluded |
-| `sandboxReadonlyPaths` | Tool paths outside the sandboxes' built-in grants (`/nix/store`, Homebrew, mise data and config, aube store, git config) |
-| `toolRuntimePaths` | Paths git and Nix probe at startup (`~/.gitconfig`, Nix profile symlinks, `/etc/nix`), for sandboxes that deny reads outside their grants |
-| `nixDaemonSocket` | The Nix daemon socket sandboxed `nix` commands connect to |
-| `agentCaches` | Separate writable package manager caches (`writePaths`) and the env vars pointing tools at them (`env`) |
+| `commands.allowed` | Read-only prefixes (`git status`, `nix eval`, `gh pr view`, `terraform fmt`, …) allowed everywhere, including outside a sandbox |
+| `commands.exact` | Allowed only as written (`git branch --show-current`); their prefixes would allow destructive forms |
+| `commands.sandboxAsk` | Broad wrappers (`just`, `npm run`, `npx`) and daemon-backed Nix commands (`nix fmt`, `nix build`); prompt in Codex and Claude, unlisted in Copilot |
+| `commands.routine` | `npm test`, `cargo test`, and `terraform validate`; sandbox approval in Codex/Claude (except Claude Terraform), narrow allows in Copilot |
+| `commands.denied` | Never auto-approved (`op`, `security`, `gh auth`, `gh api`, `sudo`, `darwin-rebuild`, `just switch`, `git push --force`, `mise trust`) |
+| `paths.homeSecrets` | Credential paths under `~` denied for reads (`.ssh`, `.config/op`, `.config/gh`, `.aws`, `.gnupg`, `.netrc`, `.npmrc`) |
+| `paths.secretFiles` | Key files denied everywhere (`**/*.pem`, `**/*.key`); `.env` files are denied per CLI |
+| `paths.denied` | `paths.homeSecrets` as plain absolute paths, for sandboxes that don't take globs |
+| `network.fetch` | Docs and registry sites the web-fetch tools may read |
+| `network.sandbox` | Download-only hosts sandboxed commands may reach (Nix registry, PyPI, crates index, Go module proxy and checksum DB, mise version index, SchemaStore). Upload-capable registries (`registry.npmjs.org`, `crates.io`, `api.github.com`) are excluded |
+| `paths.readonly` | Tool paths outside the sandboxes' built-in grants (`/nix/store`, Homebrew, mise data and config, aube store, git config) |
+| `paths.runtime` | Paths git and Nix probe at startup (`~/.gitconfig`, Nix profile symlinks, `/etc/nix`), for sandboxes that deny reads outside their grants |
+| `paths.nixDaemonSocket` | The Nix daemon socket sandboxed `nix` commands connect to |
+| `caches` | Separate writable package manager caches (`writePaths`) and the env vars pointing tools at them (`env`) |
 | `mcpServers` | Catalog MCP servers (`mcp.nix`) whose tools are allowed without prompting |
 
 Prefix denies are not a hard boundary: `sh -c '…'` or an absolute path does
@@ -60,21 +63,21 @@ a prompt, but only inside the sandbox.
 
 | List | Codex | Claude | Cursor | Copilot | OpenCode |
 |---|---|---|---|---|---|
-| `allowedCommands` | — (left to the sandbox) | `Bash(…)` allow | `Shell(…)` allow | `--allow-tool` | allow |
-| `exactCommands` | — (prefix rules only) | `Bash(…)` allow | `Shell(…)` allow | `--allow-tool` | allow |
-| `sandboxAskCommands` | `prompt` rule | ask | — | — (unlisted) | — |
-| `routineCommands` | — (sandbox policy) | — except `terraform validate` ask | — | `--allow-tool` | — |
-| `askCommands` | — | — | — | — | ask |
-| `deniedCommands` | `forbidden` rule | deny | deny | `--deny-tool` | deny |
-| `homeSecretPaths` | — (reads outside the workspace denied) | `Read(…)` deny, also a sandbox read deny | `Read(…)` deny | sandbox `deniedPaths` | — |
-| `secretFilePatterns` | workspace deny | `Read(…)` deny | `Read(…)` deny | — | — |
+| `commands.allowed` | — (left to the sandbox) | `Bash(…)` allow | `Shell(…)` allow | `--allow-tool` | allow |
+| `commands.exact` | — (prefix rules only) | `Bash(…)` allow | `Shell(…)` allow | `--allow-tool` | allow |
+| `commands.sandboxAsk` | `prompt` rule | ask | — | — (unlisted) | — |
+| `commands.routine` | — (sandbox policy) | — except `terraform validate` ask | — | `--allow-tool` | — |
+| `commands.sandboxAsk ++ commands.routine` | — | — | — | — | ask |
+| `commands.denied` | `forbidden` rule | deny | deny | `--deny-tool` | deny |
+| `paths.homeSecrets` | — (reads outside the workspace denied) | `Read(…)` deny, also a sandbox read deny | `Read(…)` deny | sandbox `deniedPaths` | — |
+| `paths.secretFiles` | workspace deny | `Read(…)` deny | `Read(…)` deny | — | — |
 | `.env` files | workspace deny | `Read`/`Edit` deny | `Read` deny | `write(.env)` deny | `read` deny |
-| `fetchDomains` | — | — | `WebFetch(…)` allow | `allowedUrls` | — |
-| `sandboxNetworkDomains` | proxy `domains` | `allowedDomains` and `WebFetch(domain:…)` allow | `networkAllowlist` | — (open network) | — |
-| `sandboxReadonlyPaths` | `read` | — (reads allowed) | `additionalReadonlyPaths` | `readonlyPaths`, `--add-dir` | — |
-| `toolRuntimePaths` | `read` | — (reads allowed) | — (reads allowed) | `readonlyPaths` | — |
-| `nixDaemonSocket` | `unix_sockets`, `read` | `allowUnixSockets` | — | `readwritePaths` | — |
-| `agentCaches` | `shell_environment_policy`, `write` | `env`, `allowWrite` | wrapped binary, `additionalReadwritePaths` | wrapper env, `readwritePaths` | — |
+| `network.fetch` | — | — | `WebFetch(…)` allow | `allowedUrls` | — |
+| `network.sandbox` | proxy `domains` | `allowedDomains` and `WebFetch(domain:…)` allow | `networkAllowlist` | — (open network) | — |
+| `paths.readonly` | `read` | — (reads allowed) | `additionalReadonlyPaths` | `readonlyPaths`, `--add-dir` | — |
+| `paths.runtime` | `read` | — (reads allowed) | — (reads allowed) | `readonlyPaths` | — |
+| `paths.nixDaemonSocket` | `unix_sockets`, `read` | `allowUnixSockets` | — | `readwritePaths` | — |
+| `caches` | `shell_environment_policy`, `write` | `env`, `allowWrite` | wrapped binary, `additionalReadwritePaths` | wrapper env, `readwritePaths` | — |
 | `mcpServers` | — | `mcp__<server>__*` allow | `Mcp(…)` allow | `--allow-tool` | — |
 
 Codex and Claude run `npm test`, `cargo test`, and installed formatters under
@@ -99,13 +102,13 @@ they can invoke commands needing extra review. Cursor and OpenCode retain
 their existing behavior.
 
 Claude's WebFetch allow rules also widen its Bash sandbox network, so Claude
-gets `sandboxNetworkDomains` instead of `fetchDomains` there.
+gets `network.sandbox` instead of `network.fetch` there.
 
 Copilot checks the paths of its own file tools separately from the sandbox:
 anything outside the working directory prompts. `--add-dir` lifts that for
-`sandboxReadonlyPaths` and also trusts any `.github/skills` and
+`paths.readonly` and also trusts any `.github/skills` and
 `.github/agents` there. Its `write()` rules match trailing path components,
-and it has no `read()` rule, so `secretFilePatterns` and `.env` reads are not
+and it has no `read()` rule, so `paths.secretFiles` and `.env` reads are not
 denied for Copilot.
 
 ### CLI-specific lists
@@ -130,7 +133,7 @@ denied for Copilot.
 | Reads | Denied outside the workspace, except tool paths and Codex's runtime set | Allowed everywhere except credential paths and `.env` files | Allowed (system read boundary) | Working directory, PATH, temp, user profile, dev-tool paths; credential paths denied |
 | Writes | Workspace, agent caches | Working directory, `$TMPDIR`, agent caches | Workspace, agent caches | Working directory, temp, agent caches, dev-tool caches (`allowDevToolAccess`) |
 | Read-only in the workspace | `.git/hooks`, `.git/config` | `.git/hooks`, `.git/config` | — | `.git/config` for file tools only |
-| Network | `sandboxNetworkDomains`; other hosts ask for approval | `sandboxNetworkDomains`; other hosts prompt | `sandboxNetworkDomains` plus Cursor's default list | Open |
+| Network | `network.sandbox`; other hosts ask for approval | `network.sandbox`; other hosts prompt | `network.sandbox` plus Cursor's default list | Open |
 | Unsandboxed | Approved escalations | `gh`, `terraform`, Go module downloads, approved retries | Approved escapes | Approved bypasses |
 | Unix sockets | Nix daemon only | Nix daemon only | — | Nix daemon, herdr |
 
@@ -143,7 +146,7 @@ allowing back what tools need.
 
 ### Unlisted hosts
 
-Hosts outside `sandboxNetworkDomains` should ask, not fail:
+Hosts outside `network.sandbox` should ask, not fail:
 
 - Codex: the proxy runs in `full` mode, so other hosts go through on-request
   approval.
@@ -246,10 +249,11 @@ agents from preferring scripts just to avoid prompts.
 
 ## Changing the setup
 
-- Shared lists: `nix/modules/home/programs/ai/permissions.nix`
+- Shared policy: `nix/modules/home/programs/ai/permissions.nix`
+- Native permission adapters: each CLI's module (`claude-code.nix`,
+  `codex.nix`, `cursor-cli.nix`, `github-copilot-cli.nix`, `opencode.nix`)
 - Claude sandbox, exclusions, and mode: `claude-code.nix`
-- Codex profile, proxy, and git worktree grants: `permissions.nix`
-  (`codexPermissions`) and `codex.nix`
+- Codex profile, proxy, command rules, and git worktree grants: `codex.nix`
 - Copilot sandbox, cache env, and tool flags: `github-copilot-cli.nix`
 - Cursor sandbox, network allowlist, and cache wrapper: `cursor-cli.nix`
 
@@ -309,7 +313,7 @@ boundary working, not a bug to work around.
   agent caches through env vars. Builds and tests that only need cached
   dependencies run without prompts. The first build in a session's cache
   downloads dependencies again.
-- **Network:** hosts in `sandboxNetworkDomains` (Nix registry, PyPI, crates
+- **Network:** hosts in `network.sandbox` (Nix registry, PyPI, crates
   index, Go proxy and checksum DB, mise version index, SchemaStore).
 - **Git:** status, diff, add, and commit. Hooks and `.git/config` are
   read-only.

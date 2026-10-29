@@ -6,14 +6,87 @@
 }:
 let
   mergeConfig = import ../../merge-config.nix { inherit lib pkgs config; };
-  permissions = import ./permissions.nix { inherit lib; };
-  commandRules = pkgs.writeText "codex-nix-config.rules" permissions.codexRules;
-  settings = permissions.codexPermissions config // {
+  permissions = import ./permissions.nix { inherit lib config; };
+  inherit (permissions)
+    commands
+    paths
+    network
+    caches
+    ;
+  quote = s: ''"${s}"'';
+  toCodexRule =
+    decision: cmd:
+    ''prefix_rule(pattern = [${lib.concatMapStringsSep ", " quote cmd}], decision = "${decision}")'';
+
+  # Codex sandboxes read the whole disk by default; deny everything outside
+  # the workspace except Codex's runtime set and the shared tool paths.
+  permissionSettings = {
+    approval_policy = "on-request";
+    approvals_reviewer = "user";
+    # Domain rules are not enforced without the proxy.
+    features.network_proxy = true;
+
+    default_permissions = "workspace-only";
+    permissions.workspace-only = {
+      extends = ":workspace";
+      network = {
+        enabled = true;
+        # Hosts outside the allowlist go through on-request approval. "limited"
+        # would also block non-GET methods and require HTTPS MITM, neither of
+        # which can be approved.
+        mode = "full";
+        domains = lib.genAttrs network.sandbox (_: "allow");
+        allow_local_binding = false;
+        allow_upstream_proxy = false;
+        # Nix builds run through the daemon, outside the agent sandbox.
+        unix_sockets.${paths.nixDaemonSocket} = "allow";
+      };
+
+      filesystem = {
+        ":root" = "deny";
+        ":minimal" = "read";
+
+        ":workspace_roots" = {
+          "." = "write";
+          # `:workspace` keeps `.git` read-only, which blocks commits even
+          # after approval. Keep hooks and config read-only: they run outside
+          # the sandbox.
+          ".git" = "write";
+          ".git/hooks" = "read";
+          ".git/config" = "read";
+          "**/.env" = "deny";
+          "**/.env.*" = "deny";
+        }
+        // lib.genAttrs paths.secretFiles (_: "deny");
+      }
+      // lib.genAttrs (paths.readonly ++ paths.runtime) (_: "read")
+      // lib.genAttrs caches.writePaths (_: "write")
+      // {
+        "${config.home.homeDirectory}/.codex/skills" = "read";
+
+        # Nix probes the socket before selecting the daemon store. The
+        # network allowlist above permits connecting, not filesystem probes.
+        ${paths.nixDaemonSocket} = "read";
+      };
+    };
+  };
+
+  # Leave routine commands to the sandbox and on-request approval policy.
+  # Explicit prompt rules also prompt inside the sandbox, while allow rules
+  # can authorize leaving it. Only commands needing extra review get rules.
+  commandRules = pkgs.writeText "codex-nix-config.rules" (
+    lib.concatMapStringsSep "\n" (toCodexRule "prompt") commands.sandboxAsk
+    + "\n"
+    + lib.concatMapStringsSep "\n" (toCodexRule "forbidden") commands.denied
+    + "\n"
+  );
+
+  settings = permissionSettings // {
     model = "gpt-6.1-sol";
     model_reasoning_effort = "medium";
     plan_mode_reasoning_effort = "high";
     web_search = "live";
-    shell_environment_policy.set = (permissions.agentCaches config).env;
+    shell_environment_policy.set = caches.env;
     # Keep @ focused on files; plugins and skills remain available through $.
     features.mentions_v2 = false;
     # MCP servers come from the projects (`ct agents`), not ChatGPT apps.
@@ -95,7 +168,7 @@ let
       };
     };
   };
-  profile = (permissions.codexPermissions config).default_permissions;
+  profile = permissionSettings.default_permissions;
 in
 {
   programs.codex = {
