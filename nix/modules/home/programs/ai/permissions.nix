@@ -345,6 +345,9 @@ let
         GOMODCACHE = "${dir "go"}/mod";
         MISE_CACHE_DIR = dir "mise";
         npm_config_cache = dir "npm";
+        # Sandboxed nvim can't open its server socket or its log in
+        # ~/.local/state, so it logs the failure to ./nvim.log instead.
+        NVIM_LOG_FILE = "/dev/null";
       };
       writePaths = map dir [
         "nix"

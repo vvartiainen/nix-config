@@ -178,6 +178,11 @@ neither has an env setting. The variables also apply to approved commands
 outside the sandbox. The first build in each cache downloads dependencies
 again.
 
+The same env sets `NVIM_LOG_FILE=/dev/null`. Sandboxed Neovim can't create
+its RPC socket or open its log under `~/.local/state`, so without it every
+headless `nvim` run writes a `server_start` warning to `./nvim.log` in the
+working directory.
+
 mise installs (`~/.local/share/mise`) stay read-only: they are programs the
 user runs outside the sandbox. Run `mise install` outside the sandbox. mise's
 state directory (`~/.local/state/mise`) is not covered.
