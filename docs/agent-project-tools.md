@@ -80,6 +80,12 @@ The reusable workflow skills in this repo are:
 | `backlog-task` | Capture a task with a short title, why and observable acceptance criteria; search for duplicates and follow the project's workflow. |
 | `work-on-task` | Give an agent work by task ID or title; resolve scope, dependencies and ownership, execute and hand off, or prepare a brief for another agent. |
 
+Publication reviews honor an explicit local comparison base without fetching.
+For remote refs, `review-before-push` prefers anonymous HTTPS for public repos
+and existing `gh` authentication for private GitHub repos, using one-off fetches
+that preserve remote settings. It explains verified SSH requirements and
+distinguishes them from authentication or sandbox access failures.
+
 For example, after the user rebuilds/applies the catalog, select a skill in the
 target project and review the generated files:
 
