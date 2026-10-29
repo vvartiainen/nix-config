@@ -66,19 +66,24 @@ the terminal's settings.
 These shortcuts are handled by Herdr before the shell or CLI in its pane.
 Numbered agent jumps follow the visible agent panel order.
 
+Hold Right Option: J/K switches agents, H/L switches tabs within the current
+workspace, and Shift+J/K switches workspaces. For direct jumps, Option+1–9
+selects agents and Option+Shift+1–9 selects tabs. Use Ctrl+B, release it,
+then Shift+1–9 to select a workspace by number.
+
 | Action | Binding |
 |---|---|
 | Previous / next agent | Alt+K / Alt+J |
 | Jump to agent 1–9 | Alt+1–9 |
 | Go To picker | Alt+G |
 | Workspace picker | Alt+W |
-| Previous / next workspace | Alt+H / Alt+L |
-| Jump to workspace 1–9 | Alt+Shift+1–9 |
+| Previous / next workspace | Alt+Shift+K / Alt+Shift+J |
+| Jump to workspace 1–9 | Ctrl+B → Shift+1–9 |
+| Previous / next tab | Alt+H / Alt+L; also Ctrl+B → P / Ctrl+B → N |
 | New tab | Alt+N |
 | New workspace | Alt+Shift+N |
 | Clear pane / new conversation | Alt+C |
-| Previous / next tab | Ctrl+B → P / Ctrl+B → N |
-| Jump to tab 1–9 | Ctrl+B → 1–9 |
+| Jump to tab 1–9 | Alt+Shift+1–9; also Ctrl+B → 1–9 |
 | Focus pane | Ctrl+B → H/J/K/L |
 | Show active shortcuts | Ctrl+B → ? |
 

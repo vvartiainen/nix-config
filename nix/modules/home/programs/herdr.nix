@@ -83,9 +83,21 @@ in
         focus_agent = "alt+1..9";
         goto = "alt+g";
         workspace_picker = "alt+w";
-        previous_workspace = "alt+h";
-        next_workspace = "alt+l";
-        switch_workspace = "alt+shift+1..9";
+        previous_workspace = "alt+shift+k";
+        next_workspace = "alt+shift+j";
+        switch_workspace = "prefix+shift+1..9";
+        previous_tab = [
+          "prefix+p"
+          "alt+h"
+        ];
+        next_tab = [
+          "prefix+n"
+          "alt+l"
+        ];
+        switch_tab = [
+          "prefix+1..9"
+          "alt+shift+1..9"
+        ];
         new_tab = "alt+n";
         new_workspace = "alt+shift+n";
 
