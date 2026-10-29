@@ -45,6 +45,7 @@ let
         # The backlog MCP servers (`bl <project> mcp start`) edit tasks there.
         ++ lib.optional (config.backlog.projects != [ ]) config.backlog.vault;
         deniedPaths = permissions.sandboxDeniedPaths config;
+        clearPolicyOnExit = true;
       };
       # No allowedHosts: a non-empty list blocks other hosts without a
       # prompt, and Copilot already prompts for every unlisted command.

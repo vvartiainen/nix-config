@@ -93,6 +93,7 @@ denied for Copilot.
 | Codex | `filesystem` | Workspace `.git` writable, hooks and config read-only, `~/.codex/skills` |
 | Copilot | `readonlyPaths` / `readwritePaths` | Copilot hooks; herdr socket and backlog vault |
 | Copilot | `--deny-tool` | `write(.git/config)`, for its file tools only |
+| Copilot | `clearPolicyOnExit` | `true` |
 
 ## Sandbox boundaries
 
