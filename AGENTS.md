@@ -15,36 +15,37 @@ This repository contains my macOS configs using nix, nix-darwin and home-manager
 
 ## Validation commands (no apply)
 
-Prefer direct Nix commands for agent verification after config changes. Run
-linting and one system build from the repository root:
+Use the tracked `nix/fixtures/host` input for agent verification after config
+changes. Run linting and one system build from the repository root:
 
 ```sh
 statix check .
-nix build --no-link '.#darwinConfigurations.<hostName>.system' \
-  --override-input host 'path:<host-directory>'
+nix build --no-link '.#darwinConfigurations.agent-fixture.system' \
+  --override-input host "path:$PWD/nix/fixtures/host"
 ```
 
-Replace `<host-directory>` with the absolute path to `~/.config/nix-config-host`
-and `<hostName>` with its `hostName` value (see README "Host data"). Pass the
-host override on every Nix invocation; it implies `--no-write-lock-file`.
-Never commit host names, usernames or work-specific config to this repo. New
-files must be `git add`ed before a build sees them.
+The fixture contains only synthetic identity and paths, with nested
+virtualization disabled and no private modules. Do not read
+`~/.config/nix-config-host` or request access to it for routine validation.
+Pass the fixture override on every Nix invocation; it implies
+`--no-write-lock-file`. Never commit real host names, usernames or
+work-specific config to this repo. New files must be `git add`ed before a
+build sees them.
 
 For a quick evaluation without building, use:
 
 ```sh
-nix eval --raw '.#darwinConfigurations.<hostName>.system.drvPath' \
-  --override-input host 'path:<host-directory>'
+nix eval --raw '.#darwinConfigurations.agent-fixture.system.drvPath' \
+  --override-input host "path:$PWD/nix/fixtures/host"
 ```
 
 `nix flake show` is optional output inspection. `nix flake check` does not
 validate `darwinConfigurations`; this flake currently exposes no `checks`.
 Neither replaces an explicit system evaluation or build.
 
-The `just` recipes remain available for convenience: `just check` runs
-`statix` and the system evaluation, and `just build` runs the same system
-build. Direct `nix build --no-link` avoids the `just` approval prompt and
-leaves no result symlink.
+The `just` recipes use private host data and are for the user's manual
+validation. Agents use the direct commands above. Direct `nix build --no-link`
+avoids the `just` approval prompt and leaves no result symlink.
 
 Do not run apply commands (for example `just switch <hostName>` or
 `darwin-rebuild switch`); user applies manually. Documentation-only changes
@@ -71,27 +72,20 @@ the sandboxes").
 
 ## Validation in a restricted agent session
 
-- Try direct Nix verification with the real host input first. A missing-file
-  result for private host data can mean the session cannot read it; request
-  access before falling back to a fixture. Do not run `just init-host` or
-  migrate host files just to get validation working.
-- If real host data remains unavailable after requesting access, create a
-  temporary directory outside the repo with a minimal `default.nix`: generic
-  `userName`/`hostName`, this checkout's `repoRoot`, and
-  `nestedVirtualization = false`. No private modules or real machine identity
-  belong in that fixture or in committed files.
-- Use the same direct Nix commands with the fixture's `hostName` and
-  `--override-input host 'path:<temporary-directory>'`. Resolve the temporary
-  directory with `realpath` first; Nix path inputs can reject macOS symlink
-  prefixes such as `/var`. Report that the result validates the public
-  configuration with a fixture, not the real machine's private configuration.
+- Use `nix/fixtures/host` directly; no private host input or temporary host
+  directory is needed. Do not run `just init-host` or migrate host files just
+  to get validation working.
+- Report that fixture validation covers the public configuration only. It
+  does not validate private modules, real machine identity or nested
+  virtualization. The fixture's `repoRoot` is a synthetic path for generated
+  dotfile links; it does not need to exist. Never apply the fixture system.
   Do not change `flake.lock` for the fixture.
 - Use small temporary consumer flakes for testing direct Home Manager imports
   on Linux or macOS. Pin their inputs to this checkout and its existing inputs;
   keep temporary locks, results and generic users outside this repo.
-- Temporary fixtures support evaluation/build testing. They do not grant
-  access to restricted private files or replace actual host validation.
-  Request access when needed and clearly report any remaining limitation.
+- The user validates their private host configuration manually before
+  applying it. Fixture validation does not require wider filesystem access;
+  normal build and network approval rules still apply.
 - Do not rerun a permission-blocked formatter when the user has asked to skip
   formatting. Keep edits readable and run `git diff --check`.
 - For helper scripts, check `type -a python3` and prefer an already-installed

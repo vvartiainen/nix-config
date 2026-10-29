@@ -241,6 +241,14 @@ boundary working, not a bug to work around.
 - **Nix:** evaluation, and builds through the daemon after approval
   (`nix build`, `just`).
 
+For nix-config validation, agents use the tracked `nix/fixtures/host` input
+with `--override-input host "path:$PWD/nix/fixtures/host"` from the repository
+root (see `AGENTS.md`). It contains synthetic identity and paths, disables
+nested virtualization, and imports no private modules. Routine validation
+does not read or request access to `~/.config/nix-config-host`. The user
+validates the real host configuration manually before applying it. Build
+and network approval rules still apply; never activate the fixture system.
+
 ### What needs approval
 
 | Action | What happens |

@@ -184,7 +184,7 @@ Machine identity is kept out of this repo, so a work machine's host name, user a
 }
 ```
 
-The flake reads it through its `host` input, which points at a stub that fails with an error. The `just` recipes pass the real directory with `--override-input host path:$HOME/.config/nix-config-host`. That flag implies `--no-write-lock-file`, so the path never ends up in `flake.lock`. Run raw `nix` or `darwin-rebuild` commands with the same flag.
+The flake reads it through its `host` input, which points at a stub that fails with an error. The `just` recipes pass the real directory with `--override-input host path:$HOME/.config/nix-config-host`. That flag implies `--no-write-lock-file`, so the path never ends up in `flake.lock`. For manual validation and activation of your machine, run raw `nix` or `darwin-rebuild` commands with the same flag. Agents use the repository fixture described below.
 
 Only that directory and the tracked files of this repo are copied into the Nix store. New files in this repo need `git add` before a build sees them.
 
@@ -193,6 +193,26 @@ Use the same value for `<HOSTNAME>` in the `just` recipes as `hostName`; it defa
 The `just` recipes stop with a hint when the host data is missing.
 
 ## Validating and applying the configs
+
+Agents validate the public configuration with the tracked
+[`nix/fixtures/host/default.nix`](nix/fixtures/host/default.nix) input:
+
+```bash
+statix check .
+nix eval --raw '.#darwinConfigurations.agent-fixture.system.drvPath' \
+  --override-input host "path:$PWD/nix/fixtures/host"
+nix build --no-link '.#darwinConfigurations.agent-fixture.system' \
+  --override-input host "path:$PWD/nix/fixtures/host"
+```
+
+Run these from the repository root. The fixture uses synthetic identity and a
+synthetic `repoRoot` for generated dotfile links; that path need not exist.
+It disables nested virtualization and imports no private modules. Agents do
+not need to read or request access to `~/.config/nix-config-host`. Build and
+network approvals still apply. This validates the public configuration only;
+never activate the fixture system.
+
+Validate your real host configuration manually before applying it:
 
 1. Validate
 
