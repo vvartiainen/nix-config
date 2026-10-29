@@ -93,16 +93,23 @@ See the [project tools guide](docs/agent-project-tools.md) for per-project MCP s
 ## Prerequisites
 
 - macOS (Apple Silicon expected by current config)
-- Xcode
+- Xcode installed at `/Applications/Xcode.app` (finish installation before continuing)
 - Homebrew
 - just (`brew install just`)
 
 Apple does not expose these as nix-darwin options. Run them once on a new machine (safe to re-run):
 
 ```bash
-sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
 sudo xcodebuild -license accept
 softwareupdate --install-rosetta --agree-to-license
+```
+
+Verify the active developer directory and tool lookup:
+
+```bash
+xcode-select --print-path # expected: /Applications/Xcode.app/Contents/Developer
+xcrun --find clang
 ```
 
 Rosetta is required for `x86_64-linux` builds on the VZ linux-builder. The Xcode license must be accepted before `xcodebuild` and some Homebrew formulas work.
