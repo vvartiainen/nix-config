@@ -15,20 +15,40 @@ This repository contains my macOS configs using nix, nix-darwin and home-manager
 
 ## Validation commands (no apply)
 
-Use the `justfile` recipes after config changes so commands get the repository's
-correct bootstrapping:
+Prefer direct Nix commands for agent verification after config changes. Run
+linting and one system build from the repository root:
 
-- `just show`
-- `just check`
-- `just eval-system`
-- `just build-system`
-- `just build`
+```sh
+statix check .
+nix build --no-link '.#darwinConfigurations.<hostName>.system' \
+  --override-input host 'path:<host-directory>'
+```
 
-Do not run apply commands (for example `just switch <hostName>`); user applies manually.
+Replace `<host-directory>` with the absolute path to `~/.config/nix-config-host`
+and `<hostName>` with its `hostName` value (see README "Host data"). Pass the
+host override on every Nix invocation; it implies `--no-write-lock-file`.
+Never commit host names, usernames or work-specific config to this repo. New
+files must be `git add`ed before a build sees them.
 
-The hostname is selected automatically, you should only need `just build` without anything else.
+For a quick evaluation without building, use:
 
-Host identity comes from `~/.config/nix-config-host` through the `host` flake input (see README "Host data"). Never commit host names, usernames or work-specific config to this repo. New files must be `git add`ed before a build sees them.
+```sh
+nix eval --raw '.#darwinConfigurations.<hostName>.system.drvPath' \
+  --override-input host 'path:<host-directory>'
+```
+
+`nix flake show` is optional output inspection. `nix flake check` does not
+validate `darwinConfigurations`; this flake currently exposes no `checks`.
+Neither replaces an explicit system evaluation or build.
+
+The `just` recipes remain available for convenience. `just build-system` and
+`just build` build the same system package; running both is redundant. Direct
+`nix build` avoids the `darwin-rebuild` dependency and leaves no result symlink
+when passed `--no-link`.
+
+Do not run apply commands (for example `just switch <hostName>` or
+`darwin-rebuild switch`); user applies manually. Documentation-only changes
+need a diff review and `git diff --check`, not a system build.
 
 ## Agent sandbox
 
@@ -37,9 +57,11 @@ the sandboxes").
 
 - Writable: the workspace, `$TMPDIR`, and `~/.cache/<tool>-agent`; package
   caches already point there. Use `$TMPDIR` for scratch files.
-- Network: package download hosts only; other hosts need approval. `just`
-  recipes always prompt, and a build that fetches flake inputs from GitHub
-  needs `github.com` approved.
+- Network: package download hosts only; other hosts need approval. Fetching
+  flake inputs from GitHub may need `github.com` approved.
+- `just` and `nix build` require command approval under the shared permission
+  rules. Direct Nix evaluation avoids the `just` wrapper prompt; builds still
+  run through the daemon outside the agent sandbox and require approval.
 - `Operation not permitted`, `403`/`Forbidden`, or `x509: OSStatus -26276`
   mean the sandbox blocked it: retry once with escalation or ask, don't try
   variants or work around it.
@@ -49,23 +71,21 @@ the sandboxes").
 
 ## Validation in a restricted agent session
 
-- Try the normal `just` recipes first. A missing-file result for private host
-  data can mean the session cannot read it; do not run `just init-host` or
+- Try direct Nix verification with the real host input first. A missing-file
+  result for private host data can mean the session cannot read it; request
+  access before falling back to a fixture. Do not run `just init-host` or
   migrate host files just to get validation working.
 - If real host data remains unavailable after requesting access, create a
   temporary directory outside the repo with a minimal `default.nix`: generic
   `userName`/`hostName`, this checkout's `repoRoot`, and
   `nestedVirtualization = false`. No private modules or real machine identity
   belong in that fixture or in committed files.
-- Run the same recipes with
-  `just --set host_dir <temporary-directory> --set host <fixture-hostName> <recipe>`.
-  This preserves the repository's host override/bootstrap logic. Report that
-  the result validates the public configuration with a fixture, not the real
-  machine's private configuration. Do not change `flake.lock` for the fixture.
-- If `darwin-rebuild` is missing from PATH, check the installed command at
-  `/nix/var/nix/profiles/system/sw/bin/darwin-rebuild`. Add its resolved store
-  directory to PATH for `just build`; do not fetch an unrelated nix-darwin
-  version. `just build-system` also builds the system derivation directly.
+- Use the same direct Nix commands with the fixture's `hostName` and
+  `--override-input host 'path:<temporary-directory>'`. Resolve the temporary
+  directory with `realpath` first; Nix path inputs can reject macOS symlink
+  prefixes such as `/var`. Report that the result validates the public
+  configuration with a fixture, not the real machine's private configuration.
+  Do not change `flake.lock` for the fixture.
 - Use small temporary consumer flakes for testing direct Home Manager imports
   on Linux or macOS. Pin their inputs to this checkout and its existing inputs;
   keep temporary locks, results and generic users outside this repo.
