@@ -110,3 +110,9 @@ Ideas and open work are tracked in a Backlog.md backlog through the `backlog-nix
 - Read `backlog://workflow/overview` or call `get_backlog_instructions` first
 - Search for an existing task before creating one
 - Keep the task status and notes current while working
+- Before creating or changing tasks, read `doc-4`, "Agent handoff and review
+  workflow", using `document_view` on `backlog-nix-config`. Follow its review
+  queue, user acceptance, and end-of-session handoff rules alongside the
+  built-in workflow guides.
+- Update `doc-2`, "Latest session handoff", after sessions that change tasks or
+  repository files, as described in `doc-4`.
