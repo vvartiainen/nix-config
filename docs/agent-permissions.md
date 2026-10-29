@@ -20,11 +20,14 @@ for anything that has to run outside the sandbox.
 | OpenCode | No sandbox; `*` is ask | CLI default | Everything not allowlisted |
 | Pi | No permission config | — | — |
 
-Copilot stays on manual approval. It has no "approve if sandboxed" setting,
-only a blanket `--allow-tool shell`, and its default sandbox grants the user
-profile and open outbound network, with a per-command bypass. OpenCode has no
-OS sandbox, so its rules are the only boundary. Pi has neither; anything it
-runs uses the user's normal access.
+Copilot has no "approve if sandboxed" setting. It uses narrow command allow
+rules for routine tests and validation, with manual approval for other
+unlisted commands. Its default sandbox grants the user profile and open
+outbound network, with a per-command bypass. These allow rules also apply if
+the user disables the sandbox; they do not enforce sandboxing. No blanket
+`--allow-tool shell` grant is configured. OpenCode has no OS sandbox, so its
+rules are the only boundary. Pi has neither; anything it runs uses the user's
+normal access.
 
 ## Shared lists
 
@@ -34,8 +37,9 @@ All in `permissions.nix`.
 |---|---|
 | `allowedCommands` | Read-only prefixes (`git status`, `nix eval`, `gh pr view`, `terraform fmt`, …) allowed everywhere, including outside a sandbox |
 | `exactCommands` | Allowed only as written (`git branch --show-current`); their prefixes would allow destructive forms |
-| `codexAskCommands` | Broad wrappers (`just`, `npm run`, `npx`) and daemon-backed Nix commands (`nix fmt`, `nix build`); always prompt in Codex |
-| `askCommands` | Includes `codexAskCommands` plus `npm test`, `cargo test`, and `terraform validate`; used by other CLIs |
+| `sandboxAskCommands` | Broad wrappers (`just`, `npm run`, `npx`) and daemon-backed Nix commands (`nix fmt`, `nix build`); prompt in Codex and Claude, unlisted in Copilot |
+| `routineCommands` | `npm test`, `cargo test`, and `terraform validate`; sandbox approval in Codex/Claude (except Claude Terraform), narrow allows in Copilot |
+| `askCommands` | Includes `sandboxAskCommands` plus `routineCommands`; OpenCode's ask list |
 | `deniedCommands` | Never auto-approved (`op`, `security`, `gh auth`, `gh api`, `sudo`, `darwin-rebuild`, `just switch`, `git push --force`, `mise trust`) |
 | `homeSecretPaths` | Credential paths under `~` denied for reads (`.ssh`, `.config/op`, `.config/gh`, `.aws`, `.gnupg`, `.netrc`, `.npmrc`) |
 | `secretFilePatterns` | Key files denied everywhere (`**/*.pem`, `**/*.key`); `.env` files are denied per CLI |
@@ -58,8 +62,9 @@ a prompt, but only inside the sandbox.
 |---|---|---|---|---|---|
 | `allowedCommands` | — (left to the sandbox) | `Bash(…)` allow | `Shell(…)` allow | `--allow-tool` | allow |
 | `exactCommands` | — (prefix rules only) | `Bash(…)` allow | `Shell(…)` allow | `--allow-tool` | allow |
-| `codexAskCommands` | `prompt` rule | — | — | — | — |
-| `askCommands` | — | ask | — | — (all prompt) | ask |
+| `sandboxAskCommands` | `prompt` rule | ask | — | — (unlisted) | — |
+| `routineCommands` | — (sandbox policy) | — except `terraform validate` ask | — | `--allow-tool` | — |
+| `askCommands` | — | — | — | — | ask |
 | `deniedCommands` | `forbidden` rule | deny | deny | `--deny-tool` | deny |
 | `homeSecretPaths` | — (reads outside the workspace denied) | `Read(…)` deny, also a sandbox read deny | `Read(…)` deny | sandbox `deniedPaths` | — |
 | `secretFilePatterns` | workspace deny | `Read(…)` deny | `Read(…)` deny | — | — |
@@ -72,13 +77,26 @@ a prompt, but only inside the sandbox.
 | `agentCaches` | `shell_environment_policy`, `write` | `env`, `allowWrite` | wrapped binary, `additionalReadwritePaths` | wrapper env, `readwritePaths` | — |
 | `mcpServers` | — | `mcp__<server>__*` allow | `Mcp(…)` allow | `--allow-tool` | — |
 
-Codex runs `npm test`, `cargo test`, `terraform validate`, and installed
-formatters under its existing sandbox without blanket command prompts. These
-commands receive no allow rules: access beyond the filesystem or network
-grants still needs on-request approval. `nix fmt` retains its prompt because
-it can build the flake's formatter through the Nix daemon, outside the agent
-sandbox. Broad wrappers keep prompts because they can invoke commands needing
-extra review. Other CLIs keep their existing rules.
+Codex and Claude run `npm test`, `cargo test`, and installed formatters under
+their existing sandboxes without blanket command prompts. No test-command
+allow rules are added for these CLIs: access beyond their grants still needs
+approval. Codex also runs `terraform validate` sandboxed; Claude retains its
+ask rule because `terraform *` is deliberately excluded from the sandbox for
+macOS TLS compatibility.
+
+Copilot uses narrow `--allow-tool` rules for `npm test`, `cargo test`,
+`terraform validate`, and the installed `nixfmt` formatter. Its sandbox remains
+enabled, and sandbox bypass is a separate approval. Other unlisted commands,
+including `just`, `npm run`, `npx`, `nix fmt`, and `nix build`, still prompt.
+Other installed formatters outside the existing allowlist still prompt in
+Copilot. Its allow rules cannot be
+conditional on sandboxing, so disabling the sandbox also removes that boundary
+for allowlisted commands.
+
+`nix fmt` retains approval because it can build the flake's formatter through
+the Nix daemon, outside the agent sandbox. Broad wrappers keep approval because
+they can invoke commands needing extra review. Cursor and OpenCode retain
+their existing behavior.
 
 Claude's WebFetch allow rules also widen its Bash sandbox network, so Claude
 gets `sandboxNetworkDomains` instead of `fetchDomains` there.
@@ -313,8 +331,9 @@ and network approval rules still apply; never activate the fixture system.
 | Other hosts (npm registry, GitHub, docs sites) | Codex and Claude prompt; in Claude's auto mode the command must declare the host |
 | `gh`, `terraform`, `go get`, `go mod download`, `go mod tidy` | Claude runs them outside the sandbox after a prompt unless an allow rule matches; other CLIs need an escalation |
 | `go build` or `go test` that downloads a toolchain or missing module | Escalation, because Go TLS fails in the sandbox |
-| Codex: `just`, `nix build`, `nix fmt`, `npm run`, `npx` | Always prompt: broad wrappers or daemon-backed Nix commands |
-| `npm test`, `cargo test`, `terraform validate` | Codex runs sandboxed; access outside its grants needs approval. Claude and OpenCode retain ask rules; other CLIs use their existing approval behavior |
+| Codex, Claude, Copilot: `just`, `nix build`, `nix fmt`, `npm run`, `npx` | Prompt: broad wrappers or daemon-backed Nix commands |
+| `npm test`, `cargo test` | Codex/Claude use sandbox approval; Copilot uses narrow allows with its sandbox enabled; OpenCode retains ask rules |
+| `terraform validate` | Codex runs sandboxed; Copilot uses a narrow allow; Claude still prompts because Terraform runs outside its sandbox; OpenCode retains its ask rule |
 | `mise install`, `mise trust` | Run outside the sandbox; `mise trust` is denied for agents, so ask the user |
 | Claude commands with `$VAR`, `$(...)` or backticks | Prompt ("A variable in this command can't be checked"), since the expansion could match an ask or excluded command; the global `CLAUDE.md` tells Claude to use literal paths instead |
 

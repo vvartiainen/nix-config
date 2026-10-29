@@ -155,8 +155,8 @@ let
   ];
 
   # Broad command wrappers and daemon-backed Nix commands still need review
-  # inside Codex's sandbox. `nix fmt` can build the flake's formatter.
-  codexAskCommands = [
+  # inside a sandbox. `nix fmt` can build the flake's formatter.
+  sandboxAskCommands = [
     [ "just" ]
     [
       "npm"
@@ -173,9 +173,9 @@ let
     ]
   ];
 
-  # Other CLIs also ask for these project-code runners. Codex leaves them to
-  # its sandbox and on-request escalation; don't grant unsandboxed allows.
-  askCommands = codexAskCommands ++ [
+  # Routine project-code runners. Codex and Claude rely on sandbox approval;
+  # Copilot needs narrow allow rules because it has no sandbox auto-approval.
+  routineCommands = [
     [
       "npm"
       "test"
@@ -189,6 +189,9 @@ let
       "validate"
     ]
   ];
+
+  # OpenCode has no OS sandbox, so these commands all need approval there.
+  askCommands = sandboxAskCommands ++ routineCommands;
 
   # Command prefixes that are never auto-approved. Prefix denies can be
   # bypassed (`sh -c`, absolute paths), but those forms still prompt or run
@@ -476,7 +479,17 @@ in
       ++ map (domain: "WebFetch(domain:${domain})") sandboxNetworkDomains
       # Projects list these in .mcp.json (`ct agents sync`).
       ++ map (name: "mcp__${name}__*") (mcpServers config);
-    ask = map (cmd: "Bash(${commandString cmd}:*)") askCommands;
+    # Terraform is deliberately excluded from Claude's sandbox for macOS TLS
+    # compatibility, so validation still needs explicit review there.
+    ask = map (cmd: "Bash(${commandString cmd}:*)") (
+      sandboxAskCommands
+      ++ [
+        [
+          "terraform"
+          "validate"
+        ]
+      ]
+    );
     deny =
       map (cmd: "Bash(${commandString cmd}:*)") deniedCommands
       ++ [
@@ -493,7 +506,7 @@ in
   # only the `--allow-tool` / `--deny-tool` / `--add-dir` CLI flags.
   copilot = config: {
     allowTools =
-      map (cmd: "shell(${commandString cmd}:*)") allowedCommands
+      map (cmd: "shell(${commandString cmd}:*)") (allowedCommands ++ routineCommands ++ [ [ "nixfmt" ] ])
       ++ map (cmd: "shell(${commandString cmd})") exactCommands
       ++ mcpServers config;
     # A relative write() path matches trailing components in any directory.
@@ -532,7 +545,7 @@ in
   # Explicit prompt rules also prompt inside the sandbox, while allow rules
   # can authorize leaving it. Only commands needing extra review get rules.
   codexRules =
-    concatMapStringsSep "\n" (toCodexRule "prompt") codexAskCommands
+    concatMapStringsSep "\n" (toCodexRule "prompt") sandboxAskCommands
     + "\n"
     + concatMapStringsSep "\n" (toCodexRule "forbidden") deniedCommands
     + "\n";
