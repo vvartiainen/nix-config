@@ -197,11 +197,8 @@ The `just` recipes stop with a hint when the host data is missing.
 1. Validate
 
     ```bash
-    just show
-    just check
-    just eval-system <HOSTNAME>
-    just build-system <HOSTNAME>
-    just build <HOSTNAME>
+    just check <HOSTNAME>  # statix lint and system evaluation
+    just build <HOSTNAME>  # build the system without applying it
     ```
 
 2. Apply manually when ready:
@@ -234,14 +231,16 @@ just rollback-to <GENERATION>
 
 ## Cleanup and garbage collection
 
+Garbage collection runs automatically every week as root and deletes system generations older than 7 days. It does not delete the per-user Home Manager generations ([NixOS/nix#8508](https://github.com/NixOS/nix/issues/8508)), so clean those up manually:
+
 ```bash
-# Delete all historical versions older than 7 days
+# Delete system and user generations older than 7 days, then collect garbage
 just clean
+```
 
-# Wiping history won't garbage collect the unused packages, so run system gc manually as root:
-just gc
+Update flake inputs:
 
-# Due to the following issue, you need to run the gc command as per user to delete home-manager's historical data:
-# https://github.com/NixOS/nix/issues/8508
-just gc-user
+```bash
+just up            # all inputs
+just up <INPUT>... # only the given inputs
 ```

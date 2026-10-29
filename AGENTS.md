@@ -41,10 +41,10 @@ nix eval --raw '.#darwinConfigurations.<hostName>.system.drvPath' \
 validate `darwinConfigurations`; this flake currently exposes no `checks`.
 Neither replaces an explicit system evaluation or build.
 
-The `just` recipes remain available for convenience. `just build-system` and
-`just build` build the same system package; running both is redundant. Direct
-`nix build` avoids the `darwin-rebuild` dependency and leaves no result symlink
-when passed `--no-link`.
+The `just` recipes remain available for convenience: `just check` runs
+`statix` and the system evaluation, and `just build` runs the same system
+build. Direct `nix build --no-link` avoids the `just` approval prompt and
+leaves no result symlink.
 
 Do not run apply commands (for example `just switch <hostName>` or
 `darwin-rebuild switch`); user applies manually. Documentation-only changes

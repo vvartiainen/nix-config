@@ -1,8 +1,5 @@
-flake_ref := "."
-system_profile := "/nix/var/nix/profiles/system"
 # Flake config name. `$HOST` when exported, otherwise this machine's hostname.
-default_host := `hostname`
-host := env("HOST", default_host)
+host := env("HOST", `hostname`)
 # Per-machine host data, kept outside the repo (see README).
 host_dir := home_directory() / ".config/nix-config-host"
 host_flags := "--override-input host 'path:" + host_dir + "'"
@@ -10,13 +7,7 @@ host_flags := "--override-input host 'path:" + host_dir + "'"
 # Stop early without host data.
 [private]
 require-host:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    if [ -e '{{ host_dir }}/default.nix' ]; then
-      exit 0
-    fi
-    echo "No host data at {{ host_dir }}/default.nix; run \`just init-host\` (see README)." >&2
-    exit 1
+    @test -e '{{ host_dir }}/default.nix' || { echo "No host data at {{ host_dir }}/default.nix; run \`just init-host\` (see README)." >&2; exit 1; }
 
 # Create the host data file if missing.
 init-host host=host:
@@ -54,34 +45,21 @@ init-host host=host:
 
 # Bootstrap nix-darwin from this flake.
 bootstrap host=host: (init-host host)
-    sudo nix run nix-darwin -- switch --flake '{{ flake_ref }}#{{ host }}' {{ host_flags }}
+    sudo nix run nix-darwin -- switch --flake '.#{{ host }}' {{ host_flags }}
 
-# Show flake outputs.
-show: require-host
-    nix flake show {{ host_flags }}
-
-# Run flake checks and lint nix files.
-check: require-host
+# Lint nix files and evaluate the darwin system derivation.
+check host=host: require-host
     statix check .
-    nix flake check {{ host_flags }}
+    nix eval --raw '.#darwinConfigurations.{{ host }}.system.drvPath' {{ host_flags }}
 
-# Evaluate the darwin system derivation.
-eval-system host=host: require-host
-    nix eval '{{ flake_ref }}#darwinConfigurations.{{ host }}.system' {{ host_flags }}
-
-# Build the darwin system derivation.
-build-system host=host: require-host
-    nix build '{{ flake_ref }}#darwinConfigurations.{{ host }}.system' {{ host_flags }}
-
-# Build the nix-darwin activation package without applying it.
+# Build the darwin system derivation without applying it.
 build host=host: require-host
-    darwin-rebuild build --flake '{{ flake_ref }}#{{ host }}' {{ host_flags }}
+    nix build '.#darwinConfigurations.{{ host }}.system' {{ host_flags }}
 
-# Apply the nix-darwin configuration.
-# SKIP_HOMEBREW=1 skips brew bundle during activation.
+# Apply the nix-darwin configuration (SKIP_HOMEBREW=1 skips brew bundle).
 switch host=host: require-host
     printf '%s\n' "${SKIP_HOMEBREW:-0}" | sudo tee /tmp/nix-darwin-skip-homebrew >/dev/null
-    sudo darwin-rebuild switch --flake '{{ flake_ref }}#{{ host }}' {{ host_flags }}
+    sudo darwin-rebuild switch --flake '.#{{ host }}' {{ host_flags }}
 
 # Reset global agent tools (also runs automatically during switch).
 cleanup-agent-config *args:
@@ -107,24 +85,12 @@ generations:
 rollback-to generation:
     sudo darwin-rebuild switch --switch-generation '{{ generation }}'
 
-# Update all flake inputs.
-up:
-    nix flake update
+# Update flake inputs, all of them when none are given.
+up *inputs:
+    nix flake update {{ inputs }}
 
-# Update a specific flake input.
-upp input:
-    nix flake update '{{ input }}'
-
-# Show system profile history.
-history:
-    nix profile history --profile '{{ system_profile }}'
-
-# Remove generations older than 7 days.
+# Weekly automatic gc runs as root only and keeps user (Home Manager) generations.
+# Remove system and user generations older than 7 days, then collect garbage.
 clean:
     sudo nix-collect-garbage --delete-older-than 7d
     nix-collect-garbage --delete-older-than 7d
-
-# Garbage collect unused store paths.
-gc:
-    sudo nix-collect-garbage
-    nix-collect-garbage
