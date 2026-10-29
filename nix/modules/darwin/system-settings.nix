@@ -55,6 +55,8 @@ in
     };
 
     defaults = {
+      hitoolbox.AppleFnUsageType = "Show Emoji & Symbols";
+
       dock = {
         autohide = true;
         show-recents = false;
@@ -82,7 +84,7 @@ in
 
         "com.apple.keyboard.fnState" = true; # enable function keys
         AppleInterfaceStyle = "Dark";
-        AppleKeyboardUIMode = 3;
+        AppleKeyboardUIMode = 3; # preserve current Tab/Shift-Tab keyboard navigation
         ApplePressAndHoldEnabled = false;
 
         InitialKeyRepeat = 15; # normal minimum is 15 (225 ms), maximum is 120 (1800 ms)

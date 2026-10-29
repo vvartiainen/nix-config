@@ -23,6 +23,14 @@ Go telemetry is disabled, including local collection, through
 `programs.go.telemetry.mode = "off"` in `nix/modules/home/programs/go.nix`.
 After applying the configuration, `go telemetry` should report `off`.
 
+Keyboard defaults in `nix/modules/darwin/system-settings.nix` preserve
+`AppleKeyboardUIMode = 3` for Tab/Shift-Tab navigation and standard function
+keys (`com.apple.keyboard.fnState = true`). Pressing Globe/Fn opens Emoji &
+Symbols (`com.apple.HIToolbox.AppleFnUsageType = 2`). Full Keyboard Access is
+unmanaged: its preference key was absent when these settings were captured,
+which does not establish an explicit enabled or disabled value. nix-darwin
+documents that changing the Globe-key action requires a restart.
+
 ## Neovim migration
 
 After building and manually applying the configuration, run the two setups side by side:
