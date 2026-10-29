@@ -12,7 +12,10 @@ let
     model = "gpt-6.1-sol";
     model_reasoning_effort = "medium";
     plan_mode_reasoning_effort = "high";
+    web_search = "live";
     shell_environment_policy.set = (permissions.agentCaches config).env;
+    # Keep @ focused on files; plugins and skills remain available through $.
+    features.mentions_v2 = false;
     # MCP servers come from the projects (`ct agents`), not ChatGPT apps.
     features.apps = false;
     # Skills come from the projects too, not the bundled system skills.
@@ -36,6 +39,13 @@ let
     # so mirror claude-statusline.sh as closely as possible.
     tui = {
       theme = "catppuccin-mocha";
+      resume_cwd = "current";
+      # Notify from background Herdr panes even while the terminal has focus.
+      notification_condition = "always";
+      presets."1" = {
+        label = "Review";
+        input = "/review";
+      };
       status_line_use_colors = true;
       status_line = [
         "model-with-reasoning"

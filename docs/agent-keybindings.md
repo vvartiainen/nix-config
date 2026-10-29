@@ -27,6 +27,22 @@ selects a model, and OpenCode's leader shortcuts still open the prompt editor
 and model picker. OpenCode Ctrl+G now opens the prompt editor; Home and
 Alt+Home still jump to the first message.
 
+## Codex defaults
+
+`@` completes filesystem paths only; use `$` for plugins and skills.
+Web search uses live retrieval, and resumed sessions keep the directory where
+Codex was launched. Notifications fire even while the terminal has focus so
+background Herdr panes can request attention. `/presets` includes preset `1`,
+**Review**, which runs `/review`.
+
+These defaults live in `nix/modules/home/programs/ai/codex.nix` and merge into
+the writable config during activation. They are supported by Codex 0.165.0:
+see the [mention picker behavior](https://github.com/openai/codex/blob/rust-v0.165.0/codex-rs/tui/src/bottom_pane/chat_composer.rs#L28-L33)
+and [configuration schema](https://github.com/openai/codex/blob/rust-v0.165.0/codex-rs/core/config.schema.json).
+After applying manually and restarting Codex, check `@`, `/presets`, and
+resuming from a different directory; notification delivery also depends on
+the terminal's settings.
+
 ## Herdr
 
 These shortcuts are handled by Herdr before the shell or CLI in its pane.
