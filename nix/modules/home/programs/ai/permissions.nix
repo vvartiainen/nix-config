@@ -154,27 +154,15 @@ let
     ]
   ];
 
-  # These commands execute project-controlled code, accept additional recipes,
-  # or build through the Nix daemon. Never grant blanket approval to them.
-  askCommands = [
+  # Broad command wrappers and daemon-backed Nix commands still need review
+  # inside Codex's sandbox. `nix fmt` can build the flake's formatter.
+  codexAskCommands = [
     [ "just" ]
     [
       "npm"
       "run"
     ]
-    [
-      "npm"
-      "test"
-    ]
     [ "npx" ]
-    [
-      "cargo"
-      "test"
-    ]
-    [
-      "terraform"
-      "validate"
-    ]
     [
       "nix"
       "fmt"
@@ -182,6 +170,23 @@ let
     [
       "nix"
       "build"
+    ]
+  ];
+
+  # Other CLIs also ask for these project-code runners. Codex leaves them to
+  # its sandbox and on-request escalation; don't grant unsandboxed allows.
+  askCommands = codexAskCommands ++ [
+    [
+      "npm"
+      "test"
+    ]
+    [
+      "cargo"
+      "test"
+    ]
+    [
+      "terraform"
+      "validate"
     ]
   ];
 
@@ -527,7 +532,7 @@ in
   # Explicit prompt rules also prompt inside the sandbox, while allow rules
   # can authorize leaving it. Only commands needing extra review get rules.
   codexRules =
-    concatMapStringsSep "\n" (toCodexRule "prompt") askCommands
+    concatMapStringsSep "\n" (toCodexRule "prompt") codexAskCommands
     + "\n"
     + concatMapStringsSep "\n" (toCodexRule "forbidden") deniedCommands
     + "\n";

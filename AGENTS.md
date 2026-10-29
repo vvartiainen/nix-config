@@ -63,6 +63,9 @@ the sandboxes").
 - `just` and `nix build` require command approval under the shared permission
   rules. Direct Nix evaluation avoids the `just` wrapper prompt; builds still
   run through the daemon outside the agent sandbox and require approval.
+- Codex runs `npm test`, `cargo test`, and `terraform validate` under its
+  sandbox without blanket command prompts. `npm run`, `npx`, and `nix fmt`
+  still prompt; `nix fmt` can build its formatter through the daemon.
 - `Operation not permitted`, `403`/`Forbidden`, or `x509: OSStatus -26276`
   mean the sandbox blocked it: retry once with escalation or ask, don't try
   variants or work around it.

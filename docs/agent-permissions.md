@@ -34,7 +34,8 @@ All in `permissions.nix`.
 |---|---|
 | `allowedCommands` | Read-only prefixes (`git status`, `nix eval`, `gh pr view`, `terraform fmt`, …) allowed everywhere, including outside a sandbox |
 | `exactCommands` | Allowed only as written (`git branch --show-current`); their prefixes would allow destructive forms |
-| `askCommands` | Run project-controlled code or build via the Nix daemon (`just`, `npm run`, `npx`, `cargo test`, `terraform validate`, `nix fmt`, `nix build`); always prompt, even when sandboxed |
+| `codexAskCommands` | Broad wrappers (`just`, `npm run`, `npx`) and daemon-backed Nix commands (`nix fmt`, `nix build`); always prompt in Codex |
+| `askCommands` | Includes `codexAskCommands` plus `npm test`, `cargo test`, and `terraform validate`; used by other CLIs |
 | `deniedCommands` | Never auto-approved (`op`, `security`, `gh auth`, `gh api`, `sudo`, `darwin-rebuild`, `just switch`, `git push --force`, `mise trust`) |
 | `homeSecretPaths` | Credential paths under `~` denied for reads (`.ssh`, `.config/op`, `.config/gh`, `.aws`, `.gnupg`, `.netrc`, `.npmrc`) |
 | `secretFilePatterns` | Key files denied everywhere (`**/*.pem`, `**/*.key`); `.env` files are denied per CLI |
@@ -57,7 +58,8 @@ a prompt, but only inside the sandbox.
 |---|---|---|---|---|---|
 | `allowedCommands` | — (left to the sandbox) | `Bash(…)` allow | `Shell(…)` allow | `--allow-tool` | allow |
 | `exactCommands` | — (prefix rules only) | `Bash(…)` allow | `Shell(…)` allow | `--allow-tool` | allow |
-| `askCommands` | `prompt` rule | ask | — | — (all prompt) | ask |
+| `codexAskCommands` | `prompt` rule | — | — | — | — |
+| `askCommands` | — | ask | — | — (all prompt) | ask |
 | `deniedCommands` | `forbidden` rule | deny | deny | `--deny-tool` | deny |
 | `homeSecretPaths` | — (reads outside the workspace denied) | `Read(…)` deny, also a sandbox read deny | `Read(…)` deny | sandbox `deniedPaths` | — |
 | `secretFilePatterns` | workspace deny | `Read(…)` deny | `Read(…)` deny | — | — |
@@ -69,6 +71,14 @@ a prompt, but only inside the sandbox.
 | `nixDaemonSocket` | `unix_sockets`, `read` | `allowUnixSockets` | — | `readwritePaths` | — |
 | `agentCaches` | `shell_environment_policy`, `write` | `env`, `allowWrite` | wrapped binary, `additionalReadwritePaths` | wrapper env, `readwritePaths` | — |
 | `mcpServers` | — | `mcp__<server>__*` allow | `Mcp(…)` allow | `--allow-tool` | — |
+
+Codex runs `npm test`, `cargo test`, `terraform validate`, and installed
+formatters under its existing sandbox without blanket command prompts. These
+commands receive no allow rules: access beyond the filesystem or network
+grants still needs on-request approval. `nix fmt` retains its prompt because
+it can build the flake's formatter through the Nix daemon, outside the agent
+sandbox. Broad wrappers keep prompts because they can invoke commands needing
+extra review. Other CLIs keep their existing rules.
 
 Claude's WebFetch allow rules also widen its Bash sandbox network, so Claude
 gets `sandboxNetworkDomains` instead of `fetchDomains` there.
@@ -303,7 +313,8 @@ and network approval rules still apply; never activate the fixture system.
 | Other hosts (npm registry, GitHub, docs sites) | Codex and Claude prompt; in Claude's auto mode the command must declare the host |
 | `gh`, `terraform`, `go get`, `go mod download`, `go mod tidy` | Claude runs them outside the sandbox after a prompt unless an allow rule matches; other CLIs need an escalation |
 | `go build` or `go test` that downloads a toolchain or missing module | Escalation, because Go TLS fails in the sandbox |
-| `just`, `nix build`, `nix fmt`, `npm run`, `npx`, `cargo test`, `terraform validate` | Always prompt: they run project code or build outside the sandbox |
+| Codex: `just`, `nix build`, `nix fmt`, `npm run`, `npx` | Always prompt: broad wrappers or daemon-backed Nix commands |
+| `npm test`, `cargo test`, `terraform validate` | Codex runs sandboxed; access outside its grants needs approval. Claude and OpenCode retain ask rules; other CLIs use their existing approval behavior |
 | `mise install`, `mise trust` | Run outside the sandbox; `mise trust` is denied for agents, so ask the user |
 | Claude commands with `$VAR`, `$(...)` or backticks | Prompt ("A variable in this command can't be checked"), since the expansion could match an ask or excluded command; the global `CLAUDE.md` tells Claude to use literal paths instead |
 
