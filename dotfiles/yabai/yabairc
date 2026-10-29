@@ -42,6 +42,7 @@ setup_space 2 Browser 2
 setup_space 3 Code 2
 setup_space 4 Misc 2
 setup_space 5 Notes 2
+setup_space 6 Mail 2
 
 # Skip app assignments when their destination Space does not exist.
 assign_app() {
@@ -62,9 +63,12 @@ assign_app "Safari" "Start"
 # Notes
 assign_app "Notion" "Notes"
 assign_app "Obsidian" "Notes"
-assign_app "Calendar" "Notes"
 assign_app "Linear" "Notes"
 assign_app "Notes" "Notes"
+
+# Mail and calendar
+assign_app "Mail" "Mail"
+assign_app "Calendar" "Mail"
 
 # Misc
 assign_app "Spotify" "Misc"

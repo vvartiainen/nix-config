@@ -45,6 +45,10 @@ or explicitly chosen later. Native edge-drag, top-edge fill, and Option-drag
 tiling are disabled so yabai handles window positioning. Inline text predictions
 are also explicitly disabled.
 
+Yabai assigns notes apps (Obsidian, Notion, Notes, and Linear) to Space 5
+(`Notes`), and Mail and Calendar to Space 6 (`Mail`). Create these Spaces in
+Mission Control if missing, then restart yabai with Ctrl+Alt+Cmd+R.
+
 ## Neovim migration
 
 After building and manually applying the configuration, run the two setups side by side:
