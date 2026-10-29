@@ -114,5 +114,6 @@ Ideas and open work are tracked in a Backlog.md backlog through the `backlog-nix
   workflow", using `document_view` on `backlog-nix-config`. Follow its review
   queue, user acceptance, and end-of-session handoff rules alongside the
   built-in workflow guides.
-- Update `doc-2`, "Latest session handoff", after sessions that change tasks or
-  repository files, as described in `doc-4`.
+- Create or update a session handoff task tagged `handoff` and `needs-review`
+  after changing tasks or repository files, as described in `doc-4`. The user
+  completes review tasks; do not maintain `doc-2` as a session handoff.
