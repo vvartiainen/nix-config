@@ -59,33 +59,88 @@ in
 
       dock = {
         autohide = true;
+        launchanim = false;
+        mineffect = "scale";
+        minimize-to-application = true;
+        mru-spaces = false;
         show-recents = false;
+        showAppExposeGestureEnabled = false;
+        showLaunchpadGestureEnabled = false;
+        showMissionControlGestureEnabled = true;
         static-only = true;
+        tilesize = 60;
+        wvous-br-corner = 14; # Quick Note
       };
 
       finder = {
         _FXShowPosixPathInTitle = true;
         AppleShowAllExtensions = false;
+        AppleShowAllFiles = true;
+        FXDefaultSearchScope = "SCcf"; # search the current folder
         FXEnableExtensionChangeWarning = false;
+        FXPreferredViewStyle = "icnv";
+        FXRemoveOldTrashItems = true;
         QuitMenuItem = true;
+        ShowExternalHardDrivesOnDesktop = false;
+        ShowHardDrivesOnDesktop = false;
+        ShowMountedServersOnDesktop = true;
         ShowPathbar = true;
+        ShowRemovableMediaOnDesktop = true;
         ShowStatusBar = true;
+        _FXSortFoldersFirst = true;
       };
 
       trackpad = {
-        Clicking = false; # enable tap to click()
-        TrackpadRightClick = true; # enable two finger right click
-        TrackpadThreeFingerDrag = false; # enable three finger drag
+        # These values were captured for both built-in and Bluetooth trackpads.
+        Clicking = false;
+        Dragging = false;
+        DragLock = false;
+        TrackpadMomentumScroll = true;
+        TrackpadPinch = true;
+        TrackpadRightClick = true;
+        TrackpadRotate = true;
+        TrackpadThreeFingerDrag = false;
       };
+
+      WindowManager = {
+        AppWindowGroupingBehavior = true;
+        AutoHide = false;
+        EnableStandardClickToShowDesktop = false;
+        EnableTiledWindowMargins = false;
+        GloballyEnabled = false; # Stage Manager
+        HideDesktop = true;
+        StageManagerHideWidgets = true;
+        StandardHideDesktopIcons = false;
+        StandardHideWidgets = true;
+      };
+
+      screencapture = {
+        location = "~/Desktop";
+        save-selections = false;
+        target = "clipboard";
+        type = "png";
+      };
+
+      universalaccess.reduceMotion = false;
+
+      ".GlobalPreferences"."com.apple.mouse.scaling" = 1.0;
 
       NSGlobalDomain = {
         "com.apple.swipescrolldirection" = false;
         "com.apple.sound.beep.feedback" = 0;
+        "com.apple.springing.delay" = 0.5;
+        "com.apple.springing.enabled" = true;
+        "com.apple.trackpad.forceClick" = true;
+        "com.apple.trackpad.scaling" = 0.6875;
 
         "com.apple.keyboard.fnState" = true; # enable function keys
         AppleInterfaceStyle = "Dark";
         AppleKeyboardUIMode = 3; # preserve current Tab/Shift-Tab keyboard navigation
         ApplePressAndHoldEnabled = false;
+        # Preserve the captured global/Finder domain difference.
+        AppleShowAllExtensions = true;
+        AppleShowScrollBars = "Automatic";
+        AppleSpacesSwitchOnActivate = true;
 
         InitialKeyRepeat = 15; # normal minimum is 15 (225 ms), maximum is 120 (1800 ms)
         KeyRepeat = 2; # normal minimum is 2 (30 ms), maximum is 120 (1800 ms)
@@ -107,22 +162,26 @@ in
       # All custom entries can be found by running `defaults read` command.
       # or `defaults read xxx` to read a specific domain.
       CustomUserPreferences = {
-        ".GlobalPreferences" = {
-          # automatically switch to a new space when switching to the application
-          AppleSpacesSwitchOnActivate = true;
-        };
         NSGlobalDomain = {
           # Add a context menu item for showing the Web Inspector in web views
           WebKitDeveloperExtras = true;
         };
-        "com.apple.finder" = {
-          ShowExternalHardDrivesOnDesktop = false;
-          ShowHardDrivesOnDesktop = false;
-          ShowMountedServersOnDesktop = true;
-          ShowRemovableMediaOnDesktop = true;
-          _FXSortFoldersFirst = true;
-          # When performing a search, search the current folder by default
-          FXDefaultSearchScope = "SCcf";
+        "com.apple.AppleMultitouchTrackpad" = {
+          # nix-darwin's trackpad options write to both trackpad domains.
+          # These values were captured only for the built-in trackpad.
+          ActuateDetents = true;
+          FirstClickThreshold = 1;
+          ForceSuppressed = false;
+          SecondClickThreshold = 1;
+          TrackpadCornerSecondaryClick = 0;
+          TrackpadFourFingerHorizSwipeGesture = 2;
+          TrackpadFourFingerPinchGesture = 2;
+          TrackpadFourFingerVertSwipeGesture = 2;
+          TrackpadThreeFingerHorizSwipeGesture = 2;
+          TrackpadThreeFingerTapGesture = 0;
+          TrackpadThreeFingerVertSwipeGesture = 2;
+          TrackpadTwoFingerDoubleTapGesture = false;
+          TrackpadTwoFingerFromRightEdgeSwipeGesture = 3;
         };
         "com.apple.desktopservices" = {
           # Avoid creating .DS_Store files on network or USB volumes
@@ -133,10 +192,6 @@ in
           # Require password immediately after sleep or screen saver begins
           askForPassword = 1;
           askForPasswordDelay = 0;
-        };
-        "com.apple.screencapture" = {
-          location = "~/Desktop";
-          type = "png";
         };
         "com.apple.AdLib" = {
           allowApplePersonalizedAdvertising = false;

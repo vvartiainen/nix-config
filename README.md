@@ -31,6 +31,17 @@ unmanaged: its preference key was absent when these settings were captured,
 which does not establish an explicit enabled or disabled value. nix-darwin
 documents that changing the Globe-key action requires a restart.
 
+The same module captures the exported Dock/Mission Control, Finder, pointer,
+trackpad, window/widget, and screenshot settings. Screenshots target the
+clipboard, with PNG retained as the format for saved captures. Finder shows
+hidden files and removes trash items after 30 days. The captured file-extension
+preferences differ by domain: enabled globally and disabled in Finder; both
+values are preserved. Trackpad settings captured only for the built-in device
+use its specific domain so they do not overwrite Bluetooth settings.
+Newly captured preferences contain only UI booleans, numbers, and fixed choices;
+no account data, device identifiers, recent items, or private paths are included.
+Missing or unreadable exported keys remain unmanaged unless already configured.
+
 ## Neovim migration
 
 After building and manually applying the configuration, run the two setups side by side:
