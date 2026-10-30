@@ -7,8 +7,8 @@ source "$CONFIG_DIR/colors.sh"
 for sid in "${SPACE_SIDS[@]}"; do
 	sketchybar --add space space."$sid" left \
 		--set space."$sid" space="$sid" \
-		padding_left=2 \
-		padding_right=2 \
+		padding_left=5 \
+		padding_right=5 \
 		icon="$sid" \
 		icon.color="$SKY" \
 		icon.padding_left=8 \
