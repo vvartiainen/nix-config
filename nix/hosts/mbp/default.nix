@@ -68,7 +68,7 @@
         # macOS 15+, otherwise the VM refuses to start (see README).
         vz.nestedVirtualization = hardware.nestedVirtualization;
         darwin-builder = {
-          diskSize = 40 * 1024;
+          diskSize = 30 * 1024;
           memorySize = 8 * 1024;
         };
         cores = 6;
