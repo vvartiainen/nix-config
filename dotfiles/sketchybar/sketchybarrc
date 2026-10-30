@@ -26,7 +26,6 @@ sketchybar --default icon.font="SF Pro:Semibold:15.0" \
   icon.color="$ICON_COLOR" \
   label.font="SF Pro:Semibold:15.0" \
   label.color="$TEXT" \
-  background.color="$BASE" \
   background.corner_radius=5 \
   background.height=24 \
   padding_left=5 \
@@ -38,13 +37,18 @@ sketchybar --default icon.font="SF Pro:Semibold:15.0" \
 
 # -- Left Side Items --
 source "$ITEM_DIR"/spaces.sh
+source "$ITEM_DIR"/yabai_layout.sh
 source "$ITEM_DIR"/front_app.sh
 
 # -- Right Side Items --
 source "$ITEM_DIR"/calendar.sh
 source "$ITEM_DIR"/volume.sh
+source "$ITEM_DIR"/mic.sh
+source "$ITEM_DIR"/wifi.sh
+source "$ITEM_DIR"/vpn.sh
 source "$ITEM_DIR"/battery.sh
 source "$ITEM_DIR"/ram.sh
 source "$ITEM_DIR"/cpu.sh
+source "$ITEM_DIR"/status_bracket.sh
 
 sketchybar --update

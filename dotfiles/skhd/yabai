@@ -2,8 +2,8 @@ ctrl + alt + cmd - r : launchctl kickstart -k gui/"$(id -u)"/org.nixos.yabai
 
 ctrl + alt  - return : yabai -m window --toggle zoom-fullscreen
 
-ctrl + alt + cmd - b : yabai -m space --layout bsp
-ctrl + alt + cmd - s : yabai -m space --layout stack
+ctrl + alt + cmd - b : yabai -m space --layout bsp && sketchybar --trigger yabai_layout_change
+ctrl + alt + cmd - s : yabai -m space --layout stack && sketchybar --trigger yabai_layout_change
 
 ctrl + alt + cmd - f : yabai -m query --windows --space | jq '.[].id' | xargs -I{} yabai -m window {} --toggle zoom-fullscreen
 

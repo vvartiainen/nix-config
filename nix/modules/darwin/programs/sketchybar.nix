@@ -8,6 +8,7 @@
 }:
 let
   homeDir = config.users.users.${userName}.home;
+  systemPath = lib.replaceStrings [ "$HOME" "$USER" ] [ homeDir userName ] config.environment.systemPath;
 in
 {
   # sketchybar allows one instance, so stop the Homebrew service before brew
@@ -29,6 +30,9 @@ in
         # Plugins parse event payloads with jq.
         extraPackages = [ pkgs.jq ];
       };
+
+      # Plugins call yabai, which is installed outside the Nix profiles.
+      launchd.agents.sketchybar.config.EnvironmentVariables.PATH = systemPath;
 
       xdg.configFile = linkTree "sketchybar";
 
