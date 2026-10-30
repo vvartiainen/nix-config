@@ -138,11 +138,25 @@ changes it, install it again:
 open /etc/apple-intelligence.mobileconfig
 ```
 
-Approve it in System Settings > General > Device Management, and remove it
-there to undo. The profile only stops new downloads; models already on disk
-stay until Apple's asset service removes them (its `ResetAssetSets`
-operation, as used by RemoveMacAI). The restriction keys are deprecated since
-macOS 26.4, so check them after major updates.
+Approve it in System Settings > General > Device Management. The profile only
+stops new downloads; models already on disk stay until Apple's asset service
+removes them (its `ResetAssetSets` operation, as used by RemoveMacAI). The
+restriction keys are deprecated since macOS 26.4, so check them after major
+updates.
+
+To turn Apple Intelligence back on:
+
+1. Remove the profile in System Settings > General > Device Management, or with
+   `sudo profiles remove -identifier nix-config.apple-intelligence`. Every
+   setting it locked is released, and model downloads are unblocked.
+2. Turn Siri and the features you want back on in System Settings.
+3. To stop shipping the profile, drop `apple-intelligence.nix` from the host
+   imports and switch. Removing the module does not remove an installed
+   profile, so do step 1 first.
+
+macOS downloads the models again in the background when a feature needs them,
+and Xcode downloads its completion model when predictive code completion is
+turned on.
 
 ## Desktop and tool notes
 
