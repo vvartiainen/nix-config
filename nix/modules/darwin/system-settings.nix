@@ -45,10 +45,17 @@ in
   security.pam.services.sudo_local = {
     enable = true;
     touchIdAuth = true;
+    # Lets Touch ID work for sudo inside tmux.
+    reattach = true;
   };
 
   system = {
     primaryUser = userName;
+
+    # Keep Finder and file dialogs from indexing the store.
+    activationScripts.preActivation.text = lib.mkBefore ''
+      /usr/bin/chflags hidden /nix
+    '';
 
     keyboard = {
       enableKeyMapping = true;

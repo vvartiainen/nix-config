@@ -57,7 +57,9 @@ just rollback-to <GENERATION>   # specific generation
 
 Garbage collection runs weekly as root and deletes system generations older
 than 7 days. It does not delete per-user Home Manager generations
-([NixOS/nix#8508](https://github.com/NixOS/nix/issues/8508)). Clean both manually:
+([NixOS/nix#8508](https://github.com/NixOS/nix/issues/8508)). GC and store
+optimisation run at background priority, and builds collect garbage on their
+own when free space drops below 5 GiB. Clean both manually:
 
 ```sh
 just clean            # delete system and user generations older than 7 days, then GC
