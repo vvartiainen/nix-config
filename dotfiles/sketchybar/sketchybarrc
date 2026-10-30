@@ -37,8 +37,8 @@ sketchybar --default icon.font="SF Pro:Semibold:15.0" \
 
 # -- Left Side Items --
 source "$ITEM_DIR"/spaces.sh
-source "$ITEM_DIR"/yabai_layout.sh
 source "$ITEM_DIR"/front_app.sh
+source "$ITEM_DIR"/yabai_layout.sh
 
 # -- Right Side Items --
 source "$ITEM_DIR"/calendar.sh
@@ -49,6 +49,8 @@ source "$ITEM_DIR"/vpn.sh
 source "$ITEM_DIR"/battery.sh
 source "$ITEM_DIR"/ram.sh
 source "$ITEM_DIR"/cpu.sh
-source "$ITEM_DIR"/status_bracket.sh
+
+# -- Shared backgrounds, after their members exist --
+source "$ITEM_DIR"/brackets.sh
 
 sketchybar --update
