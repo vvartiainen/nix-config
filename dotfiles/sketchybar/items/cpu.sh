@@ -7,4 +7,5 @@ sketchybar --add item cpu right \
 	icon=􀧓 \
 	--set cpu icon.color="$GREY" \
 	--set cpu label.color="$SKY" \
+	label.width=43 \
 	script="$PLUGIN_DIR/cpu.sh"

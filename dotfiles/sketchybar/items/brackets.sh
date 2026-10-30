@@ -11,5 +11,5 @@ sketchybar --add bracket left_side '/space\..*/' space_separator front_app \
 	--set left_side "${pill[@]}" \
 	--add bracket status vpn mic \
 	--set status "${pill[@]}" \
-	--add bracket system cpu ram battery volume wifi calendar \
+	--add bracket system cpu ram battery volume wifi calendar clock \
 	--set system "${pill[@]}"
