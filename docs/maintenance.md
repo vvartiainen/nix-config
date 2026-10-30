@@ -80,14 +80,25 @@ just builder-start
 just builder-stop
 ```
 
+The podman machine is declared in
+[`podman.nix`](../nix/modules/darwin/programs/podman.nix) and also does not
+start automatically. Activation creates it if missing and removes undeclared
+machines. `DOCKER_HOST` points Docker clients at its API socket. Size changes
+need `podman machine rm` and a new switch:
+
+```sh
+podman machine start
+podman machine stop
+```
+
 Nested virtualization gives the guest `/dev/kvm` and enables the `kvm` and
 `nixos-test` features. It requires M3 or newer and macOS 15+; set
 `nestedVirtualization = false` in host data on older Macs. Only `aarch64-linux`
 guests are accelerated; `x86_64-linux` NixOS tests use slow emulation.
 
-Activation excludes the Nix store volume, linux-builder disk, and rebuildable
-caches/toolchains from Time Machine. The path list lives in
-[`system-settings.nix`](../nix/modules/darwin/system-settings.nix). Check the
+Activation excludes the Nix store volume, linux-builder and podman machine
+disks, and rebuildable caches/toolchains from Time Machine. The path list lives
+in [`system-settings.nix`](../nix/modules/darwin/system-settings.nix). Check the
 store exclusion with `tmutil isexcluded /nix`, or set it manually with
 `sudo tmutil addexclusion -v /nix`.
 

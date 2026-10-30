@@ -13,6 +13,7 @@ let
     "${homeDir}/.cache"
     "${homeDir}/.npm"
     "${homeDir}/.rustup"
+    "${homeDir}/.local/share/containers/podman/machine"
     "${homeDir}/.local/share/mise"
     "${homeDir}/.local/share/nvim"
     "${homeDir}/golang/pkg" # GOPATH from go.nix

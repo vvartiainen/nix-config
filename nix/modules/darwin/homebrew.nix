@@ -50,7 +50,6 @@
       "opencode"
       "pkgconf"
       "pnpm"
-      "podman"
       "poppler"
       "ripgrep"
       "scc"
