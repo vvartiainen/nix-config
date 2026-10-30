@@ -57,9 +57,7 @@ the repository file rather than using `:LazyExtras`.
 Add plugin packages or parser languages in
 [`neovim.nix`](../nix/modules/home/programs/neovim.nix) when enabling more extras.
 Nix-specific loading and tool overrides live beside that module under
-[`neovim/`](../nix/modules/home/programs/neovim). Existing experimental writable
-JSON files and downloaded plugins are ignored; no cleanup of the old data
-directory is needed.
+[`neovim/`](../nix/modules/home/programs/neovim).
 
 ## Compare the editors
 

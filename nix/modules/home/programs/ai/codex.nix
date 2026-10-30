@@ -215,9 +215,6 @@ in
     + ''
       rules_path="${config.home.homeDirectory}/.codex/rules/nix-config.rules"
       mkdir -p "$(dirname "$rules_path")"
-      if [ -L "$rules_path" ]; then
-        rm -f "$rules_path"
-      fi
       install -m 0644 ${commandRules} "$rules_path"
     ''
   );
