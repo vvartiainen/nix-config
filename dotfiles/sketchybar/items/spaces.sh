@@ -20,6 +20,9 @@ for sid in "${SPACE_SIDS[@]}"; do
 		script="$PLUGIN_DIR/space.sh"
 done
 
+# Same inset from the pill edge as front_app's box at the other end.
+sketchybar --set space.1 padding_left=6
+
 sketchybar --add item space_separator left \
 	--set space_separator icon="􀆊" \
 	--set space_separator icon.color="$GREEN" \
