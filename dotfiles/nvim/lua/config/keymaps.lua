@@ -8,6 +8,32 @@ wk.add({
   { "<leader><space>", LazyVim.pick("files", { hidden = true }), desc = "Find Files (Root Dir)" },
 })
 
+-- Yank the current file path, e.g. for referring to it in AI agents
+local function yank_path(modifier, with_lines)
+  return function()
+    local path = vim.fn.expand("%" .. modifier)
+    if path == "" then
+      return vim.notify("No file path", vim.log.levels.WARN)
+    end
+    if with_lines then
+      local first, last = vim.fn.line("v"), vim.fn.line(".")
+      if first > last then
+        first, last = last, first
+      end
+      path = path .. ":" .. (first == last and first or first .. "-" .. last)
+    end
+    vim.fn.setreg("+", path)
+    vim.notify("Copied " .. path)
+  end
+end
+
+wk.add({
+  { "<leader>y", group = "yank path" },
+  { "<leader>yp", yank_path(":."), desc = "Yank Relative Path" },
+  { "<leader>yP", yank_path(":p"), desc = "Yank Absolute Path" },
+  { "<leader>yl", yank_path(":.", true), mode = { "n", "x" }, desc = "Yank Relative Path:Line(s)" },
+})
+
 -- € to $ for easier access on Finnish layout
 vim.api.nvim_set_keymap("n", "€", "$", { silent = true, desc = "End of line" })
 vim.api.nvim_set_keymap("o", "€", "$", { silent = true, desc = "End of line" })
