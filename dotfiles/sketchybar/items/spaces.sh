@@ -14,6 +14,7 @@ for sid in "${SPACE_SIDS[@]}"; do
     icon.padding_left=8 \
     label.font="sketchybar-app-font:Regular:16.0" \
     label.color="$MAUVE" \
+    label.padding_left=8 \
     label.padding_right=12 \
     background.color="$MANTLE" \
     label.y_offset=-1 \
