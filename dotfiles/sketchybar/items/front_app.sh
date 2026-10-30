@@ -7,6 +7,6 @@ sketchybar --add item front_app left \
 	icon.padding_left=8 \
 	label.color="$SKY" \
 	label.padding_right=8 \
-	padding_right=6 \
+	padding_right=2 \
 	script="$PLUGIN_DIR/front_app.sh" \
 	--subscribe front_app front_app_switched

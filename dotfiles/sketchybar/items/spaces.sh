@@ -20,8 +20,8 @@ for sid in "${SPACE_SIDS[@]}"; do
 		script="$PLUGIN_DIR/space.sh"
 done
 
-# Same inset from the pill edge as front_app's box at the other end.
-sketchybar --set space.1 padding_left=6
+# Highlight boxes sit 2pt inside the pill on every side: pill radius 7 - 2 = box radius 5.
+sketchybar --set space.1 padding_left=2
 
 sketchybar --add item space_separator left \
 	--set space_separator icon="􀆊" \
