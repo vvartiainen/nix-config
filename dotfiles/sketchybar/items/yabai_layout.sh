@@ -2,7 +2,7 @@
 
 # skhd triggers yabai_layout_change after changing the layout.
 sketchybar --add event yabai_layout_change \
-	--add item yabai_layout left \
+	--add item yabai_layout q \
 	--set yabai_layout icon.drawing=off \
 	label.color="$SKY" \
 	label.padding_left=8 \

@@ -46,7 +46,8 @@ pill_gap() {
 # -- Left Side Items --
 source "$ITEM_DIR"/spaces.sh
 source "$ITEM_DIR"/front_app.sh
-pill_gap gap.layout left
+
+# -- Left of the notch, so it doesn't move with the items above --
 source "$ITEM_DIR"/yabai_layout.sh
 
 # -- Right Side Items, added right to left --
