@@ -5,8 +5,6 @@
 # focused application in the $INFO variable:
 # https://felixkratz.github.io/SketchyBar/config/events#events-and-scripting
 
-source "$CONFIG_DIR/colors.sh"
-
 case "$SENDER" in
 front_app_switched) APP="$INFO" ;;
 # `sketchybar --update` sends no app name; the first line of lsappinfo's
@@ -15,4 +13,4 @@ forced) APP="$(lsappinfo info "$(lsappinfo front)" | sed -n '1s/^"\(.*\)" ASN:.*
 *) exit 0 ;;
 esac
 
-sketchybar --set "$NAME" label="$APP" icon="$("$CONFIG_DIR"/plugins/icon_map_fn.sh "$APP")" icon.color="$MAUVE" label.color="$SKY" icon.padding_left=10 label.padding_right=10
+sketchybar --set "$NAME" label="$APP" icon="$("$CONFIG_DIR"/plugins/icon_map_fn.sh "$APP")"

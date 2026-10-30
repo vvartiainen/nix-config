@@ -1,12 +1,15 @@
-#!/bin/sh
+#!/bin/bash
 
-PERCENTAGE=$(pmset -g batt | grep -Eo "\d+%" | cut -d% -f1)
-CHARGING=$(pmset -g batt | grep 'AC Power')
+source "$CONFIG_DIR/colors.sh"
+
+BATT=$(pmset -g batt)
+PERCENTAGE=$(echo "$BATT" | grep -Eo "[0-9]+%" | cut -d% -f1)
 
 if [ "$PERCENTAGE" = "" ]; then
 	exit 0
 fi
 
+COLOR="$GREEN"
 case ${PERCENTAGE} in
 9[0-9] | 100)
 	ICON="􀛨"
@@ -19,12 +22,17 @@ case ${PERCENTAGE} in
 	;;
 [1-2][0-9])
 	ICON="􀛩"
+	COLOR="$YELLOW"
 	;;
-*) ICON="􀛪" ;;
+*)
+	ICON="􀛪"
+	COLOR="$RED"
+	;;
 esac
 
-if [[ $CHARGING != "" ]]; then
+if [[ $BATT == *"AC Power"* ]]; then
 	ICON="􀢋"
+	COLOR="$GREEN"
 fi
 
-sketchybar --set "$NAME" icon="$ICON" label="${PERCENTAGE}%"
+sketchybar --set "$NAME" icon="$ICON" icon.color="$COLOR" label="${PERCENTAGE}%"
