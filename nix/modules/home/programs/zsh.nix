@@ -77,11 +77,6 @@
           source "$HOME/.zsh_local"
         fi
 
-        if whence -w _docker >/dev/null 2>&1; then
-          # Support setups where docker is aliased to podman.
-          compdef _docker docker=podman
-        fi
-
         # terraform from mise does not provide a native zsh completion function.
         # Fall back to terraform's own completion protocol via bash compatibility.
         if ! whence -w _terraform >/dev/null 2>&1 && command -v terraform >/dev/null 2>&1; then

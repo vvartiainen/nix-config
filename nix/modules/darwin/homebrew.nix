@@ -17,7 +17,6 @@
       "composer"
       "coreutils"
       "cpm"
-      "docker"
       "duckdb"
       "fastfetch"
       "fd"
