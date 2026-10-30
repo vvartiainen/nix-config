@@ -7,6 +7,12 @@
 
 source "$CONFIG_DIR/colors.sh"
 
-if [ "$SENDER" = "front_app_switched" ]; then
-	sketchybar --set "$NAME" label="$INFO" icon="$("$CONFIG_DIR"/plugins/icon_map_fn.sh "$INFO")" icon.color="$MAUVE" label.color="$SKY" icon.padding_left=10 label.padding_right=10
-fi
+case "$SENDER" in
+front_app_switched) APP="$INFO" ;;
+# `sketchybar --update` sends no app name; the first line of lsappinfo's
+# output is `"<name>" ASN:...`.
+forced) APP="$(lsappinfo info "$(lsappinfo front)" | sed -n '1s/^"\(.*\)" ASN:.*/\1/p')" ;;
+*) exit 0 ;;
+esac
+
+sketchybar --set "$NAME" label="$APP" icon="$("$CONFIG_DIR"/plugins/icon_map_fn.sh "$APP")" icon.color="$MAUVE" label.color="$SKY" icon.padding_left=10 label.padding_right=10
