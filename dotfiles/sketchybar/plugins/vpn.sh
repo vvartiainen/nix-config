@@ -4,8 +4,9 @@
 
 source "$CONFIG_DIR/colors.sh"
 
+# Nerd Font md-shield_check and md-shield_off_outline.
 if scutil --nc list | grep -q '(Connected)'; then
-	sketchybar --set "$NAME" icon=":vpn:" icon.color="$GREEN"
+	sketchybar --set "$NAME" icon="󰕥" icon.color="$GREEN"
 else
-	sketchybar --set "$NAME" icon=":vpnoff:" icon.color="$GREY"
+	sketchybar --set "$NAME" icon="󰦜" icon.color="$GREY"
 fi
