@@ -19,11 +19,21 @@ in
         options = {
           source = lib.mkOption {
             type = lib.types.str;
-            description = "Executable to sign, usually a store path.";
+            description = "Executable or app bundle to sign, usually a store path.";
           };
           path = lib.mkOption {
             type = lib.types.str;
             description = "Stable install path outside the store.";
+          };
+          identifier = lib.mkOption {
+            type = lib.types.nullOr lib.types.str;
+            default = null;
+            description = "Signing identifier; defaults to the entry name.";
+          };
+          executable = lib.mkOption {
+            type = lib.types.str;
+            default = "";
+            description = "Executable suffix inside an app bundle, e.g. /Contents/MacOS/skhd.";
           };
           restart = lib.mkOption {
             type = lib.types.bool;
@@ -75,8 +85,8 @@ in
       certHash=$(printf '%s' "''${certHash//:/}" | /usr/bin/tr 'A-F' 'a-f')
 
       installSignedBinary() {
-        local name=$1 source=$2 target=$3 restart=$4
-        local stamp="$keyDir/$name.source" staged output signed=1
+        local name=$1 source=$2 target=$3 restart=$4 identifier=$5 executable=$6
+        local stamp="$keyDir/$name.source" staged stagingDir output requirement signed=1
 
         # Every signature has new bytes, so compare sources instead.
         if [[ -e "$target" && "$(cat "$stamp" 2>/dev/null)" == "$source" ]]; then
@@ -84,7 +94,8 @@ in
         fi
 
         mkdir -p "$(dirname "$target")"
-        staged=$(mktemp "$(dirname "$target")/.signed.XXXXXX")
+        stagingDir=$(mktemp -d "$(dirname "$target")/.signed.XXXXXX")
+        staged="$stagingDir/$(basename "$target")"
         # rcodesign falls back to an ad-hoc signature when it can't load the
         # key, so check that the copy's designated requirement, which privacy
         # grants record, names the certificate. `codesign --verify` would reject
@@ -93,25 +104,39 @@ in
         if ! output=$(${rcodesign} sign \
             --pem-file "$keyDir/key.pem" \
             --pem-file "$keyDir/cert.pem" \
-            --binary-identifier "$name" \
+            --binary-identifier "$identifier" \
             --timestamp-url none \
             "$source" "$staged" 2>&1) \
-          || [[ "$(/usr/bin/codesign -d -r- "$staged" 2>&1 || true)" \
-            != *"designated => identifier $name and certificate root = H\"$certHash\""* ]]; then
+          || { requirement=$(/usr/bin/codesign -d -r- "$staged" 2>&1 || true)
+               [[ "$requirement" != *"designated => identifier $identifier and certificate root = H\"$certHash\""* \
+               && "$requirement" != *"designated => identifier \"$identifier\" and certificate root = H\"$certHash\""* ]]; }; then
           echo >&2 "$output"
           if [[ -e "$target" ]]; then
             echo >&2 "warning: could not sign $name; keeping $target"
-            rm -f "$staged"
+            rm -rf "$stagingDir"
             return 0
           fi
           echo >&2 "warning: could not sign $name; installing it unsigned"
-          cp -f "$source" "$staged"
+          rm -rf "$staged"
+          cp -R "$source" "$staged"
           signed=
         fi
-        chmod 755 "$staged"
+        chmod 755 "$staged$executable"
         # Rename instead of writing in place: the new file gets a fresh inode,
         # so the kernel doesn't check it against the old copy's cached signature.
-        mv -f "$staged" "$target"
+        # Directory renames cannot replace a nonempty app bundle. Keep the old
+        # bundle alongside the staged copy until the new one is installed.
+        if [[ -d "$target" ]]; then
+          mv "$target" "$stagingDir/previous.app"
+        fi
+        if ! mv -f "$staged" "$target"; then
+          if [[ -d "$stagingDir/previous.app" ]]; then
+            mv "$stagingDir/previous.app" "$target"
+          fi
+          rm -rf "$stagingDir"
+          return 1
+        fi
+        rm -rf "$stagingDir"
         if [[ -n $signed ]]; then
           printf '%s\n' "$source" > "$stamp"
         else
@@ -123,7 +148,7 @@ in
         # input. Stop it so launchd starts the new copy.
         [[ -n $restart ]] || return 0
         /bin/ps -axo pid=,comm= | while read -r pid command; do
-          if [[ $command == "$target" ]]; then
+          if [[ $command == "$target$executable" ]]; then
             echo >&2 "restarting $name..."
             kill "$pid" 2>/dev/null || true
           fi
@@ -138,6 +163,8 @@ in
             binary.source
             binary.path
             (lib.optionalString binary.restart "1")
+            (if binary.identifier == null then name else binary.identifier)
+            binary.executable
           ]
         }"
       ) cfg}

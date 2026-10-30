@@ -172,18 +172,41 @@ turned on.
   in `flake.nix`, and installed to `/opt/yabai/bin`. The `org.nixos.yabai`
   launchd agent logs to `/tmp/yabai_<user>.{out,err}.log`. Review the fork's
   changes before bumping the tag: its scripting addition runs inside Dock.
-- skhd and sketchybar come from nixpkgs. skhd is installed to `/opt/skhd/bin`
-  and runs as the `org.nixos.skhd` agent, logging to
-  `/tmp/skhd_<user>.{out,err}.log`. Home Manager runs sketchybar and logs to
+- skhd is built from [jackielii/skhd.zig](https://github.com/jackielii/skhd.zig),
+  pinned in [`skhd-package.nix`](../nix/modules/darwin/programs/skhd-package.nix).
+  Activation installs the signed bundle to `/Applications/skhd.app` and links
+  `/opt/skhd/bin/skhd` to its executable. Nix-darwin owns the `org.nixos.skhd`
+  LaunchAgent; use `reloadskhd` to restart it and `skhd --reload` to reload
+  bindings. Do not use upstream's `--install-service`, `--start-service`,
+  `--stop-service`, `--restart-service` or `--uninstall-service`: they manage a
+  separate `com.jackielii.skhd` service. Upstream `--status` also expects that
+  service; inspect ours with `launchctl print gui/"$(id -u)"/org.nixos.skhd`.
+  Runtime diagnostics go to `~/Library/Logs/skhd.log`; launchd also captures
+  startup output in `/tmp/skhd_<user>.{out,err}.log`. If login startup is blocked,
+  check System Settings > General > Login Items & Extensions for approval.
+- Existing skhd configuration remains compatible; the Zen tab shortcuts use
+  native key forwarding. Modifier aliases, `.define` commands/application
+  groups, mouse bindings and hotkey sequences are available without another
+  daemon. Advanced tap/hold and held-layer remapping can require the optional
+  root `skhd-grabber` daemon and Karabiner DriverKit component, which this
+  configuration does not install or manage. Plan their lifecycle separately
+  before enabling rules that require them; do not run `--install-service` to
+  install them alongside the Nix agent.
+- Sketchybar comes from nixpkgs. Home Manager runs it and logs to
   `~/Library/Logs/sketchybar`.
 - Activation signs yabai and skhd with a local certificate, kept root-only in
   `/var/db/nix-config/code-signing`
   ([`signed-binaries.nix`](../nix/modules/darwin/signed-binaries.nix)).
-  Accessibility grants are tied to that certificate, so they survive updates.
+  Accessibility grants are tied to that certificate and signing identity.
   Grant Accessibility again after the first signed install, or if the key is
   deleted and recreated: in System Settings > Privacy & Security >
-  Accessibility, remove the old `yabai` and `skhd` entries and add the binaries
-  from `/opt/yabai/bin` and `/opt/skhd/bin`. The certificate is not trusted by
+  Accessibility, remove the old `yabai` and `skhd` entries, add the binary
+  from `/opt/yabai/bin` and add `/Applications/skhd.app`. Migrating from asmvik
+  changes skhd's signing identity, so grant the new app Accessibility and, if
+  macOS requests it, Input Monitoring; then run `reloadskhd`. Verify shortcuts,
+  `skhd --reload`, and startup after logout/login. macOS may require permission
+  to be toggled again after an update even with the same certificate.
+  The certificate is not trusted by
   default. If a grant is listed but the tool still reports no Accessibility
   access, trust the certificate for code signing once (this prompts for an
   administrator password):
