@@ -75,6 +75,12 @@ Machine identity and private configuration stay outside this repo in
       # Backlog.md folders under this vault; each gets an agent MCP server.
       backlog.vault = "/Users/your-user/backlogs";
       backlog.projects = [ "nix-config" ];
+      # SFTP hosts for yazi (`yy sftp://my-server`); auth via SSH_AUTH_SOCK.
+      programs.yazi.vfs.sftp.my-server = {
+        host = "203.0.113.10";
+        user = "me";
+        port = 22;
+      };
     }
   ];
 }
@@ -95,3 +101,15 @@ if exported). Recipes stop with a hint when host data is missing.
 
 For routine agent validation, use the tracked public fixture instead of reading
 private host data; see [maintenance and validation](maintenance.md).
+
+## Remote files
+
+In kitty, `ssh` runs `kitten ssh`, so nothing needs installing on the remote:
+
+- `e <file>` (`edit-in-kitty`) edits a remote file in local nvim and saves back.
+- Ctrl+Shift-click a file in `ls` or `rg` output to edit, open or save it locally.
+- `kt` (`kitten transfer`) or `F7 t` copies files between local and remote.
+
+To browse remote files, run `yy sftp://<name>` for hosts listed in
+`programs.yazi.vfs.sftp` (see [Host data](#host-data)). Yank in one yazi tab and
+paste in another to copy between local and remote.

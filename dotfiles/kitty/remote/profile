@@ -13,5 +13,6 @@ _kssh_rc() {
     alias la='ls -la'
     alias rg='rg --hyperlink-format=kitty'
     alias kt='kitten transfer'
+    alias e='edit-in-kitty'
 }
 PROMPT_COMMAND="_kssh_rc${PROMPT_COMMAND:+;$PROMPT_COMMAND}"
