@@ -80,6 +80,10 @@ just builder-start
 just builder-stop
 ```
 
+The builder disk grows up to `diskSize` and never shrinks. A smaller
+`diskSize` applies only to a new disk: stop the builder and delete
+`/var/lib/linux-builder/nixos.qcow2` after switching.
+
 The podman machine is declared in
 [`podman.nix`](../nix/modules/darwin/programs/podman.nix) and also does not
 start automatically. Activation creates it if missing and removes undeclared
@@ -119,6 +123,25 @@ token/cost analytics. It keeps sessions that the agents have since deleted. Its
 wrapper in [`agentsview.nix`](../nix/modules/darwin/programs/agentsview.nix)
 disables anonymous telemetry and the GitHub update check. Model prices are still
 fetched from LiteLLM and OpenRouter; pass `--offline` to use the bundled rates.
+
+## Apple Intelligence
+
+macOS 27 has no Apple Intelligence switch, and nix-darwin cannot install
+configuration profiles.
+[`apple-intelligence.nix`](../nix/modules/darwin/apple-intelligence.nix)
+writes `/etc/apple-intelligence.mobileconfig`, which turns off Siri and Apple
+Intelligence features and blocks the model downloads. After a switch that
+changes it, install it again:
+
+```sh
+open /etc/apple-intelligence.mobileconfig
+```
+
+Approve it in System Settings > General > Device Management, and remove it
+there to undo. The profile only stops new downloads; models already on disk
+stay until Apple's asset service removes them (its `ResetAssetSets`
+operation, as used by RemoveMacAI). The restriction keys are deprecated since
+macOS 26.4, so check them after major updates.
 
 ## Desktop and tool notes
 
