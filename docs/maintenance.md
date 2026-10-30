@@ -91,6 +91,17 @@ caches/toolchains from Time Machine. The path list lives in
 store exclusion with `tmutil isexcluded /nix`, or set it manually with
 `sudo tmutil addexclusion -v /nix`.
 
+Agent session transcripts are copied hourly into
+`~/.local/share/agent-transcripts/<host>/{claude,codex,pi}/` by the
+`agent-transcripts-archive` launchd agent
+([`agent-transcripts.nix`](../nix/modules/darwin/programs/agent-transcripts.nix)).
+It copies only the JSONL session files from `~/.claude/projects`,
+`~/.codex/sessions` and `~/.pi/agent/sessions`, and never deletes from the
+archive, so sessions the agents prune stay available for analysis. Claude Code
+keeps its own sessions for 365 days (`cleanupPeriodDays`). Run
+`agent-transcripts-archive` to sync now; errors go to
+`~/Library/Logs/agent-transcripts-archive.log`.
+
 ## Desktop and tool notes
 
 - Yabai sends Obsidian, Notion, Notes, and Linear to Space 5 (`Notes`), and Mail

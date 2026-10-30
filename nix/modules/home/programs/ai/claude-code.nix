@@ -127,6 +127,9 @@ let
       commit = "";
       pr = "";
     };
+    # Sessions are deleted after 30 days by default. Keep a year locally;
+    # agent-transcripts.nix archives them for longer-term analysis.
+    cleanupPeriodDays = 365;
     permissions = permissionSettings // {
       # Like Codex: workspace edits and sandboxed commands run without
       # prompts; ask rules and sandbox escapes still prompt.
