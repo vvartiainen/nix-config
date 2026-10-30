@@ -151,5 +151,9 @@ let
   '';
 in
 {
-  home.packages = [ neovim ];
+  home.packages = [
+    neovim
+    # Treesitter parser builds in the live editor; Mason would fetch it otherwise.
+    pkgs.tree-sitter
+  ];
 }

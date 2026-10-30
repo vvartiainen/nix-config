@@ -44,6 +44,8 @@ missing tools to the project shell; there is no Mason fallback.
 Go is the exception: [`go.nix`](../nix/modules/home/programs/go.nix) installs
 `gopls`, `golangci-lint`, and `delve` globally to match the Go toolchain, so
 both editors find them without a dev shell. The live editor's Mason skips them.
+`neovim.nix` also installs the `tree-sitter` CLI for the live editor's parser
+builds, so LazyVim doesn't fetch it with Mason.
 
 ## Change the configuration
 
