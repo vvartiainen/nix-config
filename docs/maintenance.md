@@ -102,6 +102,13 @@ keeps its own sessions for 365 days (`cleanupPeriodDays`). Run
 `agent-transcripts-archive` to sync now; errors go to
 `~/Library/Logs/agent-transcripts-archive.log`.
 
+`agentsview` indexes the live session directories into
+`~/.agentsview/sessions.db` and serves a local web UI for browsing, search and
+token/cost analytics. It keeps sessions that the agents have since deleted. Its
+wrapper in [`agentsview.nix`](../nix/modules/darwin/programs/agentsview.nix)
+disables anonymous telemetry and the GitHub update check. Model prices are still
+fetched from LiteLLM and OpenRouter; pass `--offline` to use the bundled rates.
+
 ## Desktop and tool notes
 
 - Yabai sends Obsidian, Notion, Notes, and Linear to Space 5 (`Notes`), and Mail
