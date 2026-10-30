@@ -33,6 +33,7 @@ in
     };
 
     packages = with pkgs; [
+      cmake
       gdu
       lnav
       shellcheck

@@ -1,8 +1,7 @@
 _: {
   programs.git = {
     enable = true;
-    # git and git-lfs come from Homebrew.
-    package = null;
+    lfs.enable = true;
 
     # Global ignores, written to ~/.config/git/ignore (git's default excludesFile).
     ignores = [
@@ -56,13 +55,6 @@ _: {
       push.autoSetupRemote = true;
       pull.rebase = true;
       rebase.autoStash = true;
-
-      filter.lfs = {
-        clean = "git-lfs clean -- %f";
-        smudge = "git-lfs smudge -- %f";
-        process = "git-lfs filter-process";
-        required = true;
-      };
     };
   };
 }
