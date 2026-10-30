@@ -16,6 +16,8 @@ in
       # The watchdog would restart the VM after every `podman machine stop`.
       autoStart = false;
     };
+    # Pin podman 6's macOS default; applies only when the machine is created.
+    settings.containers.machine.provider = "libkrun";
   };
 
   # The nixpkgs build has no podman-mac-helper for /var/run/docker.sock, so

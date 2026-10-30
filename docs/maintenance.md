@@ -87,8 +87,9 @@ The builder disk grows up to `diskSize` and never shrinks. A smaller
 The podman machine is declared in
 [`podman.nix`](../nix/modules/darwin/programs/podman.nix) and also does not
 start automatically. Activation creates it if missing and removes undeclared
-machines. `DOCKER_HOST` points Docker clients at its API socket. Size changes
-need `podman machine rm` and a new switch:
+machines. `DOCKER_HOST` points Docker clients at its API socket. The provider
+is pinned to libkrun. Size and provider changes need `podman machine rm` and a
+new switch:
 
 ```sh
 podman machine start
