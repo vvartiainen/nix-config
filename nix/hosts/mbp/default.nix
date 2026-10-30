@@ -12,6 +12,7 @@
     ../../modules/shared/nix.nix
     ../../modules/shared/networking.nix
     ../../modules/darwin/system-settings.nix
+    ../../modules/darwin/apple-intelligence.nix
     ../../modules/darwin/homebrew.nix
     ../../modules/darwin/programs/yabai.nix
   ];
