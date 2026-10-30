@@ -11,7 +11,7 @@ sketchybar --add bracket left_side '/space\..*/' space_separator front_app \
 	--set left_side "${pill[@]}" \
 	--add bracket layout yabai_layout \
 	--set layout "${pill[@]}" \
-	--add bracket status vpn wifi mic \
+	--add bracket status vpn mic \
 	--set status "${pill[@]}" \
-	--add bracket system cpu ram battery volume calendar \
+	--add bracket system cpu ram battery volume wifi calendar \
 	--set system "${pill[@]}"

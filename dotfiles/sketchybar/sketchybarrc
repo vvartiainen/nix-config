@@ -52,13 +52,13 @@ source "$ITEM_DIR"/yabai_layout.sh
 
 # -- Right Side Items, added right to left --
 source "$ITEM_DIR"/calendar.sh
+source "$ITEM_DIR"/wifi.sh
 source "$ITEM_DIR"/volume.sh
 source "$ITEM_DIR"/battery.sh
 source "$ITEM_DIR"/ram.sh
 source "$ITEM_DIR"/cpu.sh
 pill_gap gap.status right
 source "$ITEM_DIR"/mic.sh
-source "$ITEM_DIR"/wifi.sh
 source "$ITEM_DIR"/vpn.sh
 
 # -- Shared backgrounds, after their members exist --
