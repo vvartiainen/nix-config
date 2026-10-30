@@ -178,6 +178,8 @@ in
 {
   programs.codex = {
     enable = true;
+    # The Homebrew cask provides the CLI; it updates sooner than nixpkgs.
+    package = null;
   };
 
   # A linked worktree's git dirs live in the main repo, outside the workspace,

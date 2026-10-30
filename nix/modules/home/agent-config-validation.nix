@@ -3,8 +3,8 @@ let
   schemas = {
     # Match the Homebrew Codex CLI used here (see docs/agent-keybindings.md).
     codex = pkgs.fetchurl {
-      url = "https://raw.githubusercontent.com/openai/codex/rust-v0.165.0/codex-rs/core/config.schema.json";
-      hash = "sha256-vBSokKdMf5pOuD13JVD+iBPH84n0TB8YSZ8M4kqOSmA=";
+      url = "https://raw.githubusercontent.com/openai/codex/rust-v0.166.0/codex-rs/core/config.schema.json";
+      hash = "sha256-IRvsIoJFn81w5JBa+UhyEXe27HoD4N+EzYt8ExAGpso=";
     };
     claude = pkgs.fetchurl {
       url = "https://raw.githubusercontent.com/SchemaStore/schemastore/bf7c6745505ccace5568dc0d7f4ae29647e9b41a/src/schemas/json/claude-code-settings.json";

@@ -179,7 +179,7 @@ already have been written when a later merge fails.
 
 | Configuration | Validation |
 | --- | --- |
-| Codex `config.toml` | Upstream schema from `rust-v0.165.0`, matching the Homebrew CLI used here |
+| Codex `config.toml` | Upstream schema from `rust-v0.166.0`, matching the Homebrew CLI used here |
 | Claude Code `settings.json` | Pinned SchemaStore Claude Code settings schema |
 | OpenCode runtime and v2 CLI settings | Schemas from the pinned nixpkgs OpenCode package |
 | OpenCode legacy `tui.json` | Published TUI schema, pinned by content hash |
