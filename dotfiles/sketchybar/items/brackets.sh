@@ -9,9 +9,9 @@ pill=(
 
 sketchybar --add bracket left_side '/space\..*/' space_separator front_app \
 	--set left_side "${pill[@]}" \
-	--add bracket system cpu ram battery volume \
-	--set system "${pill[@]}" \
-	--add bracket status vpn wifi mic yabai_layout \
+	--add bracket layout yabai_layout \
+	--set layout "${pill[@]}" \
+	--add bracket status vpn wifi mic \
 	--set status "${pill[@]}" \
-	--add bracket clock calendar \
-	--set clock "${pill[@]}"
+	--add bracket system cpu ram battery volume calendar \
+	--set system "${pill[@]}"
