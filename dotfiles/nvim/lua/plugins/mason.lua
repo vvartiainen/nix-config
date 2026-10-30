@@ -28,7 +28,6 @@ return {
         "marksman",
         "prettier",
         "rustywind",
-        "shellcheck",
         "shfmt",
         "stylua",
         "svelte-language-server",

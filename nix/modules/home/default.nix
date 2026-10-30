@@ -35,6 +35,7 @@ in
     packages = with pkgs; [
       gdu
       lnav
+      shellcheck
       statix
       yq-go
     ];

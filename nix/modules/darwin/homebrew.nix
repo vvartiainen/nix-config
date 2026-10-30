@@ -12,7 +12,6 @@
       "ansible"
       "awscli"
       "bat"
-      "btop"
       "cmake"
       "composer"
       "coreutils"
@@ -26,7 +25,6 @@
       "gh"
       "ghostscript"
       "git"
-      "git-delta"
       "git-lfs"
       "gnu-sed"
       "gnumeric"
@@ -51,7 +49,6 @@
       "ripgrep"
       "scc"
       "sevenzip"
-      "shellcheck" # TODO: Move to nix
       "sqlite"
       "tectonic"
       "thefuck"
@@ -61,10 +58,6 @@
       "uv"
       "wget"
       "yt-dlp"
-    ];
-
-    taps = [
-      "jesseduffield/lazydocker"
     ];
 
     casks = [

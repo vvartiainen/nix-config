@@ -1,7 +1,7 @@
 _: {
   programs.git = {
     enable = true;
-    # git, git-delta and git-lfs come from Homebrew.
+    # git and git-lfs come from Homebrew.
     package = null;
 
     # Global ignores, written to ~/.config/git/ignore (git's default excludesFile).
