@@ -4,15 +4,6 @@
 
 This repository contains my macOS configs using nix, nix-darwin and home-manager.
 
-## Directory structure
-
-- `flake.nix` and `flake.lock`: flake entrypoint and pinned inputs
-- `nix/hosts/`: per-host composition roots (currently `mbp`)
-- `nix/modules/shared/`: system-level modules that are not platform-specific
-- `nix/modules/home/`: Home Manager user base and per-program modules
-- `nix/modules/darwin/`: macOS system modules and macOS-specific Home Manager programs
-- `dotfiles/`: app config files (for example `nvim`, `tmux`, `yabai`, `skhd`)
-
 ## Validation commands (no apply)
 
 Use the tracked `nix/fixtures/host` input for agent verification after config
@@ -120,3 +111,4 @@ Ideas and open work are tracked in a Backlog.md backlog through the `backlog-nix
 - Create or update a session handoff task tagged `handoff` and `needs-review`
   after changing tasks or repository files, as described in `doc-4`. The user
   completes review tasks; do not maintain `doc-2` as a session handoff.
+- Simple tasks do not need handoffs, ask if the user wants you to create the handoff after implementation
