@@ -4,5 +4,5 @@ sketchybar --add item volume right \
 	--set volume script="$PLUGIN_DIR/volume.sh" \
 	--set volume icon.color="$PEACH" \
 	--set volume label.color="$SKY" \
-	label.width=50 \
+	label.width=43 \
 	--subscribe volume volume_change

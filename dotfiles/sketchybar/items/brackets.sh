@@ -13,3 +13,13 @@ sketchybar --add bracket left_side '/space\..*/' space_separator front_app \
 	--set status "${pill[@]}" \
 	--add bracket system cpu ram battery volume wifi calendar clock \
 	--set system "${pill[@]}"
+
+# The fixed-width values leave room after short values, so items inside the
+# system pill get less padding. Its outer edges keep the default 5.
+inner=(padding_left=2 padding_right=2)
+sketchybar --set cpu padding_right=2 \
+	--set ram "${inner[@]}" \
+	--set battery "${inner[@]}" \
+	--set volume "${inner[@]}" \
+	--set wifi "${inner[@]}" \
+	--set calendar padding_left=2
