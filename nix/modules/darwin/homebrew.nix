@@ -34,7 +34,6 @@
       "neovim"
       "nixfmt"
       "opencode"
-      "pkgconf"
       "pnpm"
       "poppler"
       "ripgrep"
