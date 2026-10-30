@@ -38,6 +38,13 @@ on = "L"
 run = "plugin duckdb +1"
 desc = "Scroll one column to the right"
 
+# Opening a remote (sftp://) file edits a local cached copy; this writes it
+# back. Yazi skips unchanged files and refuses if the remote changed meanwhile.
+[[mgr.prepend_keymap]]
+on = ["g", "U"]
+run = "upload"
+desc = "Upload edited remote file"
+
 [[mgr.prepend_keymap]]
 on = ["g", "o"]
 run = "plugin duckdb -open"

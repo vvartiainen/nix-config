@@ -112,4 +112,5 @@ In kitty, `ssh` runs `kitten ssh`, so nothing needs installing on the remote:
 
 To browse remote files, run `yy sftp://<name>` for hosts listed in
 `programs.yazi.vfs.sftp` (see [Host data](#host-data)). Yank in one yazi tab and
-paste in another to copy between local and remote.
+paste in another to copy between local and remote. Opening a remote file edits a
+local cached copy; press `g U` on it afterwards to upload the changes.
