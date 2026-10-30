@@ -43,11 +43,22 @@ let
     "allowMailSmartReplies"
     "allowSafariSummary"
     "allowNotesTranscriptionSummary"
+    # Not Apple Intelligence: privacy settings share this profile so there is
+    # only one to approve.
+    "allowDiagnosticSubmission" # Mac Analytics
+    "allowApplePersonalizedAdvertising"
+    "allowSpotlightInternetResults"
   ] (_: false);
 
   # Inline text predictions are already off in system-settings.nix.
   forcedPreferences = {
-    "com.apple.assistant.support"."Assistant Enabled" = false;
+    "com.apple.assistant.support" = {
+      "Assistant Enabled" = false;
+      # 2 opts out of Improve Siri & Dictation and Improve Search.
+      "Siri Data Sharing Opt-In Status" = 2;
+      "Search Queries Data Sharing Status" = 2;
+    };
+    "com.apple.lookup.shared".LookupSuggestionsDisabled = true;
     "com.apple.Siri" = {
       StatusMenuVisible = false;
       VoiceTriggerUserEnabled = false;
@@ -72,7 +83,7 @@ let
     PayloadIdentifier = identifier;
     PayloadUUID = uuid identifier;
     PayloadDisplayName = "Apple Intelligence off";
-    PayloadDescription = "Turns off Siri and Apple Intelligence, and blocks its model downloads. Managed by nix-config; remove this profile to undo.";
+    PayloadDescription = "Turns off Siri, Apple Intelligence, Mac Analytics, personalized ads and sharing searches and recordings with Apple, and blocks Apple Intelligence model downloads. Managed by nix-config; remove this profile to undo.";
     PayloadScope = "System";
     PayloadRemovalDisallowed = false;
     PayloadContent = [

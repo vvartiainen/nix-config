@@ -131,8 +131,10 @@ macOS 27 has no Apple Intelligence switch, and nix-darwin cannot install
 configuration profiles.
 [`apple-intelligence.nix`](../nix/modules/darwin/apple-intelligence.nix)
 writes `/etc/apple-intelligence.mobileconfig`, which turns off Siri and Apple
-Intelligence features and blocks the model downloads. After a switch that
-changes it, install it again:
+Intelligence features and blocks the model downloads. It also turns off Mac
+Analytics, personalized ads, Improve Siri & Dictation, Improve Search, and
+Spotlight and Look Up internet suggestions. After a switch that changes it,
+install it again:
 
 ```sh
 open /etc/apple-intelligence.mobileconfig
