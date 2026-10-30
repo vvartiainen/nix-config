@@ -13,4 +13,6 @@ forced) APP="$(lsappinfo info "$(lsappinfo front)" | sed -n '1s/^"\(.*\)" ASN:.*
 *) exit 0 ;;
 esac
 
-sketchybar --set "$NAME" label="$APP" icon="$("$CONFIG_DIR"/plugins/icon_map_fn.sh "$APP")"
+# icon_map.sh prints a trailing space after each icon.
+ICON="$(icon_map.sh "$APP")"
+sketchybar --set "$NAME" label="$APP" icon="${ICON% }"

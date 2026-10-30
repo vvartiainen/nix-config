@@ -66,7 +66,6 @@
       "font-hack-nerd-font"
       "font-jetbrains-mono-nerd-font"
       "font-sf-pro"
-      "font-sketchybar-app-font"
       "font-symbols-only-nerd-font"
       "font-ubuntu-mono-nerd-font"
       "ghostty"

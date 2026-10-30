@@ -11,11 +11,15 @@ if [ "$SENDER" = "space_windows_change" ]; then
 	esac
 	apps="$(echo "$INFO" | jq -r '.apps | keys[]')"
 
-	icon_strip=""
 	if [ "${apps}" != "" ]; then
+		app_list=()
 		while read -r app; do
-			icon_strip+="${icon_strip:+ }$("$CONFIG_DIR"/plugins/icon_map_fn.sh "$app")"
+			app_list+=("$app")
 		done <<<"${apps}"
+		# icon_map.sh maps each argument and prints them space-separated, with
+		# a trailing space.
+		icon_strip="$(icon_map.sh "${app_list[@]}")"
+		icon_strip="${icon_strip% }"
 	else
 		icon_strip="—"
 	fi
