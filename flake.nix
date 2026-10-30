@@ -27,9 +27,10 @@
       };
     };
 
-    # asmvik/yabai plus macOS 27 scripting-addition offsets.
+    # asmvik/yabai fork with macOS 27.0-27.2 support. Pinned to a release tag:
+    # the scripting addition from this source is injected into Dock as root.
     yabai-src = {
-      url = "github:ImTheSquid/yabai";
+      url = "github:Christian-SC26/yabai/v7.2.0";
       flake = false;
     };
 

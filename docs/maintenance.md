@@ -96,6 +96,10 @@ store exclusion with `tmutil isexcluded /nix`, or set it manually with
 - Yabai sends Obsidian, Notion, Notes, and Linear to Space 5 (`Notes`), and Mail
   and Calendar to Space 6 (`Mail`). Create missing Spaces in Mission Control,
   then restart yabai with Ctrl+Alt+Cmd+R.
+- Yabai is built from the `Christian-SC26/yabai` fork, pinned to a release tag
+  in `flake.nix`, and installed to `/opt/yabai/bin`. The `org.nixos.yabai`
+  launchd agent logs to `/tmp/yabai_<user>.{out,err}.log`. Review the fork's
+  changes before bumping the tag: its scripting addition runs inside Dock.
 - Globe/Fn opens Emoji & Symbols; changing this action requires a restart.
   Standard function keys and Tab/Shift-Tab navigation are configured in
   [`system-settings.nix`](../nix/modules/darwin/system-settings.nix), alongside

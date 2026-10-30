@@ -19,6 +19,6 @@ in
 
   programs.zsh.shellAliases = {
     reloadskhd = "skhd --restart-service";
-    reloadall = "sudo yabai --load-sa ; yabai --restart-service ; skhd --restart-service ; sketchybar --reload";
+    reloadall = "sudo yabai --load-sa ; launchctl kickstart -k gui/\"$(id -u)\"/org.nixos.yabai ; skhd --restart-service ; sketchybar --reload";
   };
 }

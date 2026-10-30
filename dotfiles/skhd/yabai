@@ -1,4 +1,4 @@
-ctrl + alt + cmd - r : yabai --restart-service
+ctrl + alt + cmd - r : launchctl kickstart -k gui/"$(id -u)"/org.nixos.yabai
 
 ctrl + alt  - return : yabai -m window --toggle zoom-fullscreen
 

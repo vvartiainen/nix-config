@@ -1,4 +1,5 @@
 {
+  config,
   inputs,
   lib,
   pkgs,
@@ -7,61 +8,70 @@
   ...
 }:
 let
-  # true  = Nix-built ImTheSquid fork (/opt/yabai/bin/yabai)
-  # false = Homebrew HEAD            (/opt/homebrew/bin/yabai)
-  #
-  # Activation recreates the service with the selected binary and PATH.
-  # yabairc loads the matching scripting addition when the service starts.
-  useYabaiFork = true;
-
-  yabaiBin = if useYabaiFork then "/opt/yabai/bin/yabai" else "/opt/homebrew/bin/yabai";
+  # Stable path outside the store, so Accessibility approval survives rebuilds
+  # and the sudoers rule has a fixed binary to pin.
+  yabaiBin = "/opt/yabai/bin/yabai";
   servicePath = "${builtins.dirOf yabaiBin}:/etc/profiles/per-user/${userName}/bin:/run/current-system/sw/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin";
-  setupService = pkgs.writeShellScript "setup-yabai-service" ''
-    set -eu
-    export PATH=${lib.escapeShellArg servicePath}
-    # The service label changed upstream. Manage both explicitly because the
-    # selected binary's --stop/uninstall-service only handles its own label.
-    for label in com.koekeishiya.yabai com.asmvik.yabai; do
-      # `print` exits non-zero if the agent isn't loaded in this user's GUI
-      # domain; `bootout` stops the process and unloads the agent from launchd.
-      if /bin/launchctl print "gui/$(id -u)/$label" >/dev/null 2>&1; then
-        /bin/launchctl bootout "gui/$(id -u)/$label"
-      fi
-      # Remove the plist so --start-service writes a new one with the current
-      # binary path and PATH instead of reusing a stale one.
-      /bin/rm -f "$HOME/Library/LaunchAgents/$label.plist"
-    done
-    # Writes ~/Library/LaunchAgents/<label>.plist and bootstraps it into gui/<uid>.
-    ${yabaiBin} --start-service
-  '';
+  label = "org.nixos.yabai";
+  homeDir = config.users.users.${userName}.home;
 in
 {
-  nixpkgs.overlays = lib.optionals useYabaiFork [
+  nixpkgs.overlays = [
     (_final: prev: {
       yabai = prev.yabai.overrideAttrs (old: {
+        # Read the version from the fork so versionCheckHook matches it.
+        version =
+          let
+            source = builtins.readFile "${inputs.yabai-src}/src/yabai.c";
+            part = name: builtins.head (builtins.match ".*#define ${name} +([0-9]+).*" source);
+          in
+          "${part "MAJOR"}.${part "MINOR"}.${part "PATCH"}";
         src = inputs.yabai-src;
-        # macOS 27's dyld rejects the scripting addition without LC_UUID.
-        postPatch = (old.postPatch or "") + ''
-          substituteInPlace makefile --replace-fail '-Wl,-no_uuid' ""
-        '';
+        meta = old.meta // {
+          homepage = "https://github.com/Christian-SC26/yabai";
+        };
       });
     })
   ];
 
-  environment.systemPath = lib.mkIf useYabaiFork (lib.mkBefore [ "/opt/yabai/bin" ]);
+  environment.systemPath = lib.mkBefore [ (builtins.dirOf yabaiBin) ];
+
+  # Reads ~/.config/yabai/yabairc. The scripting addition is managed by the
+  # activation script below, not by enableScriptingAddition, so the sudoers
+  # rule pins the stable binary instead of the store path.
+  services.yabai = {
+    enable = true;
+    package = pkgs.yabai;
+  };
+
+  launchd.user.agents.yabai.serviceConfig = {
+    # yabai unlinks a stale socket itself, and its fcntl lock dies with the
+    # process, so no cleanup is needed before starting.
+    ProgramArguments = lib.mkForce [ yabaiBin ];
+    # yabairc resolves `yabai` through PATH; keep the stable binary first so
+    # `sudo yabai --load-sa` matches the sudoers rule.
+    EnvironmentVariables.PATH = lib.mkForce servicePath;
+    KeepAlive = lib.mkForce {
+      PathState.${yabaiBin} = true;
+    };
+    # Without its Accessibility grant, yabai exits at once and prompts on every launch.
+    ThrottleInterval = 60;
+    StandardOutPath = "/tmp/yabai_${userName}.out.log";
+    StandardErrorPath = "/tmp/yabai_${userName}.err.log";
+  };
 
   # Keep the executable, Dock scripting addition, and launchd service in sync:
   #
-  # 1. (Fork only) Install the Nix-built binary to /opt/yabai/bin atomically.
+  # 1. Install the Nix-built binary to /opt/yabai/bin atomically.
   #    In-place writes caused SIGKILL from stale code signatures.
-  # 2. Fail if the selected binary is missing.
-  # 3. Write /etc/sudoers.d/yabai so `sudo yabai --load-sa` needs no password,
+  # 2. Write /etc/sudoers.d/yabai so `sudo yabai --load-sa` needs no password,
   #    pinned to the binary's sha256. The file is validated before it's installed.
-  # 4. The remaining steps run only if the user is logged into a GUI session:
+  # 3. The remaining steps run only if the user is logged into a GUI session:
   #    a. If the binary's hash differs from the one recorded in the installed
   #       scripting addition, reinstall the addition. This restarts Dock.
-  #    b. Remove both the old and new launchd agent labels, then recreate the
-  #       service with the selected binary and PATH. This restarts yabai.
+  #    b. Remove the agents that `yabai --start-service` used to install.
+  #    c. Stop the nix-darwin agent so KeepAlive restarts it. Its plist doesn't
+  #       change when only the binary does, so launchd wouldn't restart it otherwise.
   #
   # Accessibility approval stays manual.
   system.activationScripts.postActivation.text = lib.mkAfter ''
@@ -69,19 +79,12 @@ in
     sudoersDir="/private/etc/sudoers.d"
     sudoersFile="$sudoersDir/yabai"
 
-    ${lib.optionalString useYabaiFork ''
-      mkdir -p "$(dirname "$yabaiBin")"
-      # macOS install writes a temp file and renames it over the target, so the
-      # new binary gets a fresh inode and the kernel doesn't validate it against
-      # the old binary's cached code signature. -C leaves the target alone if it's
-      # already identical; -m 755 sets the mode (store files are read-only).
-      /usr/bin/install -C -m 755 "${pkgs.yabai}/bin/yabai" "$yabaiBin"
-    ''}
-
-    if [[ ! -x "$yabaiBin" ]]; then
-      echo "error: yabai binary not found at $yabaiBin" >&2
-      exit 1
-    fi
+    mkdir -p "$(dirname "$yabaiBin")"
+    # macOS install writes a temp file and renames it over the target, so the
+    # new binary gets a fresh inode and the kernel doesn't validate it against
+    # the old binary's cached code signature. -C leaves the target alone if it's
+    # already identical; -m 755 sets the mode (store files are read-only).
+    /usr/bin/install -C -m 755 "${pkgs.yabai}/bin/yabai" "$yabaiBin"
 
     yabaiHash=$(shasum -a 256 "$yabaiBin" | cut -d " " -f 1)
     mkdir -p "$sudoersDir"
@@ -124,10 +127,19 @@ in
         /bin/launchctl asuser "$yabaiUid" "$yabaiBin" --load-sa
         printf '%s\n' "$yabaiHash" > "$saHashFile"
       fi
-      # Switch from root to the user (-H sets HOME to the user's home) inside the
-      # user's session, so the service is installed in ~/Library/LaunchAgents
-      # and loaded into gui/<uid> instead of root's domain.
-      /bin/launchctl asuser "$yabaiUid" /usr/bin/sudo -H -u ${lib.escapeShellArg userName} ${setupService}
+
+      # A second instance would hold the lock and keep this agent from starting.
+      for oldLabel in com.koekeishiya.yabai com.asmvik.yabai; do
+        if /bin/launchctl print "gui/$yabaiUid/$oldLabel" >/dev/null 2>&1; then
+          /bin/launchctl bootout "gui/$yabaiUid/$oldLabel"
+        fi
+        /bin/rm -f "${homeDir}/Library/LaunchAgents/$oldLabel.plist"
+      done
+
+      # Stop a running instance and let KeepAlive start the new binary.
+      # `kickstart -k` would block activation while yabai can't start, for
+      # example before its Accessibility approval.
+      /bin/launchctl kill SIGTERM "gui/$yabaiUid/${label}" 2>/dev/null || true
     fi
   '';
 
@@ -140,7 +152,7 @@ in
       xdg.configFile = linkTree "yabai";
 
       programs.zsh.shellAliases = {
-        reloadyabai = "sudo yabai --load-sa && yabai --restart-service";
+        reloadyabai = ''sudo yabai --load-sa && launchctl kickstart -k gui/"$(id -u)"/${label}'';
       };
     };
 }
