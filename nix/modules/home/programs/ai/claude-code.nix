@@ -181,12 +181,15 @@ let
       # possible exfiltration channel through it.
       enableWeakerNetworkIsolation = false;
       filesystem = {
-        allowWrite = caches.writePaths;
+        allowWrite = caches.writePaths ++ paths.tmp;
         # Git hooks and config run outside the sandbox.
         denyWrite = [
           "**/.git/hooks"
           "**/.git/config"
         ];
+        # The home directory stays readable: user settings can't name the
+        # project, so a `~/` deny would block it too. Credential paths are
+        # denied through the Read rules above.
         # ~/.npmrc links to this tracked file; flake evaluation copies every
         # tracked file, so nix must be able to read it.
         allowRead = [ "/${repoRoot}/dotfiles/.npmrc" ];
@@ -215,6 +218,8 @@ in
       - In Bash commands, avoid shell variables, `$(...)` and backticks: Claude
         Code can't check them against permission rules and prompts. Use literal
         absolute paths and split dependent steps into separate tool calls.
+      - For temporary files, use literal paths under `/tmp` instead of
+        `$TMPDIR`; `/tmp` is writable in the sandbox.
     '';
   };
 

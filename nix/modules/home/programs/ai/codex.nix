@@ -45,6 +45,10 @@ let
       filesystem = {
         ":root" = "deny";
         ":minimal" = "read";
+        # `:workspace` grants these, but keep them explicit next to the
+        # `:root` deny.
+        ":tmpdir" = "write";
+        ":slash_tmp" = "write";
 
         ":workspace_roots" = {
           "." = "write";
@@ -59,8 +63,9 @@ let
         }
         // lib.genAttrs paths.secretFiles (_: "deny");
       }
-      // lib.genAttrs (paths.readonly ++ paths.runtime) (_: "read")
+      // lib.genAttrs (paths.readonly ++ paths.runtime ++ paths.readable) (_: "read")
       // lib.genAttrs caches.writePaths (_: "write")
+      // lib.genAttrs paths.denied (_: "deny")
       // {
         "${config.home.homeDirectory}/.codex/skills" = "read";
 

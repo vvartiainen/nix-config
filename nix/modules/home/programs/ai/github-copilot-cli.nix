@@ -20,12 +20,10 @@ let
   # Copilot has no config file setting for tool rules or file tool paths,
   # only the `--allow-tool` / `--deny-tool` / `--add-dir` CLI flags.
   toolPermissions = {
-    allowTools =
-      map (cmd: "shell(${commandString cmd}:*)") (
-        commands.allowed ++ commands.routine ++ [ [ "nixfmt" ] ]
-      )
-      ++ map (cmd: "shell(${commandString cmd})") commands.exact
-      ++ permissions.mcpServers;
+    # Copilot has no "approve if sandboxed" setting, so allow all shell
+    # commands like the other CLIs' sandbox approval. Deny rules still win,
+    # and running outside the sandbox is a separate bypass prompt.
+    allowTools = [ "shell" ] ++ permissions.mcpServers;
     # A relative write() path matches trailing components in any directory.
     # Copilot has no read() rule, so reads can't be denied this way.
     denyTools = map (cmd: "shell(${commandString cmd}:*)") commands.denied ++ [
@@ -58,6 +56,7 @@ let
         readonlyPaths =
           paths.readonly
           ++ paths.runtime
+          ++ paths.readable
           ++ [
             "${config.programs.github-copilot-cli.configDir}/hooks"
           ];
@@ -70,13 +69,15 @@ let
         # allowDevToolAccess grants a moved cache instead of its default
         # location, but only to its own ecosystem; mise has none.
         ++ caches.writePaths
+        ++ paths.tmp
         # The backlog MCP servers (`bl <project> mcp start`) edit tasks there.
         ++ lib.optional (config.backlog.projects != [ ]) config.backlog.vault;
         deniedPaths = paths.denied;
         clearPolicyOnExit = true;
       };
-      # No allowedHosts: a non-empty list blocks other hosts without a
-      # prompt, and Copilot already prompts for every unlisted command.
+      # Shell commands run without approval, so limit the network like the
+      # other sandboxes. Blocked hosts offer a sandbox bypass prompt.
+      userPolicy.network.allowedHosts = network.sandbox;
     };
     footer = {
       showModelEffort = true;

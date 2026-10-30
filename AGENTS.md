@@ -45,7 +45,7 @@ Neither replaces an explicit system evaluation or build.
 
 The `just` recipes use private host data and are for the user's manual
 validation. Agents use the direct commands above. Direct `nix build --no-link`
-avoids the `just` approval prompt and leaves no result symlink.
+leaves no result symlink.
 
 Do not run apply commands (for example `just switch <hostName>` or
 `darwin-rebuild switch`); user applies manually. Documentation-only changes
@@ -56,19 +56,16 @@ need a diff review and `git diff --check`, not a system build.
 Commands run in an OS sandbox (see `docs/agent-permissions.md`, "Working in
 the sandboxes").
 
-- Writable: the workspace, `$TMPDIR`, and `~/.cache/<tool>-agent`; package
-  caches already point there. Use `$TMPDIR` for scratch files.
+- Writable: the workspace, `$TMPDIR`, `/tmp`, and `~/.cache/<tool>-agent`;
+  package caches already point there. Use `/tmp` for scratch files.
 - Network: package download hosts only; other hosts need approval. Fetching
   flake inputs from GitHub may need `github.com` approved.
-- `just` and `nix build` require command approval under the shared permission
-  rules. Direct Nix evaluation avoids the `just` wrapper prompt; builds still
-  run through the daemon outside the agent sandbox and require approval.
-- Codex, Claude Code, and Copilot run `npm test` and `cargo test` without
-  blanket command prompts under their configured sandboxes. Codex and Copilot
-  also allow `terraform validate`; Claude still prompts because Terraform is
-  excluded from its sandbox for macOS TLS compatibility. `npm run`, `npx`, and
-  `nix fmt` still prompt; `nix fmt` can build its formatter through the daemon.
-  Copilot also narrowly allows the installed `nixfmt` formatter.
+- `nix build` and `nix fmt` require approval in Codex and Claude Code: builds
+  run through the daemon outside the agent sandbox.
+- Codex, Claude Code, and Copilot run sandboxed commands (`just`, `npm run`,
+  `npx`, `npm test`, `cargo test`) without prompts. Claude still prompts for
+  `terraform validate` because Terraform is excluded from its sandbox for
+  macOS TLS compatibility.
 - `Operation not permitted`, `403`/`Forbidden`, or `x509: OSStatus -26276`
   mean the sandbox blocked it: retry once with escalation or ask, don't try
   variants or work around it.

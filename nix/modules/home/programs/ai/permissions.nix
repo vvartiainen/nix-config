@@ -154,15 +154,9 @@ let
       ]
     ];
 
-    # Broad command wrappers and daemon-backed Nix commands still need review
-    # inside a sandbox. `nix fmt` can build the flake's formatter.
+    # Daemon-backed Nix commands build outside the agent sandbox, so they
+    # still need review inside it. `nix fmt` can build the flake's formatter.
     sandboxAsk = [
-      [ "just" ]
-      [
-        "npm"
-        "run"
-      ]
-      [ "npx" ]
       [
         "nix"
         "fmt"
@@ -173,9 +167,15 @@ let
       ]
     ];
 
-    # Routine project-code runners. Codex and Claude rely on sandbox approval;
-    # Copilot needs narrow allow rules because it has no sandbox auto-approval.
+    # Project-code runners and wrappers. The sandboxed CLIs run them without
+    # prompts; OpenCode has no sandbox, so it asks.
     routine = [
+      [ "just" ]
+      [
+        "npm"
+        "run"
+      ]
+      [ "npx" ]
       [
         "npm"
         "test"
@@ -223,15 +223,72 @@ let
   };
 
   paths = {
-    # Credential files denied for reads, relative to the home directory.
+    # Home paths sandboxed commands may read, relative to the home directory.
+    # The rest of the home directory is denied apart from the workspace;
+    # reading it needs an approved command outside the sandbox.
+    homeReadable = [
+      ".config"
+      ".local/share"
+      ".local/state"
+      ".cache"
+      # Home Manager links and shell startup files.
+      ".gitconfig"
+      ".zshenv"
+      ".zprofile"
+      ".zshrc"
+      ".bunfig.toml"
+      ".yarnrc.yml"
+      ".rgignore"
+      ".tmux.conf"
+      ".nix-profile"
+      ".nix-defexpr"
+      # Toolchains.
+      ".cargo"
+      ".rustup"
+      "go"
+      "golang"
+      "bin"
+    ];
+
+    # Credential files denied for reads, relative to the home directory. The
+    # narrower path wins, so these stay denied inside homeReadable.
     homeSecrets = [
       ".ssh/**"
-      ".config/op/**"
-      ".config/gh/**"
       ".aws/**"
+      ".azure/**"
       ".gnupg/**"
+      ".docker/**"
+      ".android/**"
+      ".amplify/**"
+      ".snowsql/**"
+      ".terraform.d/**"
       ".netrc"
       ".npmrc"
+      ".yarnrc"
+      ".pgpass"
+      ".zsh_local"
+      ".emulator_console_auth_token"
+      ".cargo/credentials.toml"
+      ".codex/auth.json"
+      ".config/op/**"
+      ".config/gh/**"
+      ".config/1Password/**"
+      ".config/agent-proxy/**"
+      ".config/codexbar/**"
+      ".config/containers/**"
+      ".config/raycast/**"
+      ".config/anthropic/**"
+      ".config/nix-config-host/**"
+      ".config/cursor/mcp.json"
+      ".config/opencode/opencode.json"
+      ".local/share/atuin/**"
+      ".local/share/containers/**"
+      ".local/share/opencode/**"
+      ".local/state/agent-proxy/**"
+      ".local/state/agent-sandbox/**"
+      ".local/state/gh/**"
+      ".local/state/opencode/**"
+      ".local/state/.copilot/**"
     ];
 
     secretFiles = [
@@ -243,6 +300,9 @@ let
     denied = map (
       path: "${config.home.homeDirectory}/${lib.removeSuffix "/**" path}"
     ) paths.homeSecrets;
+
+    # homeReadable as absolute paths.
+    readable = map (path: "${config.home.homeDirectory}/${path}") paths.homeReadable;
 
     readonly = [
       "/nix/store"
@@ -268,6 +328,14 @@ let
       "/run/current-system"
       "/nix/var/nix/profiles"
       "/etc/nix"
+    ];
+
+    # Shared scratch space, writable in every sandbox so agents can use
+    # literal temp paths. /tmp links to /private/tmp; sandboxes may match
+    # either spelling.
+    tmp = [
+      "/tmp"
+      "/private/tmp"
     ];
 
     nixDaemonSocket = "/nix/var/nix/daemon-socket/socket";
