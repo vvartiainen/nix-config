@@ -172,6 +172,26 @@ turned on.
   in `flake.nix`, and installed to `/opt/yabai/bin`. The `org.nixos.yabai`
   launchd agent logs to `/tmp/yabai_<user>.{out,err}.log`. Review the fork's
   changes before bumping the tag: its scripting addition runs inside Dock.
+- skhd and sketchybar come from nixpkgs. skhd is installed to `/opt/skhd/bin`
+  and runs as the `org.nixos.skhd` agent, logging to
+  `/tmp/skhd_<user>.{out,err}.log`. Home Manager runs sketchybar and logs to
+  `~/Library/Logs/sketchybar`.
+- Activation signs yabai and skhd with a local certificate, kept root-only in
+  `/var/db/nix-config/code-signing`
+  ([`signed-binaries.nix`](../nix/modules/darwin/signed-binaries.nix)).
+  Accessibility grants are tied to that certificate, so they survive updates.
+  Grant Accessibility again after the first signed install, or if the key is
+  deleted and recreated: in System Settings > Privacy & Security >
+  Accessibility, remove the old `yabai` and `skhd` entries and add the binaries
+  from `/opt/yabai/bin` and `/opt/skhd/bin`. The certificate is not trusted by
+  default. If a grant is listed but the tool still reports no Accessibility
+  access, trust the certificate for code signing once (this prompts for an
+  administrator password):
+
+  ```sh
+  sudo security add-trusted-cert -d -r trustRoot -p codeSign \
+    -k /Library/Keychains/System.keychain /var/db/nix-config/code-signing/cert.pem
+  ```
 - Globe/Fn opens Emoji & Symbols; changing this action requires a restart.
   Standard function keys and Tab/Shift-Tab navigation are configured in
   [`system-settings.nix`](../nix/modules/darwin/system-settings.nix), alongside

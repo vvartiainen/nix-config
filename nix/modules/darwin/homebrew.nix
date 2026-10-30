@@ -20,7 +20,6 @@
       "duckdb"
       "fastfetch"
       "fd"
-      "felixkratz/formulae/sketchybar"
       "ffmpeg"
       "ffmpegthumbnailer"
       "figlet"
@@ -35,7 +34,6 @@
       "jq"
       "julia"
       "just"
-      "asmvik/formulae/skhd"
       "kubernetes-cli"
       "lazydocker"
       "libpq"
@@ -66,9 +64,7 @@
     ];
 
     taps = [
-      "felixkratz/formulae"
       "jesseduffield/lazydocker"
-      "asmvik/formulae"
     ];
 
     casks = [

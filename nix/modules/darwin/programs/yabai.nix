@@ -8,8 +8,8 @@
   ...
 }:
 let
-  # Stable path outside the store, so Accessibility approval survives rebuilds
-  # and the sudoers rule has a fixed binary to pin.
+  # Signed copy outside the store, so Accessibility approval survives yabai
+  # updates and the sudoers rule has a fixed binary to pin.
   yabaiBin = "/opt/yabai/bin/yabai";
   servicePath = "${builtins.dirOf yabaiBin}:/etc/profiles/per-user/${userName}/bin:/run/current-system/sw/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin";
   label = "org.nixos.yabai";
@@ -33,6 +33,13 @@ in
       });
     })
   ];
+
+  signedBinaries.yabai = {
+    source = "${pkgs.yabai}/bin/yabai";
+    path = yabaiBin;
+    # postActivation restarts yabai after reloading the scripting addition.
+    restart = false;
+  };
 
   environment.systemPath = lib.mkBefore [ (builtins.dirOf yabaiBin) ];
 
@@ -60,31 +67,23 @@ in
     StandardErrorPath = "/tmp/yabai_${userName}.err.log";
   };
 
-  # Keep the executable, Dock scripting addition, and launchd service in sync:
+  # signed-binaries.nix installs the signed binary to /opt/yabai/bin earlier in
+  # activation. Keep the Dock scripting addition and launchd service in sync:
   #
-  # 1. Install the Nix-built binary to /opt/yabai/bin atomically.
-  #    In-place writes caused SIGKILL from stale code signatures.
-  # 2. Write /etc/sudoers.d/yabai so `sudo yabai --load-sa` needs no password,
+  # 1. Write /etc/sudoers.d/yabai so `sudo yabai --load-sa` needs no password,
   #    pinned to the binary's sha256. The file is validated before it's installed.
-  # 3. The remaining steps run only if the user is logged into a GUI session:
+  # 2. The remaining steps run only if the user is logged into a GUI session:
   #    a. If the binary's hash differs from the one recorded in the installed
   #       scripting addition, reinstall the addition. This restarts Dock.
   #    b. Remove the agents that `yabai --start-service` used to install.
   #    c. Stop the nix-darwin agent so KeepAlive restarts it. Its plist doesn't
   #       change when only the binary does, so launchd wouldn't restart it otherwise.
   #
-  # Accessibility approval stays manual.
+  # Accessibility approval stays manual, once per signing key.
   system.activationScripts.postActivation.text = lib.mkAfter ''
     yabaiBin="${yabaiBin}"
     sudoersDir="/private/etc/sudoers.d"
     sudoersFile="$sudoersDir/yabai"
-
-    mkdir -p "$(dirname "$yabaiBin")"
-    # macOS install writes a temp file and renames it over the target, so the
-    # new binary gets a fresh inode and the kernel doesn't validate it against
-    # the old binary's cached code signature. -C leaves the target alone if it's
-    # already identical; -m 755 sets the mode (store files are read-only).
-    /usr/bin/install -C -m 755 "${pkgs.yabai}/bin/yabai" "$yabaiBin"
 
     yabaiHash=$(shasum -a 256 "$yabaiBin" | cut -d " " -f 1)
     mkdir -p "$sudoersDir"

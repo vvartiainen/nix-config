@@ -14,6 +14,9 @@
     ../../modules/darwin/system-settings.nix
     ../../modules/darwin/apple-intelligence.nix
     ../../modules/darwin/homebrew.nix
+    ../../modules/darwin/signed-binaries.nix
+    ../../modules/darwin/programs/sketchybar.nix
+    ../../modules/darwin/programs/skhd.nix
     ../../modules/darwin/programs/yabai.nix
   ];
 
