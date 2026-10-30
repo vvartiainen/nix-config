@@ -38,14 +38,24 @@ sketchybar --default icon.font="SF Pro:Semibold:15.0" \
 # -- Left Side Items --
 source "$ITEM_DIR"/spaces.sh
 source "$ITEM_DIR"/front_app.sh
-source "$ITEM_DIR"/yabai_layout.sh
 
-# -- Right Side Items --
+# -- Right Side Items, added right to left --
+# Item padding is inside a bracket's background, so pills need a spacer item
+# between them.
+pill_gap() {
+  sketchybar --add item "$1" right \
+    --set "$1" width=8 padding_left=0 padding_right=0 \
+    icon.drawing=off label.drawing=off background.drawing=off
+}
+
 source "$ITEM_DIR"/calendar.sh
-source "$ITEM_DIR"/volume.sh
+pill_gap gap.calendar
+source "$ITEM_DIR"/yabai_layout.sh
 source "$ITEM_DIR"/mic.sh
 source "$ITEM_DIR"/wifi.sh
 source "$ITEM_DIR"/vpn.sh
+pill_gap gap.status
+source "$ITEM_DIR"/volume.sh
 source "$ITEM_DIR"/battery.sh
 source "$ITEM_DIR"/ram.sh
 source "$ITEM_DIR"/cpu.sh
