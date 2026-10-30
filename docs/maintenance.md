@@ -127,3 +127,6 @@ fetched from LiteLLM and OpenRouter; pass `--offline` to use the bundled rates.
 - Go telemetry, including local collection, is disabled in
   [`go.nix`](../nix/modules/home/programs/go.nix). After applying, `go telemetry`
   should report `off`.
+- Homebrew analytics are disabled with `HOMEBREW_NO_ANALYTICS` in
+  [`homebrew.nix`](../nix/modules/darwin/homebrew.nix). In a new shell after
+  applying, `brew analytics state` should report them disabled.

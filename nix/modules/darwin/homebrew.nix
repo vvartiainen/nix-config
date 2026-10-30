@@ -133,6 +133,7 @@
       HOMEBREW_PREFIX = "/opt/homebrew";
       HOMEBREW_CELLAR = "/opt/homebrew/Cellar";
       HOMEBREW_REPOSITORY = "/opt/homebrew";
+      HOMEBREW_NO_ANALYTICS = "1";
     };
 
     systemPath = [
