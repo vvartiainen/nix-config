@@ -80,6 +80,7 @@ The reusable workflow skills in this repo are:
 | `handoff` | Summarize changes, commits, permission issues, spec deviations, backlog activity, verification, manual checks and remaining risks. |
 | `backlog-task` | Capture a task with a short title, why and observable acceptance criteria; search for duplicates and follow the project's workflow. |
 | `work-on-task` | Give an agent work by task ID or title; resolve scope, dependencies and ownership, execute and hand off, or prepare a brief for another agent. |
+| `mac-disk-cleanup` | Survey macOS disk use and System Data, plan cleanup for approval, then clear caches, simulators, VM disks, Apple Intelligence models, local snapshots and Nix store roots. |
 
 Publication reviews honor an explicit local comparison base without fetching.
 For remote refs, `review-before-push` prefers anonymous HTTPS for public repos
