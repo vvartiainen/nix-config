@@ -166,13 +166,22 @@ in
     enable = true;
     # The wrapper execs node, so the process is named `node` and herdr can't
     # detect Copilot. Exec node through a symlink named `copilot` instead;
-    # macOS takes the process name from the exec'd path.
+    # macOS takes the process name from the exec'd path. The package also
+    # ships no shell completions, so generate them from the CLI.
     package = pkgs.github-copilot-cli.overrideAttrs (old: {
+      nativeBuildInputs = old.nativeBuildInputs ++ [ pkgs.installShellFiles ];
       postInstall = ''
         mkdir -p "$out"/libexec
         ln -s ${pkgs.nodejs}/bin/node "$out"/libexec/copilot
       ''
-      + lib.replaceStrings [ "${pkgs.nodejs}/bin/node" ] [ ''"$out"/libexec/copilot'' ] old.postInstall;
+      + lib.replaceStrings [ "${pkgs.nodejs}/bin/node" ] [ ''"$out"/libexec/copilot'' ] old.postInstall
+      + ''
+        export HOME="$TMPDIR"
+        installShellCompletion --cmd copilot \
+          --zsh <("$out"/bin/copilot completion zsh) \
+          --bash <("$out"/bin/copilot completion bash) \
+          --fish <("$out"/bin/copilot completion fish)
+      '';
     });
   };
 
