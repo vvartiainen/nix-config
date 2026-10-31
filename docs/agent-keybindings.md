@@ -14,7 +14,7 @@ Option**; Left Option remains available for keyboard-layout characters.
 | Ctrl+Alt+Cmd | yabai swaps, window moves, layouts and space management; T opens the quick-access terminal |
 | Cmd+Left Option+H/J/K/L | yabai window resizing |
 | Right Cmd+Right Option+W (also Ctrl+Alt+W) | Window mode: H/J/K/L focus; Shift+H/J/K/L warp; Cmd+H/J/K/L resize |
-| Right Cmd+Right Option+Space | Navigation mode for the focused app: Herdr in Kitty, Zen in Zen; press again to exit |
+| Right Cmd+Right Option+Space | Navigation mode for the focused app: Herdr in a Herdr window, Kitty in other Kitty windows, Zen in Zen; press again to exit |
 | Right Cmd+Right Option+R (also Ctrl+Alt+R) → H/J/K/L | yabai resize mode; Escape or Return exits |
 | Cmd+Q twice within 500 ms | Quit Zen or Kitty; one press is swallowed in those apps |
 | Ctrl+Shift (`kitty_mod`) | Kitty controls, including tabs 1–9 |
@@ -183,6 +183,32 @@ Reload skhd and SketchyBar after applying manually. Verify workspace/tab
 order, N/O/F, native search shortcuts, mode exits and switching apps. Mouse
 clicks into a text field inside Zen do not automatically exit capture; press
 Escape or Return first, or use the address/search shortcuts above.
+
+## Kitty
+
+With a Kitty window that is not running Herdr focused, press
+**Right Cmd+Right Option+Space**, release the modifiers, then navigate
+repeatedly. SketchyBar shows a green KITTY badge and key hints:
+
+| Key in Kitty mode | Action |
+|---|---|
+| H / L | Previous / next tab |
+| J / K | Next / previous window in the tab |
+| Shift+H / L | Move tab backward / forward |
+| Shift+J / K | Move window forward / backward |
+| 1–9 | Jump to tab |
+| O | Next layout |
+| Z | Toggle stack layout |
+| F | Exit mode and open the fuzzy tab switcher |
+| Escape / Return / Right Cmd+Right Option+Space | Exit mode |
+| Right Cmd+Right Option+W / R | Switch to window / resize mode |
+
+The entry key runs `dotfiles/skhd/kitty.sh`, which reads the focused window's
+title and posts F17 for Herdr mode or F18 for Kitty mode, because skhd selects
+modes by application only. Tab and number keys forward the existing
+Ctrl+Shift shortcuts; the other actions use Kitty remote control through the
+`listen_on` socket of the focused Kitty process. SketchyBar exits the mode
+when another app gains focus.
 
 ## Herdr
 

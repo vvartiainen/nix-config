@@ -1,9 +1,9 @@
 # One key enters the focused app's navigation mode.
 # Loaded last so every mode it targets is already declared.
 default, winmode, resize < $mode - space [
-  "kitty" ; herdr_mode
+  "kitty" : /bin/bash "$HOME/.config/skhd/kitty.sh" enter
   "zen" ; zen_mode
   * ~
 ]
 
-herdr_mode, zen_mode < $mode - space ; default
+herdr_mode, kitty_mode, zen_mode < $mode - space ; default

@@ -1,0 +1,40 @@
+# H/L follows tabs; J/K follows windows inside the tab.
+:: kitty_mode @ : /bin/bash "$HOME/.config/skhd/mode-indicator.sh" kitty
+
+# kitty.sh posts F17 for Herdr windows and F18 otherwise. The modifiers of the
+# entry chord may still be held when the key arrives.
+default, winmode, resize < f17 ; herdr_mode
+default, winmode, resize < cmd + alt - f17 ; herdr_mode
+default, winmode, resize < f18 ; kitty_mode
+default, winmode, resize < cmd + alt - f18 ; kitty_mode
+
+kitty_mode < h | ctrl + shift - h
+kitty_mode < l | ctrl + shift - l
+kitty_mode < j : /bin/bash "$HOME/.config/skhd/kitty.sh" action next_window
+kitty_mode < k : /bin/bash "$HOME/.config/skhd/kitty.sh" action previous_window
+
+kitty_mode < shift - h : /bin/bash "$HOME/.config/skhd/kitty.sh" action move_tab_backward
+kitty_mode < shift - l : /bin/bash "$HOME/.config/skhd/kitty.sh" action move_tab_forward
+kitty_mode < shift - j : /bin/bash "$HOME/.config/skhd/kitty.sh" action move_window_forward
+kitty_mode < shift - k : /bin/bash "$HOME/.config/skhd/kitty.sh" action move_window_backward
+
+kitty_mode < 1 | ctrl + shift - 1
+kitty_mode < 2 | ctrl + shift - 2
+kitty_mode < 3 | ctrl + shift - 3
+kitty_mode < 4 | ctrl + shift - 4
+kitty_mode < 5 | ctrl + shift - 5
+kitty_mode < 6 | ctrl + shift - 6
+kitty_mode < 7 | ctrl + shift - 7
+kitty_mode < 8 | ctrl + shift - 8
+kitty_mode < 9 | ctrl + shift - 9
+
+kitty_mode < o : /bin/bash "$HOME/.config/skhd/kitty.sh" action next_layout
+kitty_mode < z : /bin/bash "$HOME/.config/skhd/kitty.sh" action toggle_layout stack
+
+# Release capture before the tab picker so search text reaches it.
+kitty_mode < f ; default : skhd --key "f7" && skhd --key "f"
+
+kitty_mode < escape ; default
+kitty_mode < return ; default
+kitty_mode < $mode - w ; winmode
+kitty_mode < $mode - r ; resize

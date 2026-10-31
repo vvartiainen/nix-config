@@ -8,5 +8,6 @@
 .load "hotkeys"
 .load "yabai"
 .load "herdr"
+.load "kitty"
 .load "zen"
 .load "navigation"
