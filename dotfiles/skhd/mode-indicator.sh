@@ -50,15 +50,23 @@ if [ "$mode" = herdr ] || [ "$mode" = zen ]; then
   else
     front_app=$(lsappinfo info "$(lsappinfo front)" 2>/dev/null | sed -n '1s/^"\(.*\)" ASN:.*/\1/p')
   fi
+  in_app=
   case "$mode:$front_app" in
-    *:|herdr:kitty|herdr:Kitty|zen:zen|zen:Zen|zen:'Zen Browser'|zen:'Zen Browser (Beta)') ;;
-    *)
-      # A reload returns skhd to default; its native callback clears the state.
-      if /opt/skhd/bin/skhd --reload >/dev/null 2>&1; then
-        mode=default
-      fi
-      ;;
+    *:|herdr:kitty|herdr:Kitty|zen:zen|zen:Zen|zen:'Zen Browser'|zen:'Zen Browser (Beta)') in_app=1 ;;
   esac
+  # Herdr titles Kitty "host: workspace / tab / pane" (window_title in
+  # herdr.nix), including remote sessions. An unknown title keeps the mode.
+  if [ -n "$in_app" ] && [ "$mode" = herdr ]; then
+    title=$(/opt/yabai/bin/yabai -m query --windows --window 2>/dev/null | jq -r '.title // empty')
+    case "$title" in
+      ''|*': '*' / '*' /'*) ;;
+      *) in_app= ;;
+    esac
+  fi
+  # A reload returns skhd to default; its native callback clears the state.
+  if [ -z "$in_app" ] && /opt/skhd/bin/skhd --reload >/dev/null 2>&1; then
+    mode=default
+  fi
 fi
 
 # shellcheck source=dotfiles/sketchybar/colors.sh
