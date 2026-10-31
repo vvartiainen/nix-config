@@ -68,6 +68,8 @@ cmd + lalt - l : yabai -m window --resize right:100:0 || yabai -m window --resiz
 
 $focus - w ; winmode
 $focus - r ; resize
+$mode - w ; winmode
+$mode - r ; resize
 
 winmode < h : yabai -m window --focus west
 winmode < j : yabai -m window --focus south
@@ -100,6 +102,8 @@ winmode < 5 : "$HOME/.config/yabai/movewindow.sh" 5
 winmode < 6 : "$HOME/.config/yabai/movewindow.sh" 6
 
 winmode < r ; resize
+winmode < $mode - r ; resize
+resize < $mode - r ; default
 resize < w ; winmode
 
 resize < h : yabai -m window --resize right:-100:0 || yabai -m window --resize left:-100:0
@@ -110,3 +114,4 @@ resize < l : yabai -m window --resize right:100:0 || yabai -m window --resize le
 winmode, resize < escape ; default
 winmode, resize < return ; default
 winmode, resize < $focus - w ; default
+winmode, resize < $mode - w ; default

@@ -13,8 +13,8 @@ Option**; Left Option remains available for keyboard-layout characters.
 | Ctrl+Alt+P/N | yabai previous / next window, including stack navigation |
 | Ctrl+Alt+Cmd | yabai swaps, window moves, layouts and space management; T opens the quick-access terminal |
 | Cmd+Left Option+H/J/K/L | yabai window resizing |
-| Ctrl+Alt+W | Window mode: H/J/K/L focus; Shift+H/J/K/L warp; Cmd+H/J/K/L resize |
-| Ctrl+Alt+R → H/J/K/L | yabai resize mode; Escape or Return exits |
+| Right Cmd+Right Option+W (also Ctrl+Alt+W) | Window mode: H/J/K/L focus; Shift+H/J/K/L warp; Cmd+H/J/K/L resize |
+| Right Cmd+Right Option+R (also Ctrl+Alt+R) → H/J/K/L | yabai resize mode; Escape or Return exits |
 | Cmd+Q twice within 500 ms | Quit Zen or Kitty; one press is swallowed in those apps |
 | Ctrl+Shift (`kitty_mod`) | Kitty controls, including tabs 1–9 |
 | F7 → key | Kitty sessions and tools |
@@ -28,8 +28,14 @@ and Zen uses Ctrl+Shift shortcuts in its own application context.
 Resize mode captures unmatched keys until Escape or Return exits; the existing
 Cmd+Left Option resize shortcuts remain available in normal mode. Other apps
 retain single-press Cmd+Q. The skhd configuration defines `$window` as
-Ctrl+Alt+Cmd, `$focus` as Ctrl+Alt and `$app` as Ctrl+Cmd before loading the
-binding files.
+Ctrl+Alt+Cmd, `$focus` as Ctrl+Alt, `$app` as Ctrl+Cmd and `$mode` as
+Right Cmd+Right Option before loading the binding files.
+
+The right-side Cmd+Option+W shortcut is reserved for window mode instead of
+the native close-all-windows action; the left-side combination retains its
+native behavior in normal mode. Right Cmd+Right Option+R also overrides that
+combination's app-specific action to enter resize mode. No keyboard driver
+is needed for these side-specific chords.
 
 Window and resize modes stay active for repeated actions. A blue WINDOW or
 orange RESIZE badge in SketchyBar shows a popup with the available keys.
@@ -41,7 +47,9 @@ The number bindings reuse the existing move-and-follow script. All these
 actions stay in window mode for repeated adjustments.
 
 R still enters the plain-key resize mode, and W returns from there to
-window mode. Escape, Return or Ctrl+Alt+W exits
+window mode. Right Cmd+Right Option+R switches from window to resize mode,
+or exits when already resizing. Escape, Return, Ctrl+Alt+W or
+Right Cmd+Right Option+W exits
 either mode directly to normal. Window mode uses yabai's `--warp` to rearrange
 the focused tiled window beside a directional neighbour; the existing direct
 Ctrl+Alt+Cmd+H/J/K/L bindings still swap windows.
