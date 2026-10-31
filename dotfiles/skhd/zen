@@ -1,11 +1,6 @@
 # H/L follows horizontal workspaces; J/K follows vertical tabs.
 :: zen_mode @ : /bin/bash "$HOME/.config/skhd/mode-indicator.sh" zen
 
-default, winmode, resize, herdr_mode < $mode - z [
-  "zen" ; zen_mode
-  * ~
-]
-
 zen_mode < h | ctrl + shift - h
 zen_mode < l | ctrl + shift - l
 zen_mode < j | ctrl - tab
@@ -22,6 +17,4 @@ zen_mode < cmd - f ; default : skhd --key "cmd - f"
 
 zen_mode < escape ; default
 zen_mode < return ; default
-zen_mode < $mode - z ; default
-zen_mode < $mode - w ; winmode
 zen_mode < $mode - r ; resize

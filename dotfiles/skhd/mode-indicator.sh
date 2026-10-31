@@ -89,7 +89,7 @@ case "$mode" in
     resize_keys="Shift+J / K workspaces    1-9 agents"
     actions="Shift+1-9 tabs    G Go To    S workspaces"
     extra_rows=on
-    navigation="Esc / Return exit    Right Cmd+Option+H toggle"
+    navigation="Esc / Return exit    Right Cmd+Option+Space toggle"
     ;;
   zen)
     title=ZEN
@@ -98,7 +98,7 @@ case "$mode" in
     resize_keys="N new tab    O address bar    F find"
     actions="New tabs and search exit mode for typing"
     extra_rows=on
-    navigation="Esc / Return exit    Right Cmd+Option+Z toggle"
+    navigation="Esc / Return exit    Right Cmd+Option+Space toggle"
     ;;
   *)
     sketchybar --set keyboard_mode drawing=off popup.drawing=off

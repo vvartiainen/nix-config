@@ -13,10 +13,9 @@ Option**; Left Option remains available for keyboard-layout characters.
 | Ctrl+Alt+P/N | yabai previous / next window, including stack navigation |
 | Ctrl+Alt+Cmd | yabai swaps, window moves, layouts and space management; T opens the quick-access terminal |
 | Cmd+Left Option+H/J/K/L | yabai window resizing |
-| Right Cmd+Right Option+W (also Ctrl+Alt+W) | Window mode: H/J/K/L focus; Shift+H/J/K/L warp; Cmd+H/J/K/L resize |
+| Right Cmd+Right Option+Space | Navigation mode for the focused app: Herdr in Kitty, Zen in Zen, window mode elsewhere; press again to exit |
+| Ctrl+Alt+W | Window mode: H/J/K/L focus; Shift+H/J/K/L warp; Cmd+H/J/K/L resize |
 | Right Cmd+Right Option+R (also Ctrl+Alt+R) → H/J/K/L | yabai resize mode; Escape or Return exits |
-| Right Cmd+Right Option+H in Kitty | Herdr navigation mode; see below |
-| Right Cmd+Right Option+Z in Zen | Zen navigation mode; see below |
 | Cmd+Q twice within 500 ms | Quit Zen or Kitty; one press is swallowed in those apps |
 | Ctrl+Shift (`kitty_mod`) | Kitty controls, including tabs 1–9 |
 | F7 → key | Kitty sessions and tools |
@@ -33,11 +32,11 @@ retain single-press Cmd+Q. The skhd configuration defines `$window` as
 Ctrl+Alt+Cmd, `$focus` as Ctrl+Alt, `$app` as Ctrl+Cmd and `$mode` as
 Right Cmd+Right Option before loading the binding files.
 
-The right-side Cmd+Option+W shortcut is reserved for window mode instead of
-the native close-all-windows action; the left-side combination retains its
-native behavior in normal mode. Right Cmd+Right Option+R also overrides that
-combination's app-specific action to enter resize mode. No keyboard driver
-is needed for these side-specific chords.
+The right-side Cmd+Option+Space shortcut is reserved for navigation mode
+instead of Spotlight search; the left-side combination still opens Spotlight.
+Right Cmd+Right Option+R also overrides that combination's app-specific
+action to enter resize mode. No keyboard driver is needed for these
+side-specific chords.
 
 Window and resize modes stay active for repeated actions. A blue WINDOW or
 orange RESIZE badge in SketchyBar shows a popup with the available keys.
@@ -52,8 +51,7 @@ actions stay in window mode for repeated adjustments.
 R still enters the plain-key resize mode, and W returns from there to
 window mode. Right Cmd+Right Option+R switches from window to resize mode,
 or exits when already resizing. Escape, Return, Ctrl+Alt+W or
-Right Cmd+Right Option+W exits
-either mode directly to normal. Window mode uses yabai's `--warp` to rearrange
+Right Cmd+Right Option+Space exits either mode directly to normal. Window mode uses yabai's `--warp` to rearrange
 the focused tiled window beside a directional neighbour; the existing direct
 Ctrl+Alt+Cmd+H/J/K/L bindings still swap windows.
 
@@ -156,7 +154,7 @@ the terminal's settings.
 
 ## Zen
 
-With Zen focused, press **Right Cmd+Right Option+Z**, release the modifiers,
+With Zen focused, press **Right Cmd+Right Option+Space**, release the modifiers,
 then navigate repeatedly. SketchyBar shows a purple ZEN badge and key hints:
 
 | Key in Zen mode | Action |
@@ -167,15 +165,15 @@ then navigate repeatedly. SketchyBar shows a purple ZEN badge and key hints:
 | O | Exit mode and focus the address bar |
 | F | Exit mode and find in the page |
 | Cmd+T / Cmd+L / Cmd+K / Cmd+F | Exit mode and perform the native action |
-| Escape / Return / Right Cmd+Right Option+Z | Exit mode |
-| Right Cmd+Right Option+W / R | Switch to window / resize mode |
+| Escape / Return / Right Cmd+Right Option+Space | Exit mode |
+| Right Cmd+Right Option+R | Switch to resize mode |
 
 Workspace movement forwards the existing native Ctrl+Shift+H/L shortcuts;
 tab movement uses Ctrl+Tab/Ctrl+Shift+Tab with the existing sequential tab
 order setting. Typing actions release capture first so the address bar,
 new-tab UI and search fields accept text normally. Existing native shortcuts
-remain unchanged. Entry is limited to Zen; the right-side chord passes
-through in other apps. SketchyBar exits the mode when focus leaves Zen,
+remain unchanged. Entry is limited to Zen; in other apps the same chord
+selects that app's mode. SketchyBar exits the mode when focus leaves Zen,
 including after a bar restart; keep it running for this guard and the hints.
 
 Reload skhd and SketchyBar after applying manually. Verify workspace/tab
@@ -185,7 +183,7 @@ Escape or Return first, or use the address/search shortcuts above.
 
 ## Herdr
 
-With Herdr focused inside Kitty, press **Right Cmd+Right Option+H**, release
+With Herdr focused inside Kitty, press **Right Cmd+Right Option+Space**, release
 the modifiers, then navigate repeatedly with plain keys. SketchyBar shows a
 teal HERDR badge and key hints:
 
@@ -198,8 +196,8 @@ teal HERDR badge and key hints:
 | Shift+1–9 | Jump to Herdr tab |
 | G | Exit mode and open searchable Go To picker |
 | S | Exit mode and open workspace picker |
-| Escape / Return / Right Cmd+Right Option+H | Exit mode |
-| Right Cmd+Right Option+W / R | Switch to window / resize mode |
+| Escape / Return / Right Cmd+Right Option+Space | Exit mode |
+| Right Cmd+Right Option+R | Switch to resize mode |
 
 The mode forwards the native right-Option bindings below to the focused
 terminal client, so it also works with remote Herdr without selecting a
@@ -207,8 +205,7 @@ local socket/session. These are Herdr tabs, not Kitty tabs. Entry is scoped
 to Kitty, and SketchyBar exits the mode when another app gains focus. Keep
 SketchyBar running for this guard and visual feedback. The guard cannot
 distinguish Herdr from another program inside Kitty; only enter the mode
-with Herdr focused. Right Cmd+Right Option+H overrides hide-other-apps in
-Kitty; the left-side shortcut remains native in normal mode.
+with Herdr focused.
 
 Pickers release skhd capture before opening, so search text and picker keys
 work normally. Native F19/F20 aliases open the Go To/workspace pickers;
