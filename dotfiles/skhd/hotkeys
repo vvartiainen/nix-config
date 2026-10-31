@@ -1,5 +1,13 @@
 $window - t : kitten quick-access-terminal
 
+# Open or focus apps by bundle ID; leave Ctrl+Cmd+F for fullscreen.
+$app - z : /usr/bin/open -b app.zen-browser.zen
+$app - k : /usr/bin/open -b net.kovidgoyal.kitty
+$app - c : /usr/bin/open -b com.apple.iCal
+$app - o : /usr/bin/open -b md.obsidian
+$app - m : /usr/bin/open -b com.apple.mail
+$app - e : /usr/bin/open -b com.apple.finder
+
 # Require a second Cmd+Q within 500ms to quit Zen or Kitty.
 cmd - q, cmd - q [
   "zen" | cmd - q

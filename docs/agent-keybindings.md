@@ -7,6 +7,7 @@ Option**; Left Option remains available for keyboard-layout characters.
 
 | Layer | Purpose |
 |---|---|
+| Ctrl+Cmd+Z/K/C/O/M/E | Open or focus Zen / Kitty / Calendar / Obsidian / Mail / Finder |
 | Ctrl+1–6 / Left / Right | yabai space selection / previous / next space |
 | Ctrl+Alt+H/J/K/L | yabai directional window focus |
 | Ctrl+Alt+P/N | yabai previous / next window, including stack navigation |
@@ -26,7 +27,16 @@ and Zen uses Ctrl+Shift shortcuts in its own application context.
 Resize mode captures unmatched keys until Escape or Return exits; the existing
 Cmd+Left Option resize shortcuts remain available in normal mode. Other apps
 retain single-press Cmd+Q. The skhd configuration defines `$window` as
-Ctrl+Alt+Cmd and `$focus` as Ctrl+Alt before loading the binding files.
+Ctrl+Alt+Cmd, `$focus` as Ctrl+Alt and `$app` as Ctrl+Cmd before loading the
+binding files.
+
+Application shortcuts use macOS `open` with bundle identifiers to activate an
+existing app or launch it when closed. E means Explorer/Finder; Ctrl+Cmd+F
+remains available for fullscreen. These shortcuts work independently of
+Raycast. After reloading skhd, test each app with Raycast stopped, then remove
+the old Raycast application assignments manually. Their original bindings
+have not been inventoried; this is the replacement scheme. H/L and J/K retain
+their existing spatial navigation behavior in Zen and Kitty.
 
 ## Shared actions
 

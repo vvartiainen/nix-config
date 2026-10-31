@@ -1,5 +1,6 @@
 .alias $window ctrl + alt + cmd
 .alias $focus ctrl + alt
+.alias $app ctrl + cmd
 
 .sequence_timeout 500ms
 
