@@ -45,6 +45,13 @@ let
         "Read(.env.*)"
         "Read(**/.env)"
         "Read(**/.env.*)"
+        "Write(.env)"
+        "Write(.env.*)"
+        "Write(**/.env)"
+        "Write(**/.env.*)"
+        # The sandbox protects these from shell writes; this covers file tools.
+        "Write(**/.git/hooks/**)"
+        "Write(**/.git/config)"
       ]
       ++ map (path: "Read(${config.home.homeDirectory}/${path})") paths.homeSecrets
       ++ map (pattern: "Read(${pattern})") paths.secretFiles;
@@ -71,7 +78,9 @@ let
 
   sandboxSettings = {
     additionalReadonlyPaths = paths.readonly;
-    additionalReadwritePaths = caches.writePaths;
+    # Cursor grants temp writes by default (`disableTmpWrite`); list /tmp
+    # explicitly like the other CLIs.
+    additionalReadwritePaths = caches.writePaths ++ paths.tmp;
   };
 
   # Cursor has no env setting, so its binary sets the agent caches.

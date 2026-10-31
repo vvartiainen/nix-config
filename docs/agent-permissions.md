@@ -75,12 +75,12 @@ a prompt, but only inside the sandbox.
 | `paths.homeReadable` | `read` (`paths.readable`) | — (home readable) | — | `readonlyPaths` (`paths.readable`) | — |
 | `paths.homeSecrets` | `deny` (`paths.denied`) | `Read(…)` deny, also a sandbox read deny | `Read(…)` deny | sandbox `deniedPaths` | — |
 | `paths.secretFiles` | workspace deny | `Read(…)` deny | `Read(…)` deny | — | — |
-| `.env` files | workspace deny | `Read`/`Edit` deny | `Read` deny | `write(.env)` deny | `read` deny |
+| `.env` files | workspace deny | `Read`/`Edit` deny | `Read`/`Write` deny | `write(.env)` deny | `read` deny |
 | `network.fetch` | — | — | `WebFetch(…)` allow | `allowedUrls` | — |
 | `network.sandbox` | proxy `domains` | `allowedDomains` and `WebFetch(domain:…)` allow | `networkAllowlist` | `allowedHosts` | — |
 | `paths.readonly` | `read` | — (reads allowed) | `additionalReadonlyPaths` | `readonlyPaths`, `--add-dir` | — |
 | `paths.runtime` | `read` | — (reads allowed) | — (reads allowed) | `readonlyPaths` | — |
-| `paths.tmp` | `:slash_tmp`, `:tmpdir` write | `allowWrite` | — | `readwritePaths` | — |
+| `paths.tmp` | `:slash_tmp`, `:tmpdir` write | `allowWrite` | `additionalReadwritePaths` | `readwritePaths` | — |
 | `paths.nixDaemonSocket` | `unix_sockets`, `read` | `allowUnixSockets` | — | `readwritePaths` | — |
 | `caches` | `shell_environment_policy`, `write` | `env`, `allowWrite` | wrapped binary, `additionalReadwritePaths` | wrapper env, `readwritePaths` | — |
 | `mcpServers` | — | `mcp__<server>__*` allow | `Mcp(…)` allow | `--allow-tool` | — |
@@ -129,8 +129,8 @@ denied for Copilot.
 |---|---|---|---|---|
 | Reads | Under `~`: workspace and `paths.homeReadable`; elsewhere only tool paths and Codex's runtime set | Allowed everywhere except denied reads | Allowed (system read boundary) | Working directory, PATH, temp, `paths.homeReadable`, dev-tool paths |
 | Denied reads | `paths.homeSecrets`, `.env`, keys | `paths.homeSecrets`, `.env`, keys | Credential paths | `paths.homeSecrets` |
-| Writes | Workspace, `$TMPDIR`, `/tmp`, agent caches | Working directory, `$TMPDIR`, `/tmp`, agent caches | Workspace, agent caches | Working directory, temp, `/tmp`, agent caches, dev-tool caches (`allowDevToolAccess`) |
-| Read-only in the workspace | `.git/hooks`, `.git/config` | `.git/hooks`, `.git/config` | — | `.git/config` for file tools only |
+| Writes | Workspace, `$TMPDIR`, `/tmp`, agent caches | Working directory, `$TMPDIR`, `/tmp`, agent caches | Workspace, temp, `/tmp`, agent caches | Working directory, temp, `/tmp`, agent caches, dev-tool caches (`allowDevToolAccess`) |
+| Read-only in the workspace | `.git/hooks`, `.git/config` | `.git/hooks`, `.git/config` | `.git/hooks`, `.git/config` (sandbox default, plus `Write(…)` deny) | `.git/config` for file tools only |
 | Network | `network.sandbox`; other hosts ask for approval | `network.sandbox`; other hosts prompt | `network.sandbox` plus Cursor's default list | `network.sandbox`; other hosts offer a bypass prompt |
 | Unsandboxed | Approved escalations | `gh`, `terraform`, Go module downloads, approved retries | Approved escapes | Approved bypasses |
 | Unix sockets | Nix daemon only | Nix daemon only | — | Nix daemon, herdr |
