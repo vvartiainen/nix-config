@@ -1,0 +1,14 @@
+--- a/src/Skhd.zig
++++ b/src/Skhd.zig
+@@ -118,2 +118,5 @@
+         current_mode = default_mode;
++        if (default_mode.command) |command| {
++            try forkAndExec(mappings.shell, command, verbose);
++        }
+     }
+@@ -1612,2 +1615,5 @@
+         self.current_mode = default_mode;
++        if (default_mode.command) |command| {
++            try forkAndExec(self.mappings.shell, command, self.verbose);
++        }
+     } else {

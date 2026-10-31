@@ -3,16 +3,23 @@
 # Called with a mode by skhd, or without arguments to render SketchyBar.
 state_dir="${XDG_CACHE_HOME:-$HOME/.cache}/skhd"
 state_file="$state_dir/mode"
+pid_file="/tmp/skhd_${USER}.pid"
+daemon_pid=
+if [ -r "$pid_file" ]; then
+  read -r daemon_pid < "$pid_file"
+fi
 
 if [ "$#" -gt 0 ]; then
   case "$1" in
     default) rm -f "$state_file" ;;
     window|resize)
-      # The launch wrapper exports the PID preserved by exec into skhd.
-      [ -n "${SKHD_MODE_PID:-}" ] || exit 0
+      # skhd writes its PID before loading the configuration.
+      case "$daemon_pid" in
+        ''|*[!0-9]*) exit 0 ;;
+      esac
       mkdir -p "$state_dir"
       temporary=$(mktemp "$state_dir/.mode.XXXXXX") || exit 1
-      printf '%s %s\n' "$1" "$SKHD_MODE_PID" > "$temporary"
+      printf '%s %s\n' "$1" "$daemon_pid" > "$temporary"
       mv -f "$temporary" "$state_file"
       ;;
     *) exit 1 ;;
@@ -28,7 +35,11 @@ if [ -r "$state_file" ]; then
 fi
 case "$owner" in
   ''|*[!0-9]*) mode=default ;;
-  *) kill -0 "$owner" 2>/dev/null || mode=default ;;
+  *)
+    if [ "$owner" != "$daemon_pid" ] || ! kill -0 "$owner" 2>/dev/null; then
+      mode=default
+    fi
+    ;;
 esac
 
 # shellcheck source=dotfiles/sketchybar/colors.sh

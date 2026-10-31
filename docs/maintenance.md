@@ -175,10 +175,12 @@ turned on.
 - skhd is built from [jackielii/skhd.zig](https://github.com/jackielii/skhd.zig),
   pinned in [`skhd-package.nix`](../nix/modules/darwin/programs/skhd-package.nix).
   Activation installs the signed bundle to `/Applications/skhd.app` and links
-  `/opt/skhd/bin/skhd` to a launcher that clears the mode indicator on startup
-  or reload, then executes the signed app. Nix-darwin owns the `org.nixos.skhd`
-  LaunchAgent; use `reloadskhd` to restart it and `skhd --reload` to reload
-  bindings. Do not use upstream's `--install-service`, `--start-service`,
+  `/opt/skhd/bin/skhd` to its executable. Launchd starts that signed executable
+  directly; a shell wrapper can cause macOS to attribute Accessibility requests
+  to Bash. A small source patch runs default-mode callbacks at startup and
+  successful reload to reset the visual indicator. Nix-darwin owns the
+  `org.nixos.skhd` LaunchAgent; use `reloadskhd` to restart it and
+  `skhd --reload` to reload bindings. Do not use upstream's `--install-service`, `--start-service`,
   `--stop-service`, `--restart-service` or `--uninstall-service`: they manage a
   separate `com.jackielii.skhd` service. Upstream `--status` also expects that
   service; inspect ours with `launchctl print gui/"$(id -u)"/org.nixos.skhd`.
@@ -207,6 +209,9 @@ turned on.
   macOS requests it, Input Monitoring; then run `reloadskhd`. Verify shortcuts,
   `skhd --reload`, and startup after logout/login. macOS may require permission
   to be toggled again after an update even with the same certificate.
+  If an earlier shell-launcher generation prompted for Bash Accessibility,
+  remove that Bash grant after switching to the direct-launch configuration;
+  only skhd needs Accessibility for these hotkeys.
   The certificate is not trusted by
   default. If a grant is listed but the tool still reports no Accessibility
   access, trust the certificate for code signing once (this prompts for an

@@ -38,12 +38,11 @@ either mode directly to normal. Window mode uses yabai's `--warp` to rearrange
 the focused tiled window beside a directional neighbour; the existing direct
 Ctrl+Alt+Cmd+H/J/K/L bindings still swap windows.
 
-After applying manually, run `reloadskhd` once to start the daemon through its
-new launcher, then reload SketchyBar. Check repeated focus, warp and resize,
-all exits, and popup placement on your displays. `skhd --reload` through the
-stable CLI and `reloadskhd` clear the indicator; a bar reload restores it for
-a still-running mode, and a daemon exit hides it within two seconds. The
-indicator stores only the mode and owning daemon PID under the user cache.
+After applying manually, reload SketchyBar. Check repeated focus, warp and
+resize, all exits, and popup placement on your displays. Native default-mode
+callbacks on startup and successful reload clear the indicator; a bar reload
+restores it for a still-running mode, and a daemon exit hides it within two
+seconds. The indicator stores only the mode and owning daemon PID under the user cache.
 These modes require no grabber or keyboard driver.
 
 Application shortcuts use macOS `open` with bundle identifiers to activate an

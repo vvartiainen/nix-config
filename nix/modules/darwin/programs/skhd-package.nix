@@ -16,6 +16,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-3yZnlGmeaz38mJdo6rZLoRXlooumd5WSzjqk8gK4gV4=";
   };
 
+  # Reset visual mode state on startup/reload without a launchd shell wrapper.
+  patches = [ ./skhd-default-mode.patch ];
+
   zigDeps = zig_0_16.fetchDeps {
     inherit (finalAttrs) pname version src;
     hash = "sha256-7xU/H+Sdo/ir4nCFxddKpDB5ADGvcJhJTiugYno1NYo=";
