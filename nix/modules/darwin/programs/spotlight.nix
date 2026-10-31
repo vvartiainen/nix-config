@@ -23,10 +23,8 @@ in
     # Result categories turned off in System Settings → Spotlight.
     DisabledUTTypes = [ ];
     # Optional result sources turned on in System Settings → Spotlight.
-    EnabledPreferenceRules = [
-      "Custom.relatedContents"
-      "System.iphoneApps"
-    ];
+    # Related content and iPhone apps are off.
+    EnabledPreferenceRules = [ ];
   };
 
   # CustomUserPreferences rewrites a whole top-level key, which would replace
