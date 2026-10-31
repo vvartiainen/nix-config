@@ -106,22 +106,23 @@ in
           "prefix+1..9"
           "alt+shift+1..9"
         ];
-        # F13-F16 are skhd navigation mode aliases, like F19/F20 above.
+        # Ctrl+Alt chords are skhd navigation mode aliases: skhd forwards
+        # function keys without the Fn flag, which Kitty does not decode.
         new_tab = [
           "alt+n"
-          "f13"
+          "ctrl+alt+t"
         ];
         new_workspace = [
           "alt+shift+n"
-          "f14"
+          "ctrl+alt+shift+w"
         ];
         split_vertical = [
           "prefix+v"
-          "f15"
+          "ctrl+alt+v"
         ];
         split_horizontal = [
           "prefix+minus"
-          "f16"
+          "ctrl+alt+shift+v"
         ];
         # Ctrl+Alt+H/J/K/L are yabai focus shortcuts, so swaps add Shift.
         swap_pane_left = [

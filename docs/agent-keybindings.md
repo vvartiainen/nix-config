@@ -245,10 +245,11 @@ prefix when changing the title format.
 Creating tabs, workspaces and splits keeps the mode active for repeated
 actions; new tabs skip Herdr's name prompt (`ui.prompt_new_tab_name`), which
 also applies to Alt+N. Pickers release skhd capture before opening, so search
-text and picker keys work normally. Native F13–F16 aliases create tabs,
-workspaces and vertical/horizontal splits, and F19/F20 open the Go To and
-workspace pickers; unmodified keys avoid Option composing differences when
-synthesized.
+text and picker keys work normally. Native F19/F20 aliases open the Go To
+and workspace pickers; unmodified keys avoid Option composing differences when
+synthesized. Tabs, workspaces and splits use Ctrl+Alt aliases instead, because
+skhd forwards function keys without the Fn flag and Kitty then sends raw
+characters to the pane.
 Apply the Herdr config change manually, reload its configuration with
 `herdr server reload-config`, then reload skhd and SketchyBar. Verify local
 and remote navigation, numbered jumps, picker searching, all exits and
@@ -277,7 +278,7 @@ then Shift+1–9 to select a workspace by number.
 | Jump to tab 1–9 | Alt+Shift+1–9; also Ctrl+B → 1–9 |
 | Focus pane | Ctrl+B → H/J/K/L |
 | Swap pane | Ctrl+Alt+Shift+H/J/K/L; also Ctrl+B → Shift+H/J/K/L |
-| Split side by side / stacked | Ctrl+B → V / Ctrl+B → - |
+| Split side by side / stacked | Ctrl+Alt+V / Ctrl+Alt+Shift+V; also Ctrl+B → V / Ctrl+B → - |
 | Show active shortcuts | Ctrl+B → ? |
 
 The sidebar groups agents by workspace, with separate agent, machine/workspace,
