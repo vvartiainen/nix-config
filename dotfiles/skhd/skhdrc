@@ -9,3 +9,4 @@
 .load "yabai"
 .load "herdr"
 .load "zen"
+.load "navigation"
