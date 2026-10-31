@@ -34,11 +34,13 @@
         # Real /dev/kvm in the guest for nixos tests. Needs M3 or newer and
         # macOS 15+, otherwise the VM refuses to start (see README).
         vz.nestedVirtualization = hardware.nestedVirtualization;
+        # Held only while the VM runs; leaves room for the rosetta-builder
+        # running alongside it.
         darwin-builder = {
           diskSize = 30 * 1024;
-          memorySize = 8 * 1024;
+          memorySize = 12 * 1024;
         };
-        cores = 6;
+        cores = 8;
       };
     };
   };

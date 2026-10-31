@@ -10,8 +10,10 @@
   nix-rosetta-builder = {
     onDemand = true;
     onDemandLingerMinutes = 30;
-    cores = 6;
-    memory = "8GiB";
+    # Held only while the VM runs. 8 vCPUs fit every Apple silicon Mac; cores
+    # also sets maxJobs.
+    cores = 8;
+    memory = "16GiB";
     diskSize = "50GiB";
     # Preferred over a linux-builder without nested virtualization (1), below
     # one with it (4) for kvm builds.
