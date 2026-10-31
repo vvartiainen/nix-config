@@ -200,7 +200,7 @@ repeatedly. SketchyBar shows a green KITTY badge and key hints:
 | 1–9 | Jump to tab |
 | O | Next layout |
 | Z | Toggle stack layout |
-| N / T | Exit mode and open a new window / tab in the current directory |
+| N / T | New window / tab in the current directory |
 | F | Exit mode and open the fuzzy tab switcher |
 | Escape / Return / Right Cmd+Right Option+Space | Exit mode |
 | Right Cmd+Right Option+W / R | Switch to window / resize mode |
@@ -226,8 +226,8 @@ teal HERDR badge and key hints:
 | Ctrl+H / J / K / L | Swap pane with its neighbour in that direction |
 | 1–9 | Jump to agent |
 | Shift+1–9 | Jump to Herdr tab |
-| T / W | Exit mode and create a Herdr tab / workspace |
-| V / Shift+V | Exit mode and split the pane side by side / stacked |
+| T / W | Create a Herdr tab / workspace |
+| V / Shift+V | Split the pane side by side / stacked |
 | G | Exit mode and open searchable Go To picker |
 | S | Exit mode and open workspace picker |
 | Escape / Return / Right Cmd+Right Option+Space | Exit mode |
@@ -242,10 +242,13 @@ when the focused Kitty window's title loses the `herdr · ` prefix that
 `window_title` in `herdr.nix` sets, which also covers remote Herdr. Keep that
 prefix when changing the title format.
 
-Pickers, new tabs, workspaces and splits release skhd capture first, so
-typing works normally. Native F19/F20 aliases open the Go To/workspace
-pickers, and F13–F16 create tabs, workspaces and vertical/horizontal splits;
-unmodified keys avoid Option composing differences when synthesized.
+Creating tabs, workspaces and splits keeps the mode active for repeated
+actions; new tabs skip Herdr's name prompt (`ui.prompt_new_tab_name`), which
+also applies to Alt+N. Pickers release skhd capture before opening, so search
+text and picker keys work normally. Native F13–F16 aliases create tabs,
+workspaces and vertical/horizontal splits, and F19/F20 open the Go To and
+workspace pickers; unmodified keys avoid Option composing differences when
+synthesized.
 Apply the Herdr config change manually, reload its configuration with
 `herdr server reload-config`, then reload skhd and SketchyBar. Verify local
 and remote navigation, numbered jumps, picker searching, all exits and

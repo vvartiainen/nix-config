@@ -204,6 +204,8 @@ in
           };
         };
         show_agent_labels_on_pane_borders = true;
+        # skhd's Herdr mode creates tabs repeatedly without releasing capture.
+        prompt_new_tab_name = false;
         # skhd's Herdr mode guard matches the "herdr · " prefix.
         window_title = "herdr · {hostname}: {workspace} / {tab} / {pane}";
         toast.delivery = "system";

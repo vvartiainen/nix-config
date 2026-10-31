@@ -36,10 +36,11 @@ kitty_mode < 9 | ctrl + shift - 9
 kitty_mode < o : /bin/bash "$HOME/.config/skhd/kitty.sh" action next_layout
 kitty_mode < z : /bin/bash "$HOME/.config/skhd/kitty.sh" action toggle_layout stack
 
-# Release capture before the tab picker or a new shell so typing reaches it.
+kitty_mode < n : /bin/bash "$HOME/.config/skhd/kitty.sh" action new_window_with_cwd
+kitty_mode < t : /bin/bash "$HOME/.config/skhd/kitty.sh" action new_tab_with_cwd
+
+# Release capture before the tab picker so search text reaches it.
 kitty_mode < f ; default : skhd --key "f7" && skhd --key "f"
-kitty_mode < n ; default : /bin/bash "$HOME/.config/skhd/kitty.sh" action new_window_with_cwd
-kitty_mode < t ; default : /bin/bash "$HOME/.config/skhd/kitty.sh" action new_tab_with_cwd
 
 kitty_mode < escape ; default
 kitty_mode < return ; default
