@@ -16,6 +16,7 @@ Option**; Left Option remains available for keyboard-layout characters.
 | Right Cmd+Right Option+W (also Ctrl+Alt+W) | Window mode: H/J/K/L focus; Shift+H/J/K/L warp; Cmd+H/J/K/L resize |
 | Right Cmd+Right Option+R (also Ctrl+Alt+R) → H/J/K/L | yabai resize mode; Escape or Return exits |
 | Right Cmd+Right Option+H in Kitty | Herdr navigation mode; see below |
+| Right Cmd+Right Option+Z in Zen | Zen navigation mode; see below |
 | Cmd+Q twice within 500 ms | Quit Zen or Kitty; one press is swallowed in those apps |
 | Ctrl+Shift (`kitty_mod`) | Kitty controls, including tabs 1–9 |
 | F7 → key | Kitty sessions and tools |
@@ -152,6 +153,35 @@ and [configuration schema](https://github.com/openai/codex/blob/rust-v0.165.0/co
 After applying manually and restarting Codex, check `@`, `/presets`, and
 resuming from a different directory; notification delivery also depends on
 the terminal's settings.
+
+## Zen
+
+With Zen focused, press **Right Cmd+Right Option+Z**, release the modifiers,
+then navigate repeatedly. SketchyBar shows a purple ZEN badge and key hints:
+
+| Key in Zen mode | Action |
+|---|---|
+| H / L | Previous / next horizontal workspace |
+| J / K | Next / previous vertical tab |
+| N | Exit mode and open a new tab |
+| O | Exit mode and focus the address bar |
+| F | Exit mode and find in the page |
+| Cmd+T / Cmd+L / Cmd+K / Cmd+F | Exit mode and perform the native action |
+| Escape / Return / Right Cmd+Right Option+Z | Exit mode |
+| Right Cmd+Right Option+W / R | Switch to window / resize mode |
+
+Workspace movement forwards the existing native Ctrl+Shift+H/L shortcuts;
+tab movement uses Ctrl+Tab/Ctrl+Shift+Tab with the existing sequential tab
+order setting. Typing actions release capture first so the address bar,
+new-tab UI and search fields accept text normally. Existing native shortcuts
+remain unchanged. Entry is limited to Zen; the right-side chord passes
+through in other apps. SketchyBar exits the mode when focus leaves Zen,
+including after a bar restart; keep it running for this guard and the hints.
+
+Reload skhd and SketchyBar after applying manually. Verify workspace/tab
+order, N/O/F, native search shortcuts, mode exits and switching apps. Mouse
+clicks into a text field inside Zen do not automatically exit capture; press
+Escape or Return first, or use the address/search shortcuts above.
 
 ## Herdr
 

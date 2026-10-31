@@ -12,7 +12,7 @@ fi
 if [ "$#" -gt 0 ]; then
   case "$1" in
     default) rm -f "$state_file" ;;
-    window|resize|herdr)
+    window|resize|herdr|zen)
       # skhd writes its PID before loading the configuration.
       case "$daemon_pid" in
         ''|*[!0-9]*) exit 0 ;;
@@ -42,16 +42,16 @@ case "$owner" in
     ;;
 esac
 
-# Herdr capture belongs to Kitty. Events provide the app immediately; polling
-# also recovers if the bar restarted or missed an app-switch event.
-if [ "$mode" = herdr ]; then
+# App-specific capture follows its app. Events provide the app immediately;
+# polling also recovers if the bar restarted or missed an app-switch event.
+if [ "$mode" = herdr ] || [ "$mode" = zen ]; then
   if [ "${SENDER:-}" = front_app_switched ]; then
     front_app="${INFO:-}"
   else
     front_app=$(lsappinfo info "$(lsappinfo front)" 2>/dev/null | sed -n '1s/^"\(.*\)" ASN:.*/\1/p')
   fi
-  case "$front_app" in
-    ''|kitty|Kitty) ;;
+  case "$mode:$front_app" in
+    *:|herdr:kitty|herdr:Kitty|zen:zen|zen:Zen|zen:'Zen Browser'|zen:'Zen Browser (Beta)') ;;
     *)
       # A reload returns skhd to default; its native callback clears the state.
       if /opt/skhd/bin/skhd --reload >/dev/null 2>&1; then
@@ -90,6 +90,15 @@ case "$mode" in
     actions="Shift+1-9 tabs    G Go To    S workspaces"
     extra_rows=on
     navigation="Esc / Return exit    Right Cmd+Option+H toggle"
+    ;;
+  zen)
+    title=ZEN
+    color="$MAUVE"
+    keys="H / L workspaces    J / K vertical tabs"
+    resize_keys="N new tab    O address bar    F find"
+    actions="New tabs and search exit mode for typing"
+    extra_rows=on
+    navigation="Esc / Return exit    Right Cmd+Option+Z toggle"
     ;;
   *)
     sketchybar --set keyboard_mode drawing=off popup.drawing=off

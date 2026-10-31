@@ -8,3 +8,4 @@
 .load "hotkeys"
 .load "yabai"
 .load "herdr"
+.load "zen"
