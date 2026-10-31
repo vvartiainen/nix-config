@@ -24,11 +24,12 @@ du -sh /System/Library/AssetsV2/* 2>/dev/null | sort -h | tail -15
 du -sh /Library/Developer/CoreSimulator ~/Library/Developer/CoreSimulator
 du -sh ~/.local/share/containers/podman/machine/*/* 2>/dev/null
 ls -la /var/lib/linux-builder/
+sudo du -sh /var/lib/rosetta-builder
 ```
 
 Usual large items: Apple Intelligence models (`UAF_FM_GenerativeModels`,
 `UAF_FM_CodeLM` in AssetsV2), simulator runtimes, VM disks (linux-builder,
-podman), package caches, the Nix store, and local Time Machine snapshots.
+rosetta-builder, podman), package caches, the Nix store, and local Time Machine snapshots.
 
 ## Known items
 

@@ -27,6 +27,12 @@
       };
     };
 
+    # On-demand Lima/Rosetta Linux builder; its VM image builds from our nixpkgs.
+    nix-rosetta-builder = {
+      url = "github:cpick/nix-rosetta-builder";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # asmvik/yabai fork with macOS 27.0-27.2 support. Pinned to a release tag:
     # the scripting addition from this source is injected into Dock as root.
     yabai-src = {

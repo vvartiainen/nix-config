@@ -10,6 +10,7 @@ let
   # Caches, toolchains and VM disks that can be rebuilt or downloaded again.
   timeMachineExcludedPaths = [
     "/var/lib/linux-builder"
+    "/var/lib/rosetta-builder"
     "${homeDir}/.cache"
     "${homeDir}/.npm"
     "${homeDir}/.rustup"

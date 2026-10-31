@@ -72,17 +72,42 @@ just up               # all inputs
 just up <INPUT>...    # selected inputs
 ```
 
-## Linux builder and backups
+## Linux builders and backups
+
+Two Linux builders handle `aarch64-linux` and `x86_64-linux` builds:
+
+- [`rosetta-builder.nix`](../nix/modules/darwin/rosetta-builder.nix) wraps
+  [nix-rosetta-builder](https://github.com/cpick/nix-rosetta-builder), a Lima
+  VM that uses Rosetta for `x86_64-linux`. It takes everyday Linux builds. A
+  build starts it automatically and it powers off after 30 idle minutes. It has
+  no `/dev/kvm`, although it advertises the `kvm` and `nixos-test` features.
+- [`linux-builder.nix`](../nix/modules/darwin/linux-builder.nix) is the
+  nix-darwin VZ linux-builder with nested virtualization. With nested
+  virtualization it takes only builds that require `kvm`, such as NixOS VM
+  tests. Without nested virtualization it is a slower fallback for the
+  rosetta-builder.
 
 The linux-builder does not start at boot. An always-on VM can spin the host CPU
-after sleep/wake, so start it before Linux builds and stop it afterwards:
+after sleep/wake, so start it before VM tests and stop it afterwards:
 
 ```sh
 just builder-start
 just builder-stop
 ```
 
-The builder disk grows up to `diskSize` and never shrinks. A smaller
+When the linux-builder is stopped, Nix reports `cannot build on
+'ssh-ng://builder@linux-builder'` and runs `kvm` builds on the rosetta-builder,
+where tests fall back to slow emulation.
+
+The rosetta-builder VM image is an `aarch64-linux` build from this flake's
+nixpkgs. The first switch with it needs another Linux builder, so run
+`just builder-start` first. Later updates are built by the running
+rosetta-builder. A changed image or VM setting recreates the VM and its disk.
+To remove it, set `nix-rosetta-builder.enable = false` and switch before
+removing the module import: only the disabled module removes its
+`_rosettabuilder` user and `/var/lib/rosetta-builder`.
+
+The linux-builder disk grows up to `diskSize` and never shrinks. A smaller
 `diskSize` applies only to a new disk: stop the builder and delete
 `/var/lib/linux-builder/nixos.qcow2` after switching.
 
@@ -99,12 +124,12 @@ podman machine start
 podman machine stop
 ```
 
-Nested virtualization gives the guest `/dev/kvm` and enables the `kvm` and
-`nixos-test` features. It requires M3 or newer and macOS 15+; set
+Nested virtualization gives the linux-builder guest `/dev/kvm` and enables the
+`kvm` and `nixos-test` features. It requires M3 or newer and macOS 15+; set
 `nestedVirtualization = false` in host data on older Macs. Only `aarch64-linux`
 guests are accelerated; `x86_64-linux` NixOS tests use slow emulation.
 
-Activation excludes the Nix store volume, linux-builder and podman machine
+Activation excludes the Nix store volume, Linux builder and podman machine
 disks, and rebuildable caches/toolchains from Time Machine. The path list lives
 in [`system-settings.nix`](../nix/modules/darwin/system-settings.nix). Check the
 store exclusion with `tmutil isexcluded /nix`, or set it manually with

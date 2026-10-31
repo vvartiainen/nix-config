@@ -23,7 +23,8 @@ xcode-select --print-path # expected: /Applications/Xcode.app/Contents/Developer
 xcrun --find clang
 ```
 
-Rosetta is required for `x86_64-linux` builds on the VZ linux-builder. The Xcode
+Rosetta is required by the rosetta-builder and for `x86_64-linux` builds on the
+VZ linux-builder. The Xcode
 license must be accepted before `xcodebuild` and some Homebrew formulas work.
 
 ## Installation
