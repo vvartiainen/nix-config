@@ -75,7 +75,6 @@
       "obsidian"
       "podman-desktop"
       "radix"
-      "raycast"
       "sf-symbols"
       "slack"
       "spotify"
