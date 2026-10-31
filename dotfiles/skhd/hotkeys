@@ -1,4 +1,10 @@
-ctrl + alt + cmd - t : kitten quick-access-terminal
+$window - t : kitten quick-access-terminal
+
+# Require a second Cmd+Q within 500ms to quit Zen or Kitty.
+cmd - q, cmd - q [
+  "zen" | cmd - q
+  "kitty" | cmd - q
+]
 
 # Zen has no remappable next/prev tab shortcut
 ctrl + shift - j [

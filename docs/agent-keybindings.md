@@ -12,14 +12,21 @@ Option**; Left Option remains available for keyboard-layout characters.
 | Ctrl+Alt+P/N | yabai previous / next window, including stack navigation |
 | Ctrl+Alt+Cmd | yabai swaps, window moves, layouts and space management; T opens the quick-access terminal |
 | Cmd+Left Option+H/J/K/L | yabai window resizing |
+| Ctrl+Alt+R → H/J/K/L | yabai resize mode; Escape or Return exits |
+| Cmd+Q twice within 500 ms | Quit Zen or Kitty; one press is swallowed in those apps |
 | Ctrl+Shift (`kitty_mod`) | Kitty controls, including tabs 1–9 |
 | F7 → key | Kitty sessions and tools |
 | Right Option / Ctrl+B → key | Herdr direct shortcuts / prefix commands |
 
 yabai leaves plain Alt+P/N available for CLI model selection and Herdr's new
 tab action. Ctrl+Down has no skhd binding. Cmd+Tab intentionally cycles yabai
-windows; Herdr keeps its Ctrl+B prefix. Kitty also retains its Cmd shortcuts,
+windows; Herdr keeps its Ctrl+B prefix. Kitty retains its other Cmd shortcuts,
 and Zen uses Ctrl+Shift shortcuts in its own application context.
+
+Resize mode captures unmatched keys until Escape or Return exits; the existing
+Cmd+Left Option resize shortcuts remain available in normal mode. Other apps
+retain single-press Cmd+Q. The skhd configuration defines `$window` as
+Ctrl+Alt+Cmd and `$focus` as Ctrl+Alt before loading the binding files.
 
 ## Shared actions
 

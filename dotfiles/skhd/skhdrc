@@ -1,2 +1,7 @@
+.alias $window ctrl + alt + cmd
+.alias $focus ctrl + alt
+
+.sequence_timeout 500ms
+
 .load "hotkeys"
 .load "yabai"
