@@ -13,6 +13,10 @@ sketchybar --add event skhd_mode \
   --subscribe keyboard_mode skhd_mode system_woke \
   --add item keyboard_mode.keys popup.keyboard_mode \
   --set keyboard_mode.keys icon.drawing=off label.font="SF Pro:Medium:12.0" \
+  --add item keyboard_mode.resize popup.keyboard_mode \
+  --set keyboard_mode.resize icon.drawing=off label.font="SF Pro:Regular:12.0" \
+  --add item keyboard_mode.actions popup.keyboard_mode \
+  --set keyboard_mode.actions icon.drawing=off label.font="SF Pro:Regular:12.0" \
   --add item keyboard_mode.navigation popup.keyboard_mode \
   --set keyboard_mode.navigation icon.drawing=off label.font="SF Pro:Regular:12.0" \
   label.color="$SUBTEXT0"

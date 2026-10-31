@@ -49,12 +49,18 @@ case "$mode" in
     title=WINDOW
     color="$BLUE"
     keys="H J K L  focus    Shift+H J K L  warp"
-    navigation="Cmd+H J K L resize    Esc / Return exit"
+    resize_keys="Cmd+HJKL resize 100    Cmd+Shift+HJKL fine 25"
+    actions="B balance    F zoom    1-6 move + follow"
+    extra_rows=on
+    navigation="R resize mode    Esc / Return exit"
     ;;
   resize)
     title=RESIZE
     color="$PEACH"
     keys="H J K L  resize"
+    resize_keys=
+    actions=
+    extra_rows=off
     navigation="W window mode    Esc / Return exit"
     ;;
   *)
@@ -66,4 +72,6 @@ esac
 sketchybar --set keyboard_mode drawing=on label="$title" label.color="$color" \
   popup.drawing=on \
   --set keyboard_mode.keys label="$keys" \
+  --set keyboard_mode.resize drawing="$extra_rows" label="$resize_keys" \
+  --set keyboard_mode.actions drawing="$extra_rows" label="$actions" \
   --set keyboard_mode.navigation label="$navigation"

@@ -34,7 +34,13 @@ binding files.
 Window and resize modes stay active for repeated actions. A blue WINDOW or
 orange RESIZE badge in SketchyBar shows a popup with the available keys.
 In window mode, Cmd+H/J/K/L resizes directly by 100 pixels without changing
-modes. R still enters the plain-key resize mode, and W returns from there to
+modes; Cmd+Shift+H/J/K/L uses fine 25-pixel steps. B balances the current
+Space's tiled layout, F toggles zoom within the current Space (not native
+fullscreen), and 1–6 moves the focused window to that Space and follows it.
+The number bindings reuse the existing move-and-follow script. All these
+actions stay in window mode for repeated adjustments.
+
+R still enters the plain-key resize mode, and W returns from there to
 window mode. Escape, Return or Ctrl+Alt+W exits
 either mode directly to normal. Window mode uses yabai's `--warp` to rearrange
 the focused tiled window beside a directional neighbour; the existing direct
