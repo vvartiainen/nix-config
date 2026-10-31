@@ -10,7 +10,7 @@ sketchybar --add event skhd_mode \
   popup.height=26 popup.y_offset=6 \
   script="/bin/bash \"$HOME/.config/skhd/mode-indicator.sh\"" \
   update_freq=2 updates=on \
-  --subscribe keyboard_mode skhd_mode system_woke \
+  --subscribe keyboard_mode skhd_mode system_woke front_app_switched \
   --add item keyboard_mode.keys popup.keyboard_mode \
   --set keyboard_mode.keys icon.drawing=off label.font="SF Pro:Medium:12.0" \
   --add item keyboard_mode.resize popup.keyboard_mode \

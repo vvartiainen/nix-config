@@ -15,6 +15,7 @@ Option**; Left Option remains available for keyboard-layout characters.
 | Cmd+Left Option+H/J/K/L | yabai window resizing |
 | Right Cmd+Right Option+W (also Ctrl+Alt+W) | Window mode: H/J/K/L focus; Shift+H/J/K/L warp; Cmd+H/J/K/L resize |
 | Right Cmd+Right Option+R (also Ctrl+Alt+R) → H/J/K/L | yabai resize mode; Escape or Return exits |
+| Right Cmd+Right Option+H in Kitty | Herdr navigation mode; see below |
 | Cmd+Q twice within 500 ms | Quit Zen or Kitty; one press is swallowed in those apps |
 | Ctrl+Shift (`kitty_mod`) | Kitty controls, including tabs 1–9 |
 | F7 → key | Kitty sessions and tools |
@@ -43,6 +44,7 @@ In window mode, Cmd+H/J/K/L resizes directly by 100 pixels without changing
 modes; Cmd+Shift+H/J/K/L uses fine 25-pixel steps. B balances the current
 Space's tiled layout, F toggles zoom within the current Space (not native
 fullscreen), and 1–6 moves the focused window to that Space and follows it.
+Shift+B selects BSP layout and S selects stack layout; B still balances.
 The number bindings reuse the existing move-and-follow script. All these
 actions stay in window mode for repeated adjustments.
 
@@ -152,6 +154,39 @@ resuming from a different directory; notification delivery also depends on
 the terminal's settings.
 
 ## Herdr
+
+With Herdr focused inside Kitty, press **Right Cmd+Right Option+H**, release
+the modifiers, then navigate repeatedly with plain keys. SketchyBar shows a
+teal HERDR badge and key hints:
+
+| Key in Herdr mode | Action |
+|---|---|
+| H / L | Previous / next Herdr tab |
+| J / K | Next / previous agent |
+| Shift+J / K | Next / previous Herdr workspace |
+| 1–9 | Jump to agent |
+| Shift+1–9 | Jump to Herdr tab |
+| G | Exit mode and open searchable Go To picker |
+| S | Exit mode and open workspace picker |
+| Escape / Return / Right Cmd+Right Option+H | Exit mode |
+| Right Cmd+Right Option+W / R | Switch to window / resize mode |
+
+The mode forwards the native right-Option bindings below to the focused
+terminal client, so it also works with remote Herdr without selecting a
+local socket/session. These are Herdr tabs, not Kitty tabs. Entry is scoped
+to Kitty, and SketchyBar exits the mode when another app gains focus. Keep
+SketchyBar running for this guard and visual feedback. The guard cannot
+distinguish Herdr from another program inside Kitty; only enter the mode
+with Herdr focused. Right Cmd+Right Option+H overrides hide-other-apps in
+Kitty; the left-side shortcut remains native in normal mode.
+
+Pickers release skhd capture before opening, so search text and picker keys
+work normally. Native F19/F20 aliases open the Go To/workspace pickers;
+unmodified keys avoid Option composing differences when synthesized.
+Apply the Herdr config change manually, reload its configuration with
+`herdr server reload-config`, then reload skhd and SketchyBar. Verify local
+and remote navigation, numbered jumps, picker searching, all exits and
+switching away from Kitty. No underlying native shortcuts are removed.
 
 These shortcuts are handled by Herdr before the shell or CLI in its pane.
 Numbered agent jumps follow the visible agent panel order.

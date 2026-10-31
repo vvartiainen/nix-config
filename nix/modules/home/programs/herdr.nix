@@ -81,8 +81,16 @@ in
         previous_agent = "alt+k";
         next_agent = "alt+j";
         focus_agent = "alt+1..9";
-        goto = "alt+g";
-        workspace_picker = "alt+w";
+        # skhd releases navigation mode before synthesizing these picker keys.
+        # Unmodified function keys avoid left/right Option composing differences.
+        goto = [
+          "alt+g"
+          "f19"
+        ];
+        workspace_picker = [
+          "alt+w"
+          "f20"
+        ];
         previous_workspace = "alt+shift+k";
         next_workspace = "alt+shift+j";
         switch_workspace = "prefix+shift+1..9";

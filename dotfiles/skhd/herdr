@@ -1,0 +1,45 @@
+# Native shortcuts target the focused terminal client, including remote Herdr.
+:: herdr_mode @ : /bin/bash "$HOME/.config/skhd/mode-indicator.sh" herdr
+
+default, winmode, resize < $mode - h [
+  "kitty" ; herdr_mode
+  * ~
+]
+
+herdr_mode < h | ralt - h
+herdr_mode < l | ralt - l
+herdr_mode < j | ralt - j
+herdr_mode < k | ralt - k
+herdr_mode < shift - j | ralt + shift - j
+herdr_mode < shift - k | ralt + shift - k
+
+herdr_mode < 1 | ralt - 1
+herdr_mode < 2 | ralt - 2
+herdr_mode < 3 | ralt - 3
+herdr_mode < 4 | ralt - 4
+herdr_mode < 5 | ralt - 5
+herdr_mode < 6 | ralt - 6
+herdr_mode < 7 | ralt - 7
+herdr_mode < 8 | ralt - 8
+herdr_mode < 9 | ralt - 9
+
+herdr_mode < shift - 1 | ralt + shift - 1
+herdr_mode < shift - 2 | ralt + shift - 2
+herdr_mode < shift - 3 | ralt + shift - 3
+herdr_mode < shift - 4 | ralt + shift - 4
+herdr_mode < shift - 5 | ralt + shift - 5
+herdr_mode < shift - 6 | ralt + shift - 6
+herdr_mode < shift - 7 | ralt + shift - 7
+herdr_mode < shift - 8 | ralt + shift - 8
+herdr_mode < shift - 9 | ralt + shift - 9
+
+# Release capture before opening a picker so search text reaches Herdr.
+# F19/F20 are native Herdr aliases; --key does not preserve right Option.
+herdr_mode < g ; default : skhd --key "f19"
+herdr_mode < s ; default : skhd --key "f20"
+
+herdr_mode < escape ; default
+herdr_mode < return ; default
+herdr_mode < $mode - h ; default
+herdr_mode < $mode - w ; winmode
+herdr_mode < $mode - r ; resize
