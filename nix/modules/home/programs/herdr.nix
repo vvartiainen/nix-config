@@ -106,8 +106,40 @@ in
           "prefix+1..9"
           "alt+shift+1..9"
         ];
-        new_tab = "alt+n";
-        new_workspace = "alt+shift+n";
+        # F13-F16 are skhd navigation mode aliases, like F19/F20 above.
+        new_tab = [
+          "alt+n"
+          "f13"
+        ];
+        new_workspace = [
+          "alt+shift+n"
+          "f14"
+        ];
+        split_vertical = [
+          "prefix+v"
+          "f15"
+        ];
+        split_horizontal = [
+          "prefix+minus"
+          "f16"
+        ];
+        # Ctrl+Alt+H/J/K/L are yabai focus shortcuts, so swaps add Shift.
+        swap_pane_left = [
+          "prefix+shift+h"
+          "ctrl+alt+shift+h"
+        ];
+        swap_pane_down = [
+          "prefix+shift+j"
+          "ctrl+alt+shift+j"
+        ];
+        swap_pane_up = [
+          "prefix+shift+k"
+          "ctrl+alt+shift+k"
+        ];
+        swap_pane_right = [
+          "prefix+shift+l"
+          "ctrl+alt+shift+l"
+        ];
 
         command = [
           {

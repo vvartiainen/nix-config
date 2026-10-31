@@ -93,18 +93,18 @@ case "$mode" in
   herdr)
     title=HERDR
     color="$TEAL"
-    keys="H / L tabs    J / K agents"
-    resize_keys="Shift+J / K workspaces    1-9 agents"
-    actions="Shift+1-9 tabs    G Go To    S workspaces"
+    keys="H / L tabs    J / K agents    Ctrl+HJKL swap pane"
+    resize_keys="Shift+J / K workspaces    1-9 agents    Shift+1-9 tabs"
+    actions="T new tab    W new workspace    V / Shift+V split    G Go To    S workspaces"
     extra_rows=on
     navigation="Esc / Return exit    Right Cmd+Option+Space toggle"
     ;;
   kitty)
     title=KITTY
     color="$GREEN"
-    keys="H / L tabs    J / K windows    1-9 tabs"
+    keys="H / L tabs    J / K windows    1-9 tabs    Ctrl+HJKL swap window"
     resize_keys="Shift+H / L move tab    Shift+J / K move window"
-    actions="O next layout    Z stack    F tab switcher"
+    actions="N new window    T new tab    O next layout    Z stack    F tab switcher"
     extra_rows=on
     navigation="Esc / Return exit    Right Cmd+Option+Space toggle"
     ;;

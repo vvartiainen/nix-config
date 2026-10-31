@@ -196,9 +196,11 @@ repeatedly. SketchyBar shows a green KITTY badge and key hints:
 | J / K | Next / previous window in the tab |
 | Shift+H / L | Move tab backward / forward |
 | Shift+J / K | Move window forward / backward |
+| Ctrl+H / J / K / L | Swap window with its neighbour in that direction |
 | 1–9 | Jump to tab |
 | O | Next layout |
 | Z | Toggle stack layout |
+| N / T | Exit mode and open a new window / tab in the current directory |
 | F | Exit mode and open the fuzzy tab switcher |
 | Escape / Return / Right Cmd+Right Option+Space | Exit mode |
 | Right Cmd+Right Option+W / R | Switch to window / resize mode |
@@ -221,8 +223,11 @@ teal HERDR badge and key hints:
 | H / L | Previous / next Herdr tab |
 | J / K | Next / previous agent |
 | Shift+J / K | Next / previous Herdr workspace |
+| Ctrl+H / J / K / L | Swap pane with its neighbour in that direction |
 | 1–9 | Jump to agent |
 | Shift+1–9 | Jump to Herdr tab |
+| T / W | Exit mode and create a Herdr tab / workspace |
+| V / Shift+V | Exit mode and split the pane side by side / stacked |
 | G | Exit mode and open searchable Go To picker |
 | S | Exit mode and open workspace picker |
 | Escape / Return / Right Cmd+Right Option+Space | Exit mode |
@@ -237,8 +242,9 @@ when the focused Kitty window's title loses the `herdr · ` prefix that
 `window_title` in `herdr.nix` sets, which also covers remote Herdr. Keep that
 prefix when changing the title format.
 
-Pickers release skhd capture before opening, so search text and picker keys
-work normally. Native F19/F20 aliases open the Go To/workspace pickers;
+Pickers, new tabs, workspaces and splits release skhd capture first, so
+typing works normally. Native F19/F20 aliases open the Go To/workspace
+pickers, and F13–F16 create tabs, workspaces and vertical/horizontal splits;
 unmodified keys avoid Option composing differences when synthesized.
 Apply the Herdr config change manually, reload its configuration with
 `herdr server reload-config`, then reload skhd and SketchyBar. Verify local
@@ -267,6 +273,8 @@ then Shift+1–9 to select a workspace by number.
 | Clear pane / new conversation | Alt+C |
 | Jump to tab 1–9 | Alt+Shift+1–9; also Ctrl+B → 1–9 |
 | Focus pane | Ctrl+B → H/J/K/L |
+| Swap pane | Ctrl+Alt+Shift+H/J/K/L; also Ctrl+B → Shift+H/J/K/L |
+| Split side by side / stacked | Ctrl+B → V / Ctrl+B → - |
 | Show active shortcuts | Ctrl+B → ? |
 
 The sidebar groups agents by workspace, with separate agent, machine/workspace,

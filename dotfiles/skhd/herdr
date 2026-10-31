@@ -28,10 +28,19 @@ herdr_mode < shift - 7 | ralt + shift - 7
 herdr_mode < shift - 8 | ralt + shift - 8
 herdr_mode < shift - 9 | ralt + shift - 9
 
-# Release capture before opening a picker so search text reaches Herdr.
-# F19/F20 are native Herdr aliases; --key does not preserve right Option.
+herdr_mode < ctrl - h | ctrl + ralt + shift - h
+herdr_mode < ctrl - j | ctrl + ralt + shift - j
+herdr_mode < ctrl - k | ctrl + ralt + shift - k
+herdr_mode < ctrl - l | ctrl + ralt + shift - l
+
+# Release capture before opening a picker or new pane so typing reaches Herdr.
+# F13-F16 and F19/F20 are native Herdr aliases; --key does not preserve right Option.
 herdr_mode < g ; default : skhd --key "f19"
 herdr_mode < s ; default : skhd --key "f20"
+herdr_mode < t ; default : skhd --key "f13"
+herdr_mode < w ; default : skhd --key "f14"
+herdr_mode < v ; default : skhd --key "f15"
+herdr_mode < shift - v ; default : skhd --key "f16"
 
 herdr_mode < escape ; default
 herdr_mode < return ; default
