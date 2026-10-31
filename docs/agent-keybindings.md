@@ -31,7 +31,7 @@ and Zen uses Ctrl+Shift shortcuts in its own application context.
 | Edit prompt externally | Ctrl+G | Codex, Claude, OpenCode, Pi, and Copilot; no verified Cursor equivalent |
 | Select model | Alt+P | Claude, OpenCode, and Pi; Codex uses Alt+P → 0; Copilot and Cursor retain native controls below |
 | Inspect output | Ctrl+O | Codex/Claude open the transcript, Pi expands tools, Copilot expands recent output with an empty prompt |
-| Copy last response | Alt+Y | Codex only; moved from Ctrl+O |
+| Copy last response | Alt+Y | Codex and Claude; Claude runs `/copy` |
 | Change reasoning effort | Alt+T | Codex raises effort, Claude opens `/effort`, Pi cycles effort; Copilot and Cursor retain native controls below |
 | Lower reasoning effort | Alt+Shift+T | Codex only |
 
@@ -68,6 +68,24 @@ Claude's binding uses its native
 [`command:effort` action](https://code.claude.com/docs/en/keybindings#chat-actions).
 Copilot retains its native
 [mid-prompt command entry](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-command-reference#global-shortcuts-in-the-interactive-interface).
+
+## Claude navigation
+
+Right Option+Y runs `/copy` to copy Claude's last response. Prompt editing
+keeps the standard keys; Ctrl+G opens Neovim. Vim editor mode is not enabled.
+
+| Context | Navigation |
+|---|---|
+| Lists and pickers | J/K next/previous, G G first, Shift+G last |
+| Confirmation options | J/K next/previous |
+| Tabs and attachments | H/L previous/next |
+| Model picker and effort slider | H/L decrease/increase effort |
+| Footer | H/J/K/L left/down/up/right |
+
+These are contextual [native keybindings](https://code.claude.com/docs/en/keybindings).
+Letters still type normally in dialog text fields. Autocomplete keeps arrow
+navigation so J/K remain available while typing a command or path. Conversation
+scrolling retains Claude's defaults; these bindings do not capture prompt letters.
 
 ## Codex defaults
 
@@ -172,7 +190,7 @@ In Claude, confirm Alt+T opens effort controls and Esc cancels. Verify drafts
 and attachments survive both selection and cancellation, and that no prompt
 is submitted. Check Copilot's command entry returns to the original draft.
 
-Also check existing model/editor aliases, Codex Alt+Y copying, and Pi Alt+T
+Also check existing model/editor aliases, Codex and Claude Alt+Y copying, and Pi Alt+T
 cycling. When using Herdr, verify Shift+Enter and numbered shortcuts survive
 the terminal layers. Restart Codex after changing its settings; Claude reloads
 keybindings automatically, Pi uses `/reload`, and Herdr's default config

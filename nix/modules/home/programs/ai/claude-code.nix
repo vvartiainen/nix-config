@@ -241,7 +241,64 @@ in
         bindings = [
           {
             context = "Chat";
-            bindings."alt+t" = "command:effort";
+            bindings = {
+              "alt+t" = "command:effort";
+              "alt+y" = "command:copy";
+            };
+          }
+          # Navigation belongs to UI contexts; keep prompt editing non-modal.
+          {
+            context = "Select";
+            bindings = {
+              j = "select:next";
+              k = "select:previous";
+              "g g" = "select:first";
+              "shift+g" = "select:last";
+            };
+          }
+          {
+            context = "Confirmation";
+            bindings = {
+              j = "confirm:next";
+              k = "confirm:previous";
+            };
+          }
+          {
+            context = "Tabs";
+            bindings = {
+              h = "tabs:previous";
+              l = "tabs:next";
+            };
+          }
+          {
+            context = "ModelPicker";
+            bindings = {
+              h = "modelPicker:decreaseEffort";
+              l = "modelPicker:increaseEffort";
+            };
+          }
+          {
+            context = "EffortSlider";
+            bindings = {
+              h = "effortSlider:decreaseEffort";
+              l = "effortSlider:increaseEffort";
+            };
+          }
+          {
+            context = "Footer";
+            bindings = {
+              h = "footer:previous";
+              j = "footer:down";
+              k = "footer:up";
+              l = "footer:next";
+            };
+          }
+          {
+            context = "Attachments";
+            bindings = {
+              h = "attachments:previous";
+              l = "attachments:next";
+            };
           }
         ];
       };
