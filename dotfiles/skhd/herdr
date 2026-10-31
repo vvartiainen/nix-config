@@ -35,4 +35,5 @@ herdr_mode < s ; default : skhd --key "f20"
 
 herdr_mode < escape ; default
 herdr_mode < return ; default
+herdr_mode < $mode - w ; winmode
 herdr_mode < $mode - r ; resize

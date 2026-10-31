@@ -1,9 +1,9 @@
-# One key enters the focused app's navigation mode, or window mode elsewhere.
+# One key enters the focused app's navigation mode.
 # Loaded last so every mode it targets is already declared.
-default < $mode - space [
+default, winmode, resize < $mode - space [
   "kitty" ; herdr_mode
   "zen" ; zen_mode
-  * ; winmode
+  * ~
 ]
 
-winmode, resize, herdr_mode, zen_mode < $mode - space ; default
+herdr_mode, zen_mode < $mode - space ; default

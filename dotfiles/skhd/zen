@@ -17,4 +17,5 @@ zen_mode < cmd - f ; default : skhd --key "cmd - f"
 
 zen_mode < escape ; default
 zen_mode < return ; default
+zen_mode < $mode - w ; winmode
 zen_mode < $mode - r ; resize
