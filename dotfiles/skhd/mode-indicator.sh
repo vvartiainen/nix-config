@@ -49,7 +49,7 @@ case "$mode" in
     title=WINDOW
     color="$BLUE"
     keys="H J K L  focus    Shift+H J K L  warp"
-    navigation="R resize    Esc / Return exit"
+    navigation="Cmd+H J K L resize    Esc / Return exit"
     ;;
   resize)
     title=RESIZE
