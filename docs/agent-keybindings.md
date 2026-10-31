@@ -207,10 +207,9 @@ terminal client, so it also works with remote Herdr without selecting a
 local socket/session. These are Herdr tabs, not Kitty tabs. Entry is scoped
 to Kitty, and SketchyBar exits the mode when another app gains focus. Keep
 SketchyBar running for this guard and visual feedback. The guard also exits
-when the focused Kitty window's title stops matching Herdr's `window_title`
-format (`host: workspace / tab / pane`), which also covers remote Herdr.
-Changing that format in `herdr.nix` requires updating the pattern in
-`mode-indicator.sh`.
+when the focused Kitty window's title loses the `herdr · ` prefix that
+`window_title` in `herdr.nix` sets, which also covers remote Herdr. Keep that
+prefix when changing the title format.
 
 Pickers release skhd capture before opening, so search text and picker keys
 work normally. Native F19/F20 aliases open the Go To/workspace pickers;

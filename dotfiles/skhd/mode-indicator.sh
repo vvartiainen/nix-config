@@ -54,12 +54,12 @@ if [ "$mode" = herdr ] || [ "$mode" = zen ]; then
   case "$mode:$front_app" in
     *:|herdr:kitty|herdr:Kitty|zen:zen|zen:Zen|zen:'Zen Browser'|zen:'Zen Browser (Beta)') in_app=1 ;;
   esac
-  # Herdr titles Kitty "host: workspace / tab / pane" (window_title in
+  # Herdr prefixes the Kitty title with "herdr · " (window_title in
   # herdr.nix), including remote sessions. An unknown title keeps the mode.
   if [ -n "$in_app" ] && [ "$mode" = herdr ]; then
     title=$(/opt/yabai/bin/yabai -m query --windows --window 2>/dev/null | jq -r '.title // empty')
     case "$title" in
-      ''|*': '*' / '*' /'*) ;;
+      ''|'herdr · '*) ;;
       *) in_app= ;;
     esac
   fi

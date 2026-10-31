@@ -172,7 +172,8 @@ in
           };
         };
         show_agent_labels_on_pane_borders = true;
-        window_title = "{hostname}: {workspace} / {tab} / {pane}";
+        # skhd's Herdr mode guard matches the "herdr · " prefix.
+        window_title = "herdr · {hostname}: {workspace} / {tab} / {pane}";
         toast.delivery = "system";
         sound.enabled = true;
       };
