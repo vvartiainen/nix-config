@@ -201,6 +201,7 @@ repeatedly. SketchyBar shows a green KITTY badge and key hints:
 | O | Next layout |
 | Z | Toggle stack layout |
 | N / T | New window / tab in the current directory |
+| Ctrl+N / Ctrl+T | Close window / tab; Kitty may ask to confirm closing a tab with running programs |
 | F | Exit mode and open the fuzzy tab switcher |
 | Escape / Return / Right Cmd+Right Option+Space | Exit mode |
 | Right Cmd+Right Option+W / R | Switch to window / resize mode |
@@ -228,6 +229,8 @@ teal HERDR badge and key hints:
 | Shift+1–9 | Jump to Herdr tab |
 | T / W | Create a Herdr tab / workspace |
 | V / Shift+V | Split the pane side by side / stacked |
+| Ctrl+V / Ctrl+T | Close pane / tab, without confirmation |
+| Ctrl+W | Exit mode and close the workspace after Herdr's confirmation |
 | G | Exit mode and open searchable Go To picker |
 | S | Exit mode and open workspace picker |
 | Escape / Return / Right Cmd+Right Option+Space | Exit mode |
@@ -279,6 +282,8 @@ then Shift+1–9 to select a workspace by number.
 | Focus pane | Ctrl+B → H/J/K/L |
 | Swap pane | Ctrl+Alt+Shift+H/J/K/L; also Ctrl+B → Shift+H/J/K/L |
 | Split side by side / stacked | Ctrl+Alt+V / Ctrl+Alt+Shift+V; also Ctrl+B → V / Ctrl+B → - |
+| Close pane / tab | Ctrl+Alt+X / Ctrl+Alt+Shift+X; also Ctrl+B → X for panes |
+| Close workspace | F16, with confirmation |
 | Show active shortcuts | Ctrl+B → ? |
 
 The sidebar groups agents by workspace, with separate agent, machine/workspace,

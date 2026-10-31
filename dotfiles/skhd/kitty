@@ -39,6 +39,10 @@ kitty_mode < z : /bin/bash "$HOME/.config/skhd/kitty.sh" action toggle_layout st
 kitty_mode < n : /bin/bash "$HOME/.config/skhd/kitty.sh" action new_window_with_cwd
 kitty_mode < t : /bin/bash "$HOME/.config/skhd/kitty.sh" action new_tab_with_cwd
 
+# Ctrl closes what the plain key creates.
+kitty_mode < ctrl - n : /bin/bash "$HOME/.config/skhd/kitty.sh" action close_window
+kitty_mode < ctrl - t : /bin/bash "$HOME/.config/skhd/kitty.sh" action close_tab
+
 # Release capture before the tab picker so search text reaches it.
 kitty_mode < f ; default : skhd --key "f7" && skhd --key "f"
 

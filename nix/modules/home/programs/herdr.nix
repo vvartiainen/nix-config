@@ -124,6 +124,13 @@ in
           "prefix+minus"
           "ctrl+alt+shift+v"
         ];
+        close_pane = [
+          "prefix+x"
+          "ctrl+alt+x"
+        ];
+        close_tab = "ctrl+alt+shift+x";
+        # skhd releases navigation mode first so the confirmation gets input.
+        close_workspace = "f16";
         # Ctrl+Alt+H/J/K/L are yabai focus shortcuts, so swaps add Shift.
         swap_pane_left = [
           "prefix+shift+h"
