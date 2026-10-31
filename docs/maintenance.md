@@ -175,7 +175,8 @@ turned on.
 - skhd is built from [jackielii/skhd.zig](https://github.com/jackielii/skhd.zig),
   pinned in [`skhd-package.nix`](../nix/modules/darwin/programs/skhd-package.nix).
   Activation installs the signed bundle to `/Applications/skhd.app` and links
-  `/opt/skhd/bin/skhd` to its executable. Nix-darwin owns the `org.nixos.skhd`
+  `/opt/skhd/bin/skhd` to a launcher that clears the mode indicator on startup
+  or reload, then executes the signed app. Nix-darwin owns the `org.nixos.skhd`
   LaunchAgent; use `reloadskhd` to restart it and `skhd --reload` to reload
   bindings. Do not use upstream's `--install-service`, `--start-service`,
   `--stop-service`, `--restart-service` or `--uninstall-service`: they manage a

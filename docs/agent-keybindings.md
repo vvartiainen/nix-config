@@ -13,6 +13,7 @@ Option**; Left Option remains available for keyboard-layout characters.
 | Ctrl+Alt+P/N | yabai previous / next window, including stack navigation |
 | Ctrl+Alt+Cmd | yabai swaps, window moves, layouts and space management; T opens the quick-access terminal |
 | Cmd+Left Option+H/J/K/L | yabai window resizing |
+| Ctrl+Alt+W | Window mode: H/J/K/L focus; Shift+H/J/K/L warp; R enters resize mode |
 | Ctrl+Alt+R → H/J/K/L | yabai resize mode; Escape or Return exits |
 | Cmd+Q twice within 500 ms | Quit Zen or Kitty; one press is swallowed in those apps |
 | Ctrl+Shift (`kitty_mod`) | Kitty controls, including tabs 1–9 |
@@ -29,6 +30,21 @@ Cmd+Left Option resize shortcuts remain available in normal mode. Other apps
 retain single-press Cmd+Q. The skhd configuration defines `$window` as
 Ctrl+Alt+Cmd, `$focus` as Ctrl+Alt and `$app` as Ctrl+Cmd before loading the
 binding files.
+
+Window and resize modes stay active for repeated actions. A blue WINDOW or
+orange RESIZE badge in SketchyBar shows a popup with the available keys.
+In resize mode, W returns to window mode. Escape, Return or Ctrl+Alt+W exits
+either mode directly to normal. Window mode uses yabai's `--warp` to rearrange
+the focused tiled window beside a directional neighbour; the existing direct
+Ctrl+Alt+Cmd+H/J/K/L bindings still swap windows.
+
+After applying manually, run `reloadskhd` once to start the daemon through its
+new launcher, then reload SketchyBar. Check repeated focus, warp and resize,
+all exits, and popup placement on your displays. `skhd --reload` through the
+stable CLI and `reloadskhd` clear the indicator; a bar reload restores it for
+a still-running mode, and a daemon exit hides it within two seconds. The
+indicator stores only the mode and owning daemon PID under the user cache.
+These modes require no grabber or keyboard driver.
 
 Application shortcuts use macOS `open` with bundle identifiers to activate an
 existing app or launch it when closed. E means Explorer/Finder; Ctrl+Cmd+F

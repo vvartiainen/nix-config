@@ -61,15 +61,32 @@ cmd + lalt - j : yabai -m window --resize bottom:0:100 || yabai -m window --resi
 cmd + lalt - k : yabai -m window --resize bottom:0:-100 || yabai -m window --resize top:0:-100
 cmd + lalt - l : yabai -m window --resize right:100:0 || yabai -m window --resize left:100:0
 
-# Resize repeatedly without holding modifiers; Escape or Return exits.
-:: resize @
+# Hydra-style window arrangement; mode commands update the bar on entry.
+:: default : /bin/bash "$HOME/.config/skhd/mode-indicator.sh" default
+:: winmode @ : /bin/bash "$HOME/.config/skhd/mode-indicator.sh" window
+:: resize @ : /bin/bash "$HOME/.config/skhd/mode-indicator.sh" resize
 
+$focus - w ; winmode
 $focus - r ; resize
+
+winmode < h : yabai -m window --focus west
+winmode < j : yabai -m window --focus south
+winmode < k : yabai -m window --focus north
+winmode < l : yabai -m window --focus east
+
+winmode < shift - h : yabai -m window --warp west
+winmode < shift - j : yabai -m window --warp south
+winmode < shift - k : yabai -m window --warp north
+winmode < shift - l : yabai -m window --warp east
+
+winmode < r ; resize
+resize < w ; winmode
 
 resize < h : yabai -m window --resize right:-100:0 || yabai -m window --resize left:-100:0
 resize < j : yabai -m window --resize bottom:0:100 || yabai -m window --resize top:0:100
 resize < k : yabai -m window --resize bottom:0:-100 || yabai -m window --resize top:0:-100
 resize < l : yabai -m window --resize right:100:0 || yabai -m window --resize left:100:0
 
-resize < escape ; default
-resize < return ; default
+winmode, resize < escape ; default
+winmode, resize < return ; default
+winmode, resize < $focus - w ; default

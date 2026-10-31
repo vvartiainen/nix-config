@@ -12,6 +12,18 @@ let
   skhdBin = "/opt/skhd/bin/skhd";
   label = "org.nixos.skhd";
   homeDir = config.users.users.${userName}.home;
+  skhdLauncher = pkgs.writeShellScript "skhd" ''
+    case "''${1:-}" in
+      "")
+        export SKHD_MODE_PID=$$
+        /bin/bash "$HOME/.config/skhd/mode-indicator.sh" default
+        ;;
+      -r|--reload)
+        /bin/bash "$HOME/.config/skhd/mode-indicator.sh" default
+        ;;
+    esac
+    exec ${skhdApp}/Contents/MacOS/skhd "$@"
+  '';
 in
 {
   nixpkgs.overlays = [
@@ -31,7 +43,7 @@ in
 
   # Reads ~/.config/skhd/skhdrc.
   launchd.user.agents.skhd.serviceConfig = {
-    ProgramArguments = [ "${skhdApp}/Contents/MacOS/skhd" ];
+    ProgramArguments = [ skhdBin ];
     # Bindings run through the shell and call yabai and jq.
     EnvironmentVariables.PATH =
       lib.replaceStrings [ "$HOME" "$USER" ] [ homeDir userName ]
@@ -48,7 +60,7 @@ in
   # created for the Homebrew build before the new agent loads.
   system.activationScripts.extraActivation.text = ''
     /bin/mkdir -p ${builtins.dirOf skhdBin}
-    /bin/ln -sfn ${skhdApp}/Contents/MacOS/skhd ${skhdBin}
+    /bin/ln -sfn ${skhdLauncher} ${skhdBin}
     skhdUid=$(/usr/bin/id -u ${lib.escapeShellArg userName})
     for oldLabel in com.koekeishiya.skhd com.asmvik.skhd; do
       /bin/launchctl bootout "gui/$skhdUid/$oldLabel" 2>/dev/null || true

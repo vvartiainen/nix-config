@@ -46,6 +46,7 @@ pill_gap() {
 # -- Left Side Items --
 source "$ITEM_DIR"/spaces.sh
 source "$ITEM_DIR"/front_app.sh
+source "$ITEM_DIR"/keyboard_mode.sh
 
 # -- Right Side Items, added right to left --
 source "$ITEM_DIR"/calendar.sh
