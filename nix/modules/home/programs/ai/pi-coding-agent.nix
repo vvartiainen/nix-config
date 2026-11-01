@@ -13,6 +13,8 @@
       defaultProvider = "openai-codex";
       defaultModel = "gpt-6.1-sol";
       defaultThinkingLevel = "medium";
+      # The default, kept explicit like the other CLIs.
+      compaction.enabled = true;
 
       packages = [
         "npm:pi-web-access@0.40.0"

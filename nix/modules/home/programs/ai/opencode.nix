@@ -64,6 +64,9 @@ let
       ];
     };
     permission = permissionSettings;
+    # `auto` is the default; keep it explicit and compact in the background.
+    compaction.auto = true;
+    experimental.background_compaction = true;
   };
 
   tuiSettings = {
