@@ -129,7 +129,7 @@ denied for Copilot.
 |---|---|---|---|---|
 | Reads | Under `~`: workspace and `paths.homeReadable`; elsewhere only tool paths and Codex's runtime set | Allowed everywhere except denied reads | Allowed (system read boundary) | Working directory, PATH, temp, `paths.homeReadable`, dev-tool paths |
 | Denied reads | `paths.homeSecrets`, `.env`, keys | `paths.homeSecrets`, `.env`, keys | Credential paths | `paths.homeSecrets` |
-| Writes | Workspace, `$TMPDIR`, `/tmp`, agent caches | Working directory, `$TMPDIR`, `/tmp`, agent caches | Workspace, temp, `/tmp`, agent caches | Working directory, temp, `/tmp`, agent caches, dev-tool caches (`allowDevToolAccess`) |
+| Writes | Workspace, `$TMPDIR`, `/tmp`, agent caches, macOS runtime scratch (`/var/tmp`) | Working directory, `$TMPDIR`, `/tmp`, agent caches | Workspace, temp, `/tmp`, agent caches | Working directory, temp, `/tmp`, agent caches, dev-tool caches (`allowDevToolAccess`) |
 | Read-only in the workspace | `.git/hooks`, `.git/config` | `.git/hooks`, `.git/config` | `.git/hooks`, `.git/config` (sandbox default, plus `Write(…)` deny) | `.git/config` for file tools only |
 | Network | `network.sandbox`; other hosts ask for approval | `network.sandbox`; other hosts prompt | `network.sandbox` plus Cursor's default list | `network.sandbox`; other hosts offer a bypass prompt |
 | Unsandboxed | Approved escalations | `gh`, `terraform`, Go module downloads, approved retries | Approved escapes | Approved bypasses |
@@ -148,6 +148,119 @@ Claude keeps the home directory readable and denies only `paths.homeSecrets`,
 project, because user settings can't name it (`.` there means `~/.claude`);
 only a per-project `allowRead: ["."]` or a launch wrapper could allow it
 back. The network allowlist limits where readable data could go.
+
+### Codex permission profiles and workspace modes
+
+`codex.nix` selects the custom profile `workspace-only` with
+`default_permissions`. The name is ours; it does not mean Codex grants access
+only to the repository. The profile inherits `:workspace`, replaces its
+whole-disk read grant with `:root = "deny"`, and adds runtime paths, shared
+tool paths, selected home paths, agent caches, and credential exclusions.
+
+The following names were checked against Codex CLI **0.166.0**. Built-in
+permission profiles and the CLI's `--sandbox` choices are separate ways of
+selecting permissions:
+
+| Permission profile | CLI sandbox mode | Baseline behavior |
+|---|---|---|
+| `:read-only` | `read-only` | Whole-disk reads, no ordinary filesystem writes; network restricted by default |
+| `:workspace` | `workspace-write` | Whole-disk reads, workspace and temporary-directory writes, protected workspace metadata; network restricted by default |
+| `:danger-full-access` | `danger-full-access` | No Codex OS sandbox; approval policy is a separate setting |
+| `workspace-only` (this repo) | Custom named profile | Restricted reads, workspace/temp/cache writes, proxy-controlled network, and explicit exclusions |
+
+There is no `workspace-edit` sandbox mode in this version. `workspace-write`
+allows both edit tools and shell commands to modify permitted files; it is
+not an edit-tool-only mode. Selecting the plain built-in workspace profile
+would lose this repository's custom read boundary and exclusions. Keep the
+custom profile for normal work. A read-only profile is useful for inspection,
+but the plain built-in still permits broad reads.
+
+Keep `default_permissions` as the configuration interface here. Do not also
+set the legacy `sandbox_mode` or `[sandbox_workspace_write]` settings; the
+[configuration reference](https://developers.openai.com/codex/config-reference/)
+documents them as incompatible with named permission profiles.
+
+`extends` can name `:workspace`, `:read-only`, or another custom profile;
+child keys override matching parent keys. `:danger-full-access` cannot be
+used as an inheritance parent. Starting without `extends` is possible, but
+requires spelling out runtime access, workspace grants, and metadata
+protections. Keeping `extends = ":workspace"` preserves the built-in
+protections for `.agents`, `.codex`, and `.aws`; this repo deliberately
+overrides `.git` to allow commits while retaining read-only hooks and config.
+See the versioned [profile resolver](https://github.com/openai/codex/blob/rust-v0.166.0/codex-rs/core/src/config/permissions.rs)
+and [built-in profile definitions](https://github.com/openai/codex/blob/rust-v0.166.0/codex-rs/protocol/src/models.rs).
+
+### Codex filesystem keys
+
+These special keys belong inside a permission profile's `filesystem` table;
+they are not profile names. `read` permits reads, `write` permits reads and
+writes, and `deny` permits neither. More specific path rules can narrow or
+expand broader grants. See the versioned [filesystem policy](https://github.com/openai/codex/blob/rust-v0.166.0/codex-rs/protocol/src/permissions.rs).
+
+| Key | Meaning in this configuration |
+|---|---|
+| `:root` | Filesystem-wide baseline. `deny` replaces inherited whole-disk reads; explicit grants reopen selected paths |
+| `:minimal` | Enables Codex's platform runtime bundle for restricted reads; its macOS scope is described below |
+| `:workspace_roots` | Applies the nested rules to each workspace root. `"." = "write"` grants workspace access; narrower entries protect hooks, config, and secrets |
+| `:tmpdir` | The runtime temporary directory (`$TMPDIR` on macOS); explicitly writable here |
+| `:slash_tmp` | `/tmp`, physically `/private/tmp` on macOS; explicitly writable here |
+| Absolute path | A grant or exclusion for a particular location, such as `/nix/store` or an agent cache |
+
+The profile-level `workspace_roots` setting adds named roots (path-to-boolean
+entries); `--add-dir` adds writable directories for a launch. These differ
+from `filesystem.:workspace_roots`, which defines the access rules applied
+to roots. Use a specific absolute path grant for a tool or cache that should
+not be treated as another project. `--cd` selects the working directory;
+`--worktree` creates a managed Git worktree. None is a replacement for the
+read restrictions in this profile. See the [profile configuration types](https://github.com/openai/codex/blob/rust-v0.166.0/codex-rs/config/src/permissions_toml.rs)
+and `codex --help`.
+
+#### What `:minimal` includes on macOS
+
+This is a versioned runtime bundle, not a short alias for the explicit
+`paths.runtime` list in `permissions.nix`. In Codex 0.166.0 it supplies system
+executables, libraries and frameworks, `/etc` configuration, selected system
+data and preferences, device access, and selected macOS runtime services.
+The bundle includes limited device writes and IPC permissions as well as
+reads; `"read"` does not make the entire bundle read-only. See the complete
+[macOS runtime policy](https://github.com/openai/codex/blob/rust-v0.166.0/codex-rs/sandboxing/src/seatbelt_read_only_platform_defaults.sbpl).
+
+For shell processes, Codex additionally grants reads beneath **all of
+`/Applications`**, and scratch reads/writes beneath `/private/tmp` and
+`/private/var/tmp` (also reached through `/tmp` and `/var/tmp`). Scratch grants
+are lowered with filesystem exclusions. Filesystem-helper profiles do not
+receive these process-only additions. See the [Seatbelt builder](https://github.com/openai/codex/blob/rust-v0.166.0/codex-rs/sandboxing/src/seatbelt.rs#L992-L997)
+and [scratch policy](https://github.com/openai/codex/blob/rust-v0.166.0/codex-rs/sandboxing/src/seatbelt_scratch.rs).
+
+This explains why a bundled CLI such as Rex can run from `/Applications`
+without a new approval. The child process remains sandboxed; execution does
+not grant application-directory writes. A separately running server has its
+own permissions, and connecting to it is subject to IPC/network policy.
+
+Keep `:minimal` for normal command startup. Removing it requires maintaining
+the OS runtime allowances yourself and can prevent shells from starting.
+Recheck the versioned implementation after Codex updates: the bundle's scope
+is not fully visible in the explicit path list shown to the model.
+
+### Codex approvals and network settings
+
+Filesystem access, network access, and approval routing are independent.
+`approval_policy = "on-request"` allows requests for wider access;
+`approvals_reviewer = "user"` sends those requests to the user. `never`
+disables approval requests rather than granting more access. Prompt and
+forbidden command rules add review requirements to the sandbox policy.
+
+`network.enabled = true` enables networking subject to the proxy.
+`features.network_proxy = true` makes the domain rules enforceable; `domains`
+allows package hosts and other hosts require approval. `mode = "full"`
+avoids the extra request-method and HTTPS restrictions of `limited` mode;
+it does not bypass the domain rules. `allow_local_binding = false` and
+`allow_upstream_proxy = false` withhold those capabilities. The
+`unix_sockets` entry permits the Nix daemon connection separately from TCP
+hosts, and its filesystem read grant permits socket probes. These proxy
+rules govern sandboxed commands, not hosted web search, apps, or MCP servers.
+See the
+[configuration reference](https://developers.openai.com/codex/config-reference/).
 
 ### Unlisted hosts
 

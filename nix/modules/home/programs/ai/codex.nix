@@ -28,6 +28,8 @@ let
 
     default_permissions = "workspace-only";
     permissions.workspace-only = {
+      # Built-in workspace writes and protected metadata; our :root deny
+      # replaces its whole-disk reads. See docs/agent-permissions.md.
       extends = ":workspace";
       network = {
         enabled = true;
@@ -44,6 +46,9 @@ let
 
       filesystem = {
         ":root" = "deny";
+        # Codex's platform runtime bundle, not just ordinary read paths.
+        # On macOS this includes /Applications reads and process scratch
+        # writes under /tmp and /var/tmp. See docs/agent-permissions.md.
         ":minimal" = "read";
         # `:workspace` grants these, but keep them explicit next to the
         # `:root` deny.
