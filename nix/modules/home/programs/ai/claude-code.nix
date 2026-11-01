@@ -142,6 +142,8 @@ let
       # keychain certificates, not Apple's roots. Add the Nix bundle, which
       # follows cacert and nix-darwin distrust updates.
       NODE_EXTRA_CA_CERTS = "/etc/ssl/certs/ca-certificates.crt";
+      # Compact at 80% of the auto-compact window, like the other CLIs.
+      CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = "80";
     };
     # MCP servers come from the projects (`ct agents`), not claude.ai.
     disableClaudeAiConnectors = true;

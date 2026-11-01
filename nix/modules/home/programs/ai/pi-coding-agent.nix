@@ -13,8 +13,12 @@
       defaultProvider = "openai-codex";
       defaultModel = "gpt-6.1-sol";
       defaultThinkingLevel = "medium";
-      # The default, kept explicit like the other CLIs.
-      compaction.enabled = true;
+      # Compact at 80% of the default model's 500k-token window, like the
+      # other CLIs: Pi compacts when fewer than reserveTokens remain.
+      compaction = {
+        enabled = true;
+        modelOverrides."openai-codex/gpt-6.1-sol".reserveTokens = 100000;
+      };
 
       packages = [
         "npm:pi-web-access@0.40.0"

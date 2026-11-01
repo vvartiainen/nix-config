@@ -95,10 +95,9 @@ let
     model = "gpt-6.1-sol";
     model_reasoning_effort = "medium";
     plan_mode_reasoning_effort = "high";
-    # Auto-compaction is on by default at the model's token limit. Also compact
-    # between turns once 80% of the window is used, so long sessions compact
-    # less often mid-turn. `features.async_compaction` is still experimental.
-    model_post_turn_compact_threshold_percent = 80;
+    # Compact at 80% of the model's 500k-token context window, like the other
+    # CLIs. The limit is in tokens, so revisit it when the model changes.
+    model_auto_compact_token_limit = 400000;
     web_search = "live";
     shell_environment_policy.set = caches.env;
     # Keep @ focused on files; plugins and skills remain available through $.

@@ -64,9 +64,8 @@ let
       ];
     };
     permission = permissionSettings;
-    # `auto` is the default; keep it explicit and compact in the background.
+    # The default, kept explicit like the other CLIs.
     compaction.auto = true;
-    experimental.background_compaction = true;
   };
 
   tuiSettings = {
