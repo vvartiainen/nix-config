@@ -3,7 +3,9 @@
 default, winmode, resize < $mode - space [
   "kitty" : /bin/bash "$HOME/.config/skhd/kitty.sh" enter
   "zen" ; zen_mode
+  "Rex Beta" ; rex_mode
+  "Rex" ; rex_mode
   * ~
 ]
 
-herdr_mode, kitty_mode, zen_mode < $mode - space ; default
+herdr_mode, kitty_mode, zen_mode, rex_mode < $mode - space ; default

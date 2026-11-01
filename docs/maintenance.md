@@ -255,6 +255,27 @@ turned on.
 - Go telemetry, including local collection, is disabled in
   [`go.nix`](../nix/modules/home/programs/go.nix). After applying, `go telemetry`
   should report `off`.
+- Rex's [official flake](https://www.superlogical.com/rex/docs/linux/installation)
+  is pinned to the snapshot channel in `flake.lock`. Home Manager installs its
+  CLI and terminfo through `programs.rex`. The nix-darwin
+  [`rex.nix`](../nix/modules/darwin/programs/rex.nix) module packages the signed
+  GUI DMG and exposes `Rex Beta.app` through `/Applications/Nix Apps`.
+  Update its version, URL and checksum together using the official preview
+  appcast linked in that module; update the CLI input with `just up rex`.
+  The GUI runs the macOS server; no Linux server service is enabled.
+  After applying, quit Rex and move the old `/Applications/Rex Beta.app` aside
+  manually, then launch `/Applications/Nix Apps/Rex Beta.app` and update any
+  Dock or login-item references. Keep the old app until the Nix copy works.
+  Use Nix for GUI updates rather than accepting in-app updates: the app in the
+  store is read-only. The vendor's automatic update checks still run.
+  In Rex terminals, zsh keeps `REX_BIN_DIR` first in PATH so the CLI matches
+  the running app/server. Outside Rex, the pinned Nix CLI is available.
+  SSH is managed outside Home Manager, so run `rex terminfo setup` once after
+  applying to add the SSH terminal fallback, then check `rex terminfo status`.
+  Existing app-installed terminfo may need to be moved aside if Home Manager
+  reports a collision; inspect it before replacing it. The Lua configuration
+  at `~/.config/rex/init.lua` is managed by Home Manager; reload it with
+  `rex config reload`. See [Rex mode](agent-keybindings.md#rex) for shortcuts.
 - Homebrew analytics are disabled with `HOMEBREW_NO_ANALYTICS` in
   [`homebrew.nix`](../nix/modules/darwin/homebrew.nix). In a new shell after
   applying, `brew analytics state` should report them disabled.

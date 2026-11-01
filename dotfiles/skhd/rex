@@ -1,0 +1,38 @@
+# Forward aliases to the focused Rex client, including remote sessions.
+:: rex_mode @ : /bin/bash "$HOME/.config/skhd/mode-indicator.sh" rex
+
+rex_mode < h | ctrl + alt - h
+rex_mode < l | ctrl + alt - l
+rex_mode < j | ctrl + alt - j
+rex_mode < k | ctrl + alt - k
+rex_mode < ctrl - h | ctrl + alt + shift - h
+rex_mode < ctrl - j | ctrl + alt + shift - j
+rex_mode < ctrl - k | ctrl + alt + shift - k
+rex_mode < ctrl - l | ctrl + alt + shift - l
+
+rex_mode < t | ctrl + alt - t
+rex_mode < v | ctrl + alt - v
+rex_mode < shift - v | ctrl + alt + shift - v
+rex_mode < z | ctrl + alt - z
+rex_mode < b | ctrl + alt - b
+
+rex_mode < 1 | ctrl + alt - 1
+rex_mode < 2 | ctrl + alt - 2
+rex_mode < 3 | ctrl + alt - 3
+rex_mode < 4 | ctrl + alt - 4
+rex_mode < 5 | ctrl + alt - 5
+rex_mode < 6 | ctrl + alt - 6
+rex_mode < 7 | ctrl + alt - 7
+rex_mode < 8 | ctrl + alt - 8
+rex_mode < 9 | ctrl + alt - 9
+
+# Release capture before pickers accept search text or close prompts appear.
+rex_mode < ctrl - t ; default : skhd --key "ctrl + alt + shift - t"
+rex_mode < ctrl - v ; default : skhd --key "ctrl + alt - x"
+rex_mode < f ; default : skhd --key "ctrl + alt - f"
+rex_mode < s ; default : skhd --key "ctrl + alt - s"
+
+rex_mode < escape ; default
+rex_mode < return ; default
+rex_mode < $mode - w ; winmode
+rex_mode < $mode - r ; resize

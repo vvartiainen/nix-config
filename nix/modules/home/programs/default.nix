@@ -12,6 +12,7 @@
     ./kitty.nix
     ./lazygit.nix
     ./neovim.nix
+    ./rex.nix
     ./rust.nix
     ./starship.nix
     ./yazi.nix

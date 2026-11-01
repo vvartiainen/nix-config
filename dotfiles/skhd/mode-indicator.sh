@@ -12,7 +12,7 @@ fi
 if [ "$#" -gt 0 ]; then
   case "$1" in
     default) rm -f "$state_file" ;;
-    window|resize|herdr|kitty|zen)
+    window|resize|herdr|kitty|zen|rex)
       # skhd writes its PID before loading the configuration.
       case "$daemon_pid" in
         ''|*[!0-9]*) exit 0 ;;
@@ -44,7 +44,7 @@ esac
 
 # App-specific capture follows its app. Events provide the app immediately;
 # polling also recovers if the bar restarted or missed an app-switch event.
-if [ "$mode" = herdr ] || [ "$mode" = kitty ] || [ "$mode" = zen ]; then
+if [ "$mode" = herdr ] || [ "$mode" = kitty ] || [ "$mode" = zen ] || [ "$mode" = rex ]; then
   if [ "${SENDER:-}" = front_app_switched ]; then
     front_app="${INFO:-}"
   else
@@ -52,7 +52,7 @@ if [ "$mode" = herdr ] || [ "$mode" = kitty ] || [ "$mode" = zen ]; then
   fi
   in_app=
   case "$mode:$front_app" in
-    *:|herdr:kitty|herdr:Kitty|kitty:kitty|kitty:Kitty|zen:zen|zen:Zen|zen:'Zen Browser'|zen:'Zen Browser (Beta)') in_app=1 ;;
+    *:|herdr:kitty|herdr:Kitty|kitty:kitty|kitty:Kitty|zen:zen|zen:Zen|zen:'Zen Browser'|zen:'Zen Browser (Beta)'|rex:Rex|rex:'Rex Beta') in_app=1 ;;
   esac
   # Herdr prefixes the Kitty title with "herdr · " (window_title in
   # herdr.nix), including remote sessions. An unknown title keeps the mode.
@@ -105,6 +105,15 @@ case "$mode" in
     keys="H / L tabs    J / K windows    1-9 tabs    Ctrl+HJKL swap window"
     resize_keys="Shift+H / L move tab    Shift+J / K move window"
     actions="N window    T tab    Ctrl+ closes    O next layout    Z stack    F tab switcher"
+    extra_rows=on
+    navigation="Esc / Return exit    Right Cmd+Option+Space toggle"
+    ;;
+  rex)
+    title=REX
+    color="$PEACH"
+    keys="H / L tabs    J / K panes    Ctrl+HJKL focus    1-9 tabs"
+    resize_keys="T tab    V / Shift+V split    Z zoom    B balance"
+    actions="Ctrl+T close tab    Ctrl+V close pane    F palette    S sessions"
     extra_rows=on
     navigation="Esc / Return exit    Right Cmd+Option+Space toggle"
     ;;

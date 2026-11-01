@@ -14,7 +14,7 @@ Option**; Left Option remains available for keyboard-layout characters.
 | Ctrl+Alt+Cmd | yabai swaps, window moves, layouts and space management; T opens the quick-access terminal |
 | Cmd+Left Option+H/J/K/L | yabai window resizing |
 | Right Cmd+Right Option+W (also Ctrl+Alt+W) | Window mode: H/J/K/L focus; Shift+H/J/K/L warp; Cmd+H/J/K/L resize |
-| Right Cmd+Right Option+Space | Navigation mode for the focused app: Herdr in a Herdr window, Kitty in other Kitty windows, Zen in Zen; press again to exit |
+| Right Cmd+Right Option+Space | Navigation mode for the focused app: Herdr in a Herdr window, Kitty in other Kitty windows, Zen in Zen, Rex in Rex; press again to exit |
 | Right Cmd+Right Option+R (also Ctrl+Alt+R) → H/J/K/L | yabai resize mode; Escape or Return exits |
 | Cmd+Q twice within 500 ms | Quit Zen or Kitty; one press is swallowed in those apps |
 | Ctrl+Shift (`kitty_mod`) | Kitty controls, including tabs 1–9 |
@@ -35,7 +35,7 @@ Right Cmd+Right Option before loading the binding files.
 The right-side Cmd+Option+W shortcut is reserved for window mode instead of
 the native close-all-windows action; the left-side combination retains its
 native behavior in normal mode. Right Cmd+Right Option+R also overrides that
-combination's app-specific action to enter resize mode. In Kitty and Zen,
+combination's app-specific action to enter resize mode. In Kitty, Zen and Rex,
 right-side Cmd+Option+Space enters navigation mode instead of Spotlight
 search; it passes through in other apps, and the left-side combination
 always opens Spotlight. No keyboard driver is needed for these
@@ -212,6 +212,32 @@ modes by application only. Tab and number keys forward the existing
 Ctrl+Shift shortcuts; the other actions use Kitty remote control through the
 `listen_on` socket of the focused Kitty process. SketchyBar exits the mode
 when another app gains focus.
+
+## Rex
+
+With Rex or Rex Beta focused, press **Right Cmd+Right Option+Space**, release
+the modifiers, then use the following keys. SketchyBar shows an orange REX
+badge and exits capture when another app gains focus.
+
+| Key in Rex mode | Action |
+|---|---|
+| H / L | Previous / next tab |
+| J / K | Next / previous pane |
+| Ctrl+H / J / K / L | Focus pane left / down / up / right |
+| 1–9 | Jump to tab |
+| T | New tab |
+| V / Shift+V | Split right / down |
+| Z / B | Zoom pane / balance splits |
+| Ctrl+V / Ctrl+T | Exit mode and close pane / tab |
+| F / S | Exit mode and open command palette / session picker |
+| Escape / Return / Right Cmd+Right Option+Space | Exit mode |
+| Right Cmd+Right Option+W / R | Switch to window / resize mode |
+
+The mode forwards Ctrl+Alt aliases defined in the Home Manager Rex module
+to the focused client. For remote sessions, install the same Rex Lua bindings
+on the server that reads the configuration. Apply manually, run
+`rex config reload`, then reload skhd and SketchyBar. Verify tab/pane
+navigation, splits, picker searching, close prompts, and exit on app switch.
 
 ## Herdr
 
