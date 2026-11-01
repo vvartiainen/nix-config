@@ -279,3 +279,112 @@ turned on.
 - Homebrew analytics are disabled with `HOMEBREW_NO_ANALYTICS` in
   [`homebrew.nix`](../nix/modules/darwin/homebrew.nix). In a new shell after
   applying, `brew analytics state` should report them disabled.
+
+## Rex remote access over Tailscale
+
+Each machine that runs agents needs its own Rex server. The Mac and iPhone
+connect to those servers as clients. Connecting the Mac app to a Linux host
+does not make the Mac a proxy for that host: add the Linux host separately on
+the iPhone to control its sessions directly. See the official
+[remote access](https://www.superlogical.com/rex/docs/linux/remote-access) and
+[server modes](https://www.superlogical.com/rex/docs/linux/server-modes) guides.
+
+### iPhone to Mac
+
+In the Mac app's settings, find **Serve over Tailscale** and keep access limited
+to your Tailscale account. Rex embeds its own Tailscale node, separate from the
+Mac's Tailscale app. Use a distinct device name such as `rex-mac` and sign in
+with the same account used by Tailscale on the iPhone. Enable MagicDNS and HTTPS
+certificates in the tailnet's DNS settings, and approve the new device if the
+tailnet requires it.
+
+The running server can also be enabled without restarting existing sessions:
+
+```sh
+rex --autostart=false server tailscale on --hostname rex-mac
+rex --autostart=false server tailscale login
+rex --autostart=false server status
+```
+
+Open the sign-in link locally. Once status reports Tailscale running and HTTPS
+available, display the pairing address or QR code:
+
+```sh
+rex --autostart=false server tailscale pair
+```
+
+Connect Tailscale on the iPhone and add the displayed address in Rex, or scan
+the pairing code if the client offers it. Keep addresses, enrollment links and
+Tailscale state out of this repository. Leave access limited to the node's
+owner; `--allow-tailnet-members` broadens access and is unnecessary here.
+
+The CLI's `tailscale on` changes only the running server. Its sign-in is saved,
+but a restarted server returns to its startup flags. Check the app's **Serve
+over Tailscale** setting and verify access after a planned app/server restart;
+do not assume a CLI enable persists. `rex config reload` reloads Lua bindings,
+not server startup flags. Keep the Mac awake and Rex running for access. Test
+from the phone on cellular, with Wi-Fi off, before relying on remote access.
+
+### Mac and iPhone to Linux agent hosts
+
+For one user's agents, run a personal Rex server as that user so it uses the
+intended home directory, repositories and agent configuration. The packaged
+system `rex.service` instead runs as the shared `rex` account. Install Rex
+using the vendor's [Linux installation guide](https://www.superlogical.com/rex/docs/linux/installation).
+For an initial connection on a host with no running Rex server:
+
+```sh
+rex server start --tailscale --tailscale-hostname rex-agent
+rex server status
+```
+
+Sign in through the reported link. Startup options do not reconfigure an
+existing server. For a server already running, `rex server tailscale on` enables
+remote access without ending sessions, but only for that run of the server.
+Use a different node name for each VM or physical host.
+
+On Linux with Nix and systemd, import the official
+`inputs.rex.homeManagerModules.default` into that user's Home Manager config
+and configure a persistent personal server there:
+
+```nix
+{
+  programs.rex.enable = true;
+  services.rex = {
+    enable = true;
+    tailscale = {
+      enable = true;
+      hostname = "rex-agent";
+    };
+  };
+}
+```
+
+Use a pinned Rex input in the Linux configuration. This repository currently
+configures only the Mac; this example is for the Linux host's configuration,
+including NixOS hosts using Home Manager. Enable lingering for the agent user
+with `loginctl enable-linger` on that host if the service should start at boot
+and remain running after logout. Enrollment is interactive once; do not put an
+auth key in Nix source. Without Home Manager, arrange a supervised personal
+server using the host's service manager, including the Tailscale startup flags.
+
+For microVMs, keep the user's home and Rex state (`~/.local/state/rex`, or
+`$XDG_STATE_HOME/rex`) on persistent storage. Each VM needs outbound networking
+and working DNS; embedded Tailscale does not require a guest TUN device or
+inbound port forwarding. Do not clone enrolled Rex state into another VM;
+enroll each guest separately. Sessions run only while the guest is running,
+and pausing or sleeping the Mac also interrupts access to its guests.
+
+After HTTPS is available, choose **Add Remote Host…** in the Mac app and enter
+the address shown by the Linux server. Add it separately on the iPhone. For
+CLI access, register it separately using the actual address:
+
+```sh
+rex hosts add agent https://rex-agent.example.ts.net
+rex -S agent ls
+```
+
+`rex hosts` currently manages only CLI hosts; it does not populate the Mac app
+or sync to the iPhone. Validate each host from both clients and verify its
+service after a planned reboot. An external mini PC can remain available
+while the Mac sleeps when the phone connects directly to that server.
