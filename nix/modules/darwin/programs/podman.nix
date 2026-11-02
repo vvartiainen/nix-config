@@ -7,6 +7,7 @@
 let
   machine = "podman-machine-default";
   podman = config.services.podman.package;
+  mergeConfig = import ../../home/merge-config.nix { inherit lib pkgs config; };
 in
 {
   # Machine sizes apply only when activation creates the machine; recreate it
@@ -27,21 +28,31 @@ in
     settings.containers.machine.provider = "libkrun";
   };
 
-  home.packages = [
-    # Docker CLI compatibility: `docker` runs podman, like NixOS dockerCompat.
-    (pkgs.runCommand "podman-docker-compat" { } ''
-      mkdir -p $out/bin
-      ln -s ${lib.getExe podman} $out/bin/docker
-    '')
-    # Provider for `podman compose` and so `docker compose`.
-    pkgs.docker-compose
-  ];
-
   programs.zsh.initContent = ''
     compdef docker=podman
   '';
 
-  # The nixpkgs build has no podman-mac-helper for /var/run/docker.sock, so
-  # point Docker clients at the machine's API socket under $TMPDIR instead.
-  home.sessionVariables.DOCKER_HOST = "unix://$TMPDIR/podman/${machine}-api.sock";
+  home = {
+    packages = [
+      # Docker CLI compatibility: `docker` runs podman, like NixOS dockerCompat.
+      (pkgs.runCommand "podman-docker-compat" { } ''
+        mkdir -p $out/bin
+        ln -s ${lib.getExe podman} $out/bin/docker
+      '')
+      # Provider for `podman compose` and so `docker compose`.
+      pkgs.docker-compose
+    ];
+
+    # The nixpkgs build has no podman-mac-helper for /var/run/docker.sock, so
+    # point Docker clients at the machine's API socket under $TMPDIR instead.
+    sessionVariables.DOCKER_HOST = "unix://$TMPDIR/podman/${machine}-api.sock";
+
+    # Podman Desktop (Homebrew cask) gets no Nix PATH when launched from the
+    # Dock, so point it at the store binary. The app keeps its other settings.
+    activation.podmanDesktopSettings = lib.hm.dag.entryAfter [ "linkGeneration" ] (mergeConfig {
+      name = "podman-desktop-settings";
+      path = "${config.xdg.dataHome}/containers/podman-desktop/configuration/settings.json";
+      settings."podman.binary.path" = lib.getExe podman;
+    });
+  };
 }
