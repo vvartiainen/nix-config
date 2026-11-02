@@ -9,7 +9,7 @@ Option**; Left Option remains available for keyboard-layout characters.
 |---|---|
 | Ctrl+Cmd+Z/K/C/O/M/E | Open or focus Zen / Kitty / Calendar / Obsidian / Mail / Finder |
 | Ctrl+Cmd+U | Toggle CodexBar's usage menu (CodexBar must be running) |
-| Ctrl+Cmd+Shift+U | Show Codex and Claude quota cards in a Kitty window |
+| Ctrl+Cmd+Shift+U | Toggle the persistent quick-access quota dashboard |
 | Ctrl+1–6 / Left / Right | yabai space selection / previous / next space |
 | Ctrl+Alt+H/J/K/L | yabai directional window focus |
 | Ctrl+Alt+P/N | yabai previous / next window, including stack navigation |
@@ -82,14 +82,30 @@ Quit CodexBar before applying the configuration manually, then relaunch it so
 it registers the shortcut. To try the same binding immediately, record it in
 **CodexBar Settings → General → Keyboard shortcut → Open menu**.
 
-**Ctrl+Cmd+Shift+U** opens a Kitty window with Codex and Claude quota cards,
-using the bundled CLI's `cards --provider both --source oauth` command. This
-command was verified manually after the default multi-provider command stalled.
-It avoids automatic browser/terminal source selection and excludes other
-providers. Both subscriptions need an available OAuth login. No separate CLI
-installation is needed. Reload skhd with `skhd --reload` after changing this
-binding. The window stays open after the report finishes; close it with Cmd+W
-and use the shortcut again for a fresh report.
+**Ctrl+Cmd+Shift+U** toggles a dedicated quick-access **Metrics** dashboard.
+**Esc**, **Q**, **Ctrl+C**, or **Cmd+W** hides it immediately; clicking another
+window also hides it. **R** requests a refresh, and **Ctrl+D** stops the dashboard.
+The existing Ctrl+Alt+Cmd+T quick-access shell is a separate instance.
+
+The dashboard keeps its last successful quota report in memory while hidden.
+Reopening shows that report immediately, including its age, while refreshes run
+every five minutes in a separate process. A refresh times out after 30 seconds;
+errors keep the last successful report visible. The first open after stopping
+the dashboard or restarting Kitty needs a fresh fetch. No login daemon or quota
+cache on disk is installed.
+
+Quotas use the bundled CodexBar CLI's `cards --provider both --source oauth`
+command, verified manually after the default multi-provider command stalled.
+Both Codex and Claude need an available OAuth login. Kitty's bundled Python runs
+the dashboard; no separate Python or CLI installation is needed. Only quotas
+are shown for now; the persistent view can gain other metrics later.
+
+Apply the configuration manually once to link the new `metrics.sh`,
+`metrics.conf`, and `metrics.py` files, then reload skhd with `skhd --reload`.
+After future dashboard changes, stop it with Ctrl+D and reopen it. Verify
+repeated shortcut toggling, Esc/Q dismissal during a fetch, last-report
+retention, refresh/error messages, display placement, and that the ordinary
+quick-access shell still toggles independently.
 
 Enable **Merge Icons** in CodexBar's menu bar settings to browse subscriptions
 in one menu. CodexBar 0.83.0's tab shortcuts were reported to switch only
@@ -108,7 +124,10 @@ position. These are CodexBar's native defaults, checked against
 [0.83.0's switcher shortcuts](https://github.com/steipete/CodexBar/blob/v0.83.0/Sources/CodexBarCore/Config/ProviderSwitcherShortcuts.swift)
 and [provider navigation](https://github.com/steipete/CodexBar/blob/v0.83.0/Sources/CodexBar/StatusItem/StatusItemController%2BProviderNavigation.swift).
 The menu binding is configured in `nix/modules/darwin/programs/codexbar.nix`;
-the terminal shortcut is in `dotfiles/skhd/hotkeys`. The card command is
+the dashboard lives in `dotfiles/kitty/metrics.*`, with its shortcut in
+`dotfiles/skhd/hotkeys`. It uses Kitty's
+[quick-access terminal](https://sw.kovidgoyal.net/kitty/kittens/quick-access-terminal/),
+which manages a panel internally. The card command is
 documented in [CodexBar's CLI reference](https://github.com/steipete/CodexBar/blob/v0.83.0/docs/cli.md).
 
 ## Shared actions
