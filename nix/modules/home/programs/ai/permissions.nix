@@ -53,6 +53,10 @@ let
         "nix"
         "eval"
       ]
+      [
+        "statix"
+        "check"
+      ]
 
       [ "tail" ]
       [ "head" ]
