@@ -63,6 +63,12 @@ in
     settings = {
       enter_accept = true;
       sync.records = true;
+      # The binary is pinned above, so update notices are noise.
+      update_check = false;
+      # Inside a git repo, the workspace filter shows only that repo's commands.
+      workspaces = true;
+      # Up arrow walks this shell's history; Ctrl-R still searches everything.
+      filter_mode_shell_up_key_binding = "session";
 
       # Never save commands with literal credentials, on top of the built-in
       # secrets_filter. `atuin history prune` removes old matches. Values
