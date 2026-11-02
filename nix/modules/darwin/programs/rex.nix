@@ -43,5 +43,9 @@ in
     "Workspace.sidebarPosition" = "left";
     "Workspace.sidebarCollapsed" = false;
     "Workspace.terminalOptionKeyBehavior" = "rightActsAsAlt";
+    # Native macOS notifications for program activity (agents waiting or
+    # finished) and OSC 9/777. macOS still asks once for permission.
+    "Workspace.showsProgramActivityNotifications" = true;
+    "Workspace.allowsTerminalNotifications" = true;
   };
 }
