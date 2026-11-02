@@ -7,6 +7,20 @@
 let
   homeDir = config.users.users.${userName}.home;
 
+  # Preserve the saved symbolic-hotkey settings supplied by the user.
+  # Parameters are character code, virtual key code and modifier mask.
+  hotkey = enabled: character: keyCode: modifiers: {
+    inherit enabled;
+    value = {
+      type = "standard";
+      parameters = [
+        character
+        keyCode
+        modifiers
+      ];
+    };
+  };
+
   # Caches, toolchains and VM disks that can be rebuilt or downloaded again.
   timeMachineExcludedPaths = [
     "/var/lib/linux-builder"
@@ -176,12 +190,46 @@ in
       # All custom entries can be found by running `defaults read` command.
       # or `defaults read xxx` to read a specific domain.
       CustomUserPreferences = {
-        # This dictionary is managed as a whole. Program modules add their
-        # shortcut entries here through Nix's attribute-set merging.
-        "com.apple.symbolichotkeys".AppleSymbolicHotKeys = {
-          # Select the previous input source: off; Ctrl+Space toggles Kitty.
-          "60".enabled = false;
-        };
+        # Manage the complete saved dictionary, including disabled shortcuts.
+        # Spotlight adds entries 64/65 through Nix's attribute-set merging.
+        "com.apple.symbolichotkeys".AppleSymbolicHotKeys =
+          lib.genAttrs (map toString (lib.range 15 26)) (_: { enabled = false; })
+          // lib.genAttrs
+            [
+              "164"
+              "175"
+              "215"
+              "216"
+              "217"
+              "218"
+              "219"
+              "222"
+              "225"
+              "226"
+              "227"
+              "228"
+              "229"
+              "230"
+              "231"
+              "232"
+            ]
+            (_: hotkey false 65535 65535 0)
+          // {
+            "59" = hotkey false 65535 96 9437184;
+            # Input-source switching stays off; Ctrl+Space toggles Kitty.
+            "60" = hotkey false 32 49 262144;
+            "61" = hotkey false 32 49 786432;
+            "79" = hotkey true 65535 123 8650752;
+            "80" = hotkey true 65535 123 8781824;
+            "81" = hotkey true 65535 124 8650752;
+            "82" = hotkey true 65535 124 8781824;
+            "118" = hotkey true 65535 18 262144;
+            "119" = hotkey true 65535 19 262144;
+            "120" = hotkey true 65535 20 262144;
+            "121" = hotkey true 65535 21 262144;
+            "162" = hotkey false 65535 96 9961472;
+            "190" = hotkey false 113 12 8388608;
+          };
         NSGlobalDomain = {
           # Add a context menu item for showing the Web Inspector in web views
           WebKitDeveloperExtras = true;
