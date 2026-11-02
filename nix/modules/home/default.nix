@@ -36,6 +36,7 @@ in
       cmake
       gdu
       lnav
+      nixfmt
       shellcheck
       statix
       yq-go

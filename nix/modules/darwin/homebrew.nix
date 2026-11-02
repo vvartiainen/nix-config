@@ -32,7 +32,6 @@
       "mas"
       "mise"
       "neovim"
-      "nixfmt"
       "opencode"
       "pnpm"
       "poppler"
