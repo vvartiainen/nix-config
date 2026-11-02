@@ -285,7 +285,7 @@ badge and exits capture when another app gains focus.
 | T | New tab |
 | V / Shift+V | Split right / down |
 | Z / B | Zoom pane / balance splits |
-| Ctrl+V / Ctrl+T | Exit mode and close pane / tab |
+| Ctrl+V / Ctrl+T | Close pane / tab; stay in mode for repeated closes |
 | F / S | Exit mode and open command palette / session picker |
 | Escape / Return / Right Cmd+Right Option+Space | Exit mode |
 | Right Cmd+Right Option+W / R | Switch to window / resize mode |
@@ -295,6 +295,11 @@ to the focused client. For remote sessions, install the same Rex Lua bindings
 on the server that reads the configuration. Apply manually, run
 `rex config reload`, then reload skhd and SketchyBar. Verify tab/pane
 navigation, splits, picker searching, close prompts, and exit on app switch.
+Tab and pane closes keep capture active, as do creation, navigation and layout
+actions in the other modes. If Rex asks for confirmation, press Escape or
+Return to release capture before answering the prompt. Pickers and actions
+that open text fields exit mode so their controls receive keys normally;
+Herdr's workspace close also exits for its confirmation.
 
 ## Herdr
 

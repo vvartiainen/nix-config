@@ -26,9 +26,11 @@ rex_mode < 7 | ctrl + alt - 7
 rex_mode < 8 | ctrl + alt - 8
 rex_mode < 9 | ctrl + alt - 9
 
-# Release capture before pickers accept search text or close prompts appear.
-rex_mode < ctrl - t ; default : skhd --key "ctrl + alt + shift - t"
-rex_mode < ctrl - v ; default : skhd --key "ctrl + alt - x"
+# Keep closes repeatable, like tab creation and pane splitting above.
+rex_mode < ctrl - t | ctrl + alt + shift - t
+rex_mode < ctrl - v | ctrl + alt - x
+
+# Release capture before pickers accept search text.
 rex_mode < f ; default : skhd --key "ctrl + alt - f"
 rex_mode < s ; default : skhd --key "ctrl + alt - s"
 
