@@ -89,8 +89,7 @@ def config_files(home, xdg):
         files.append((home / f".pi/agent/{name}.json", "json", f"pi-{name}"))
     files.append((home / ".pi/agent/themes/catppuccin-mocha.json",
                   "json", "pi-theme"))
-    for name, schema in [("opencode", "opencode"), ("cli", "opencode-cli"),
-                         ("tui", "opencode-tui")]:
+    for name, schema in [("opencode", "opencode"), ("cli", "opencode-cli")]:
         for suffix in ["json", "jsonc"]:
             files.append((xdg / f"opencode/{name}.{suffix}", "jsonc", schema))
         layer = "home-manager" if name == "opencode" else f"home-manager-{name}"

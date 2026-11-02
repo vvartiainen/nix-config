@@ -23,7 +23,6 @@ in
         "codexMutableConfig"
         "cursorCliConfig"
         "githubCopilotCliSettings"
-        "opencodeConfig"
       ]
       [ "linkGeneration" ]
       ''

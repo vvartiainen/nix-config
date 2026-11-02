@@ -183,7 +183,6 @@ already have been written when a later merge fails.
 | Codex `config.toml` | Upstream schema from `rust-v0.166.0`, matching the Homebrew CLI used here |
 | Claude Code `settings.json` | Pinned SchemaStore Claude Code settings schema |
 | OpenCode runtime and v2 CLI settings | Schemas from the pinned nixpkgs OpenCode package |
-| OpenCode legacy `tui.json` | Published TUI schema, pinned by content hash |
 | Pi settings, keybindings, models and the declared theme | Schemas shipped with the pinned Pi package |
 | Cursor, Copilot, MCP registries, Claude runtime state and desktop config | Parsing and object-root checks only; no schema bundled |
 
@@ -198,9 +197,8 @@ where the upstream schema rejects them; permissive schemas cannot catch every ty
 Schemas are bundled through
 [`agent-config-validation.nix`](../nix/modules/home/agent-config-validation.nix).
 Validation itself requires no network and does not follow a config's `$schema`
-URL. Update schema versions/hashes deliberately when upgrading CLIs; the legacy
-TUI URL can require a hash refresh if upstream replaces it. The regression
-tests run as part of building the validator package.
+URL. Update schema versions/hashes deliberately when upgrading CLIs. The
+regression tests run as part of building the validator package.
 
 Coverage follows this repo's default global CLI paths and XDG config directory.
 Project settings, custom CLI home overrides, private modules, environment/flag

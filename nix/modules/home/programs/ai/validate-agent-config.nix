@@ -21,7 +21,6 @@ in
           "codexMutableConfig"
           "cursorCliConfig"
           "githubCopilotCliSettings"
-          "opencodeConfig"
         ]
         ''
           run ${lib.getExe validator}

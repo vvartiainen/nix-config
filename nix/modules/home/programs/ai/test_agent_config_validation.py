@@ -52,7 +52,6 @@ class ValidationTest(unittest.TestCase):
             ("claude", {"permissions": {"allow": "wrong"}}),
             ("opencode", {"model": 12}),
             ("opencode-cli", {"theme": {"mode": "wrong"}}),
-            ("opencode-tui", {"theme": 12}),
             ("pi-settings", {"defaultThinkingLevel": "typo"}),
             ("pi-keybindings", {"app.model.select": 12}),
             ("pi-models", {"providers": []}),

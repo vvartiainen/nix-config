@@ -1,11 +1,9 @@
 {
   lib,
-  pkgs,
   config,
   ...
 }:
 let
-  mergeConfig = import ../../merge-config.nix { inherit lib pkgs config; };
   permissions = import ./permissions.nix { inherit lib config; };
   inherit (permissions) commands;
 
@@ -68,13 +66,7 @@ let
     compaction.auto = true;
   };
 
-  tuiSettings = {
-    "$schema" = "https://opencode.ai/tui.json";
-    theme = "catppuccin";
-  };
-
-  # OpenCode v2 reads cli.json with dotted action IDs. Retain tui.json above
-  # for the legacy client.
+  # OpenCode v2 reads cli.json with dotted action IDs.
   cliSettings = {
     theme.name = "catppuccin";
     keybinds = {
@@ -106,11 +98,4 @@ in
   };
 
   home.sessionVariables.OPENCODE_EXPERIMENTAL_LSP_TOOL = "true";
-
-  home.activation.opencodeConfig = lib.hm.dag.entryAfter [ "linkGeneration" ] (mergeConfig {
-    name = "opencode-tui";
-    schema = "opencode-tui";
-    path = "${config.xdg.configHome}/opencode/tui.json";
-    settings = tuiSettings;
-  });
 }

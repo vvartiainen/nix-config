@@ -12,11 +12,6 @@ let
     };
     opencode = pkgs.opencode.passthru.jsonschema.config;
     opencode-cli = pkgs.opencode.passthru.jsonschema.cli;
-    # Legacy OpenCode 1 client, alongside the pinned OpenCode 2 schemas.
-    opencode-tui = pkgs.fetchurl {
-      url = "https://opencode.ai/tui.json";
-      hash = "sha256-6zYeKEZpvCU5gsUpsaZ6jYZ+XNlqbqppbvFiV0+Fwd8=";
-    };
   }
   // builtins.listToAttrs (
     map
