@@ -38,11 +38,40 @@ let
       mainProgram = "atuin";
     };
   };
+
+  # Finds secrets that slipped into shell history; see atuin-secrets.sh.
+  atuinSecrets = pkgs.writeShellApplication {
+    name = "atuin-secrets";
+    runtimeInputs = [
+      atuinBinary
+      pkgs.gitleaks
+      pkgs.jq
+    ];
+    text = builtins.readFile ./atuin-secrets.sh;
+  };
 in
 {
+  home.packages = [
+    pkgs.gitleaks
+    atuinSecrets
+  ];
+
   programs.atuin = {
     enable = true;
     enableZshIntegration = true;
     package = atuinBinary;
+    settings = {
+      enter_accept = true;
+      sync.records = true;
+
+      # Never save commands with literal credentials, on top of the built-in
+      # secrets_filter. `atuin history prune` removes old matches. Values
+      # starting with `$` are references, not secrets, so they are kept.
+      history_filter = [
+        "(?i)\\w*(password|passwd|secret|token|api_?key)\\w*=[\"']?[^$\\s\"']"
+        "(?i)authorization:\\s*(bearer|basic)\\s+[^$\\s]"
+        "://[^/\\s:@]+:[^/\\s@$]+@"
+      ];
+    };
   };
 }
