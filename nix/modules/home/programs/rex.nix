@@ -149,6 +149,7 @@ in
       end
       for key, direction in pairs({ h = "left", j = "down", k = "up", l = "right" }) do
         rex.bind("ctrl+alt+shift+" .. key, "pane.focus", { direction = direction })
+        rex.bind("ctrl+alt+cmd+" .. key, "pane.resize", { direction = direction })
       end
     '';
   };

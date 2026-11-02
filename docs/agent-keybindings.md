@@ -295,6 +295,8 @@ repeatedly. SketchyBar shows a green KITTY badge and key hints:
 | Shift+H / L | Move tab backward / forward |
 | Shift+J / K | Move window forward / backward |
 | Ctrl+H / J / K / L | Swap window with its neighbour in that direction |
+| Cmd+H / J / K / L | Make window narrower / shorter / taller / wider; stay in mode |
+| B | Reset window sizes in the tab |
 | 1–9 | Jump to tab |
 | O | Next layout |
 | Z | Toggle stack layout |
@@ -311,6 +313,10 @@ Ctrl+Shift shortcuts; the other actions use Kitty remote control through the
 `listen_on` socket of the focused Kitty process. SketchyBar exits the mode
 when another app gains focus.
 
+Resizing uses Kitty's [`resize_window` action](https://sw.kovidgoyal.net/kitty/layouts/#resizing-windows)
+with its default increment. Available adjustments depend on the layout; stack
+has no visible split to resize. B restores the layout's default sizes.
+
 ## Rex
 
 With Rex or Rex Beta focused, press **Right Cmd+Right Option+Space**, release
@@ -322,6 +328,7 @@ badge and exits capture when another app gains focus.
 | K / J | Previous / next tab |
 | H / L | Previous / next pane |
 | Ctrl+H / J / K / L | Focus pane left / down / up / right |
+| Cmd+H / J / K / L | Resize pane left / down / up / right by 5%; stay in mode |
 | 1–9 | Jump to tab |
 | T | New tab |
 | N or V / Shift+V | Split right / down |
@@ -331,6 +338,12 @@ badge and exits capture when another app gains focus.
 | G or F / S | Exit mode and open command palette / session picker |
 | Escape / Return / Right Cmd+Right Option+Space | Exit mode |
 | Right Cmd+Right Option+W / R | Switch to window / resize mode |
+
+Resizing forwards aliases to the focused Rex client, including remote sessions,
+using [`pane.resize`](https://www.superlogical.com/rex/docs/customize/key-modes).
+Each press moves the split divider by 5% of the split it divides. B balances
+the splits again. After applying, run `rex config reload` and reload skhd and
+SketchyBar to load the new aliases and hints.
 
 Outside navigation mode, the direct shortcuts follow Kitty:
 

@@ -103,7 +103,7 @@ case "$mode" in
     title=KITTY
     color="$GREEN"
     keys="H / L tabs    J / K windows    1-9 tabs    Ctrl+HJKL swap window"
-    resize_keys="Shift+H / L move tab    Shift+J / K move window"
+    resize_keys="Cmd+HJKL resize    B balance    Shift+H / L move tab    Shift+J / K move window"
     actions="N window    T tab    Ctrl+ closes    O next layout    Z stack    F tab switcher"
     extra_rows=on
     navigation="Esc / Return exit    Right Cmd+Option+Space toggle"
@@ -112,7 +112,7 @@ case "$mode" in
     title=REX
     color="$PEACH"
     keys="J / K tabs    H / L panes    Ctrl+HJKL focus    1-9 tabs"
-    resize_keys="T tab    N / V split right    Shift+V split down    Z zoom    B balance"
+    resize_keys="Cmd+HJKL resize    T tab    N / V split right    Shift+V split down    Z zoom    B balance"
     actions="Ctrl+T close tab    Ctrl+N / V close pane    G / F palette    S sessions"
     extra_rows=on
     navigation="Esc / Return exit    Right Cmd+Option+Space toggle"

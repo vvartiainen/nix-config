@@ -23,6 +23,12 @@ kitty_mode < ctrl - j : /bin/bash "$HOME/.config/skhd/kitty.sh" action move_wind
 kitty_mode < ctrl - k : /bin/bash "$HOME/.config/skhd/kitty.sh" action move_window up
 kitty_mode < ctrl - l : /bin/bash "$HOME/.config/skhd/kitty.sh" action move_window right
 
+kitty_mode < cmd - h : /bin/bash "$HOME/.config/skhd/kitty.sh" action resize_window narrower
+kitty_mode < cmd - j : /bin/bash "$HOME/.config/skhd/kitty.sh" action resize_window shorter
+kitty_mode < cmd - k : /bin/bash "$HOME/.config/skhd/kitty.sh" action resize_window taller
+kitty_mode < cmd - l : /bin/bash "$HOME/.config/skhd/kitty.sh" action resize_window wider
+kitty_mode < b : /bin/bash "$HOME/.config/skhd/kitty.sh" action resize_window reset
+
 kitty_mode < 1 | ctrl + shift - 1
 kitty_mode < 2 | ctrl + shift - 2
 kitty_mode < 3 | ctrl + shift - 3

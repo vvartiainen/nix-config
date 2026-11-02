@@ -10,6 +10,11 @@ rex_mode < ctrl - j | ctrl + alt + shift - j
 rex_mode < ctrl - k | ctrl + alt + shift - k
 rex_mode < ctrl - l | ctrl + alt + shift - l
 
+rex_mode < cmd - h | ctrl + alt + cmd - h
+rex_mode < cmd - j | ctrl + alt + cmd - j
+rex_mode < cmd - k | ctrl + alt + cmd - k
+rex_mode < cmd - l | ctrl + alt + cmd - l
+
 rex_mode < t | ctrl + alt - t
 rex_mode < n | ctrl + alt - v
 rex_mode < v | ctrl + alt - v
