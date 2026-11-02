@@ -65,11 +65,37 @@ in
   ];
   programs.zsh.shellAliases.hh = "herdr-here";
 
-  # The Pi extension is versioned with herdr, so reinstall it on every
-  # activation to keep state reporting and session restore current.
-  home.activation.herdrPiIntegration = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-    ${lib.getExe config.programs.herdr.package} integration install pi >/dev/null
-  '';
+  # Reconcile vendor-owned hooks/plugins after cleanup and mutable settings.
+  # The installer preserves unrelated hooks and updates its own without duplicates.
+  home.activation.herdrAgentIntegrations =
+    lib.hm.dag.entryAfter
+      [
+        "linkGeneration"
+        "claudeCodeConfig"
+        "codexMutableConfig"
+        "cursorCliConfig"
+        "githubCopilotCliSettings"
+        "rexAgentHooks"
+      ]
+      ''
+        run mkdir -p ${lib.escapeShellArgs [
+          config.programs.github-copilot-cli.configDir
+          "${config.xdg.configHome}/cursor"
+          "${config.xdg.configHome}/opencode"
+          "${config.home.homeDirectory}/.pi/agent/extensions"
+        ]}
+        ${lib.concatMapStringsSep "\n" (agent: ''
+          run env CURSOR_CONFIG_DIR=${lib.escapeShellArg "${config.xdg.configHome}/cursor"} \
+            ${lib.getExe config.programs.herdr.package} integration install ${agent}
+        '') [
+          "claude"
+          "codex"
+          "copilot"
+          "cursor"
+          "opencode"
+          "pi"
+        ]}
+      '';
 
   programs.herdr = {
     enable = true;

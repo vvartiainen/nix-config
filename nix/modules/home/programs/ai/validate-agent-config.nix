@@ -21,6 +21,8 @@ in
           "codexMutableConfig"
           "cursorCliConfig"
           "githubCopilotCliSettings"
+          "rexAgentHooks"
+          "herdrAgentIntegrations"
         ]
         ''
           run ${lib.getExe validator}

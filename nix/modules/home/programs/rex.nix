@@ -29,6 +29,20 @@ in
     force = true;
   });
 
+  # The pinned CLI recognizes the identical linked skills as unchanged and
+  # reconciles only its hooks, preserving other integrations and settings.
+  home.activation.rexAgentHooks =
+    lib.hm.dag.entryAfter
+      [
+        "linkGeneration"
+        "claudeCodeConfig"
+        "codexMutableConfig"
+      ]
+      ''
+        run ${lib.getExe config.programs.rex.package} --autostart=false skill setup \
+          --agent claude --agent codex
+      '';
+
   # The GUI package runs the macOS server; this flake supplies CLI and terminfo.
   programs.rex = {
     enable = true;

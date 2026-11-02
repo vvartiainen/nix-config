@@ -286,8 +286,28 @@ turned on.
   (Codex, OpenCode and Pi) and `~/.claude/skills/rex`. It is generated from the
   pinned Rex CLI; the guide comes from the running CLI when invoked. Global
   cleanup runs before Home Manager restores these declared skills on each
-  switch. Session-start hooks installed by `rex skill setup` remain separate;
-  this declaration installs the skill only.
+  switch. After linking the skills and merging agent settings, activation runs
+  the pinned CLI's `rex skill setup --agent claude --agent codex` to reconcile
+  its global session-start hooks. Identical linked skills are left untouched;
+  unrelated settings and hooks are preserved. Session naming stays at its
+  previously installed choice (off for a new setup). OpenCode and Pi share the
+  skill but have no Rex command hooks. No manual hook setup is needed.
+
+  Herdr's Home Manager module likewise reconciles the global Claude, Codex,
+  Copilot, Cursor, OpenCode and Pi integrations on every activation, after Rex
+  and the agent settings. The pinned `herdr integration install` updates its
+  own hooks/plugins without duplicating existing registrations, including ones
+  installed manually. Cursor uses the declared `CURSOR_CONFIG_DIR`; required
+  plugin directories are created even before the first agent launch. These
+  vendor-owned files remain writable so the installers can update them.
+
+  After applying manually, inspect `herdr integration status` and
+  `rex --autostart=false skill status`, then start fresh agent sessions in each
+  terminal and check session association and state reporting. Approve newly
+  registered hooks in the agent UI if prompted. Reapplying should leave one
+  registration per integration, alongside any custom hooks. The fixture build
+  checks the public configuration and activation script, not live terminal
+  reporting or private host modules.
 
   Codex and Claude require approval for Rex CLI calls, including the skill's
   guide command. Their sandbox socket allowlists exclude Rex, since a running
