@@ -9,6 +9,19 @@
     # to add the fallback to that configuration (see docs/maintenance.md).
     sshGuard = false;
     config = ''
+      -- GUI themes use client actions rather than server configuration fields.
+      rex.action{
+        name = "catppuccin_mocha",
+        title = "Apply Catppuccin Mocha",
+        category = "Appearance",
+        run = function()
+          rex.client.queue("client.appearance.switch_mode", { mode = "dark" })
+          rex.client.queue("client.theme.import", {
+            path = "${../../../../dotfiles/rex/Catppuccin-Mocha}",
+          })
+        end,
+      }
+
       -- Aliases forwarded by skhd's Rex mode to the focused client.
       rex.bind("ctrl+alt+h", "client.tab.previous")
       rex.bind("ctrl+alt+l", "client.tab.next")

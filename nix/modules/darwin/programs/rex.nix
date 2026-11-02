@@ -34,4 +34,14 @@ let
 in
 {
   environment.systemPackages = [ rexApp ];
+
+  # GUI preferences are separate from the server's init.lua configuration.
+  # Match Kitty: keep left Option for composing characters, right Option for Alt.
+  system.defaults.CustomUserPreferences."com.superlogical.rex" = {
+    "Workspace.appearance" = "dark";
+    "Workspace.tabStyle" = "vertical";
+    "Workspace.sidebarPosition" = "left";
+    "Workspace.sidebarCollapsed" = false;
+    "Workspace.terminalOptionKeyBehavior" = "rightActsAsAlt";
+  };
 }

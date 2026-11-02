@@ -280,6 +280,23 @@ turned on.
   reports a collision; inspect it before replacing it. The Lua configuration
   at `~/.config/rex/init.lua` is managed by Home Manager; reload it with
   `rex config reload`. See [Rex mode](agent-keybindings.md#rex) for shortcuts.
+  GUI settings are separate from Lua: the Darwin module selects dark
+  appearance and expanded vertical tabs on the left. It sets right Option to
+  act as Alt, matching Kitty, while left Option keeps character composition.
+  Quit Rex before applying preferences, then relaunch it. To test immediately,
+  choose **Option Key Behavior** in Settings and select the right-Option Alt
+  behavior. Verify your terminal Alt shortcuts with the right Option key.
+  For Catppuccin Mocha, after applying and running `rex config reload`, choose
+  **Apply Catppuccin Mocha** from Rex's command palette. This action selects
+  dark appearance and imports the Nix-store copy of the tracked
+  [`Mocha theme`](../dotfiles/rex/Catppuccin-Mocha). The Ghostty-format file
+  matches the Kitty palette; Rex derives both GUI and terminal colors from it.
+  The palette and import action are declarative; the app stores the selected
+  imported theme. Run the action once on each Mac, or again after changing the
+  palette. `rex config reload` alone does not select a GUI theme. To import
+  before applying, use **Import Theme File** and select the theme in this
+  checkout. CLI invocation requires Remote Control enabled under
+  **Settings → Rex Server**: `rex do catppuccin_mocha`.
 - Homebrew analytics are disabled with `HOMEBREW_NO_ANALYTICS` in
   [`homebrew.nix`](../nix/modules/darwin/homebrew.nix). In a new shell after
   applying, `brew analytics state` should report them disabled.
