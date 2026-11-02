@@ -101,7 +101,12 @@ where tests fall back to slow emulation.
 
 The rosetta-builder VM image is an `aarch64-linux` build from this flake's
 nixpkgs. The first switch with it needs another Linux builder, so run
-`just builder-start` first. Later updates are built by the running
+`just builder-start` first. The image build requires `kvm`, which the
+linux-builder advertises even without nested virtualization; there it runs
+under slow emulation. If the applied `/etc/nix/machines` lacks `kvm` on the
+linux-builder, the switch fails with `missing system features`. Pass that line
+with `kvm` added once: `sudo darwin-rebuild switch ... --option builders
+'<line from /etc/nix/machines with kvm>'`. Later updates are built by the running
 rosetta-builder. A changed image or VM setting recreates the VM and its disk.
 To remove it, set `nix-rosetta-builder.enable = false` and switch before
 removing the module import: only the disabled module removes its

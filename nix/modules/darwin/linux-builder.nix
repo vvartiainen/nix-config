@@ -16,14 +16,14 @@
     ];
     ephemeral = false;
     maxJobs = 4;
+    # kvm even without nested virtualization: the rosetta-builder image build
+    # requires it, and qemu falls back to emulation without /dev/kvm.
     supportedFeatures = [
       "benchmark"
       "big-parallel"
-    ]
-    ++ lib.optionals hardware.nestedVirtualization [
       "kvm"
-      "nixos-test"
-    ];
+    ]
+    ++ lib.optionals hardware.nestedVirtualization [ "nixos-test" ];
     # Take only builds that need /dev/kvm. The rosetta-builder also advertises
     # kvm without having it, so win ties against its speedFactor; Nix falls
     # back to it when this builder is stopped.
