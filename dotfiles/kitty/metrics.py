@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tempfile
 import termios
+import textwrap
 import time
 import tty
 
@@ -30,6 +31,7 @@ class Quotas:
         self.text = ""
         self.updated_at = None
         self.error = ""
+        self.partial_text = ""
         self.next_refresh = 0
         self.process = None
         self.started_at = 0
@@ -75,8 +77,13 @@ class Quotas:
                 self.text = output
                 self.updated_at = time.time()
                 self.error = ""
+                self.partial_text = ""
             else:
-                self.error = error or f"CodexBar returned no complete report (exit {code}). Press R to retry."
+                # Cards can contain usable quotas plus a failure footer while
+                # exiting nonzero. Keep that evidence without replacing good data.
+                self.partial_text = output
+                footer = "\n".join(output.splitlines()[-6:])
+                self.error = error or footer or f"CodexBar returned no complete report (exit {code}). Press R to retry."
         self.close()
         self.next_refresh = time.monotonic() + self.interval
 
@@ -97,7 +104,7 @@ class Quotas:
         self.stdout = self.stderr = None
 
 
-def report_lines(quotas, now=None):
+def report_lines(quotas, now=None, columns=100):
     now = time.time() if now is None else now
     status = "Fetching first report…"
     if quotas.updated_at is not None:
@@ -112,13 +119,19 @@ def report_lines(quotas, now=None):
         status = "No successful report yet."
     lines = ["METRICS · Codex / Claude", "Esc / Q hide · R refresh · Ctrl+D stop", status, ""]
     if quotas.error:
-        lines += ["Refresh failed: " + " ".join(quotas.error.split()), ""]
-    lines += quotas.text.splitlines()
+        message = "Refresh failed: " + " ".join(quotas.error.split())
+        lines += textwrap.wrap(message, width=max(1, columns - 1)) + [""]
+    if quotas.text:
+        if quotas.error:
+            lines += ["Last successful report:"]
+        lines += quotas.text.splitlines()
+    elif quotas.partial_text:
+        lines += ["Latest attempt (incomplete):"] + quotas.partial_text.splitlines()
     return lines
 
 
 def draw(quotas, size):
-    lines = report_lines(quotas)
+    lines = report_lines(quotas, columns=size.columns)
     visible = lines[:size.lines]
     if len(lines) > size.lines:
         visible[-1] = "… Resize the dashboard to see the full report."

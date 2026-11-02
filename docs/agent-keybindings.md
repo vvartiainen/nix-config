@@ -90,7 +90,9 @@ The existing Ctrl+Alt+Cmd+T quick-access shell is a separate instance.
 The dashboard keeps its last successful quota report in memory while hidden.
 Reopening shows that report immediately, including its age, while refreshes run
 every five minutes in a separate process. A refresh times out after 30 seconds;
-errors keep the last successful report visible. The first open after stopping
+errors keep the last successful report visible and show the CLI's failure
+details. If the first refresh produces only a partial report, its available
+quotas are shown as incomplete. The first open after stopping
 the dashboard or restarting Kitty needs a fresh fetch. No login daemon or quota
 cache on disk is installed.
 
@@ -106,6 +108,12 @@ After future dashboard changes, stop it with Ctrl+D and reopen it. Verify
 repeated shortcut toggling, Esc/Q dismissal during a fetch, last-report
 retention, refresh/error messages, display placement, and that the ordinary
 quick-access shell still toggles independently.
+
+For startup diagnostics, run `/bin/sh ~/.config/kitty/metrics.sh` in a terminal.
+The launcher uses Kitty's foreground mode; skhd already runs its commands in
+the background. Its named `metrics-dashboard` instance is separate from the
+ordinary quick-access shell and the earlier `metrics`/`metrics-debug` instances.
+Stop an older diagnostic dashboard with Ctrl+D before retesting the shortcut.
 
 Enable **Merge Icons** in CodexBar's menu bar settings to browse subscriptions
 in one menu. CodexBar 0.83.0's tab shortcuts were reported to switch only

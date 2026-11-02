@@ -78,6 +78,40 @@ class QuotaTests(unittest.TestCase):
         self.assertEqual((self.quotas.text, self.quotas.updated_at), (report, stamp))
         self.assertIn("no complete report", self.quotas.error)
 
+    def test_first_partial_report_shows_quota_and_provider_failure(self):
+        self.quotas.command = [
+            PYTHON, "-c",
+            "import sys; print('Codex: 75% left\\nFailed providers: Claude OAuth unavailable'); sys.exit(1)",
+        ]
+        self.quotas.refresh(100)
+        self.finish_refresh()
+        self.assertEqual(self.quotas.text, "")
+        self.assertIsNone(self.quotas.updated_at)
+        lines = "\n".join(metrics.report_lines(self.quotas))
+        self.assertIn("Latest attempt (incomplete)", lines)
+        self.assertIn("75% left", lines)
+        self.assertIn("Claude OAuth unavailable", lines)
+
+    def test_partial_failure_exposes_footer_but_preserves_last_good_report(self):
+        report, stamp = self.get_success()
+        self.quotas.command = [
+            PYTHON, "-c",
+            "import sys; print('Codex: 50% left\\nFailed providers: Claude OAuth unavailable'); sys.exit(1)",
+        ]
+        self.quotas.refresh(100)
+        self.finish_refresh()
+        self.assertEqual((self.quotas.text, self.quotas.updated_at), (report, stamp))
+        lines = "\n".join(metrics.report_lines(self.quotas))
+        self.assertIn("Claude OAuth unavailable", lines)
+        self.assertIn("Last successful report", lines)
+        self.assertIn(report, lines)
+
+    def test_long_error_wraps_instead_of_hiding_its_cause(self):
+        self.quotas.error = "Synthetic provider failure " * 10 + "expired OAuth session"
+        lines = metrics.report_lines(self.quotas, columns=40)
+        self.assertIn("expired OAuth session", " ".join(lines))
+        self.assertTrue(all(len(line) < 40 for line in lines[4:]))
+
     def test_missing_cli_reports_error_without_crashing(self):
         self.quotas.command = ["/nonexistent-synthetic-codexbar"]
         self.quotas.refresh(100)
