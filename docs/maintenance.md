@@ -234,9 +234,8 @@ turned on.
   Grant Accessibility again after the first signed install, or if the key is
   deleted and recreated: in System Settings > Privacy & Security >
   Accessibility, remove the old `yabai` and `skhd` entries, add the binary
-  from `/opt/yabai/bin` and add `/Applications/skhd.app`. Migrating from asmvik
-  changes skhd's signing identity, so grant the new app Accessibility and, if
-  macOS requests it, Input Monitoring; then run `reloadskhd`. Verify shortcuts,
+  from `/opt/yabai/bin` and add `/Applications/skhd.app`. If macOS requests it,
+  also grant skhd Input Monitoring; then run `reloadskhd`. Verify shortcuts,
   `skhd --reload`, and startup after logout/login. macOS may require permission
   to be toggled again after an update even with the same certificate.
   If an earlier shell-launcher generation prompted for Bash Accessibility,

@@ -46,16 +46,9 @@ in
     StandardErrorPath = "/tmp/skhd_${userName}.err.log";
   };
 
-  # skhd allows one instance, so remove the agent that `skhd --install-service`
-  # created for the Homebrew build before the new agent loads.
   system.activationScripts.extraActivation.text = ''
     /bin/mkdir -p ${builtins.dirOf skhdBin}
     /bin/ln -sfn ${skhdApp}/Contents/MacOS/skhd ${skhdBin}
-    skhdUid=$(/usr/bin/id -u ${lib.escapeShellArg userName})
-    for oldLabel in com.koekeishiya.skhd com.asmvik.skhd; do
-      /bin/launchctl bootout "gui/$skhdUid/$oldLabel" 2>/dev/null || true
-      /bin/rm -f "${homeDir}/Library/LaunchAgents/$oldLabel.plist"
-    done
   '';
 
   home-manager.users.${userName} =

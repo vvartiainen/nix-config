@@ -1,5 +1,4 @@
 {
-  config,
   inputs,
   lib,
   pkgs,
@@ -13,7 +12,6 @@ let
   yabaiBin = "/opt/yabai/bin/yabai";
   servicePath = "${builtins.dirOf yabaiBin}:/etc/profiles/per-user/${userName}/bin:/run/current-system/sw/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin";
   label = "org.nixos.yabai";
-  homeDir = config.users.users.${userName}.home;
 in
 {
   nixpkgs.overlays = [
@@ -75,8 +73,7 @@ in
   # 2. The remaining steps run only if the user is logged into a GUI session:
   #    a. If the binary's hash differs from the one recorded in the installed
   #       scripting addition, reinstall the addition. This restarts Dock.
-  #    b. Remove the agents that `yabai --start-service` used to install.
-  #    c. Stop the nix-darwin agent so KeepAlive restarts it. Its plist doesn't
+  #    b. Stop the nix-darwin agent so KeepAlive restarts it. Its plist doesn't
   #       change when only the binary does, so launchd wouldn't restart it otherwise.
   #
   # Accessibility approval stays manual, once per signing key.
@@ -126,14 +123,6 @@ in
         /bin/launchctl asuser "$yabaiUid" "$yabaiBin" --load-sa
         printf '%s\n' "$yabaiHash" > "$saHashFile"
       fi
-
-      # A second instance would hold the lock and keep this agent from starting.
-      for oldLabel in com.koekeishiya.yabai com.asmvik.yabai; do
-        if /bin/launchctl print "gui/$yabaiUid/$oldLabel" >/dev/null 2>&1; then
-          /bin/launchctl bootout "gui/$yabaiUid/$oldLabel"
-        fi
-        /bin/rm -f "${homeDir}/Library/LaunchAgents/$oldLabel.plist"
-      done
 
       # Stop a running instance and let KeepAlive start the new binary.
       # `kickstart -k` would block activation while yabai can't start, for
