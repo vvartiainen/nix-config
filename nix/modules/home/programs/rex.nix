@@ -74,12 +74,59 @@ in
         end,
       }
 
-      -- Direct navigation follows vertical tabs and side-by-side panes.
-      rex.bind("alt+k", "client.tab.previous")
-      rex.bind("alt+j", "client.tab.next")
-      rex.bind("alt+h", "pane.focus_previous")
-      rex.bind("alt+l", "pane.focus_next")
-      rex.bind("alt+n", "client.tab.new")
+      -- Kitty's nth_window: focus the active tab's Nth pane in layout order.
+      local function pane_leaves(node, out)
+        if node.split then
+          pane_leaves(node.split.before, out)
+          pane_leaves(node.split.after, out)
+        elseif node.block_id then
+          out[#out + 1] = node.block_id
+        end
+        return out
+      end
+
+      rex.action{
+        name = "pane_goto",
+        title = "Go to Pane",
+        category = "Pane",
+        args = {
+          type = "object",
+          properties = { index = { type = "integer", minimum = 1 } },
+          required = { "index" },
+        },
+        run = function(ctx, args)
+          local view = rex.call("session.view", { session_id = ctx.session_id })
+          for _, window in ipairs(view.windows or {}) do
+            if window.window_id == view.active_window_id then
+              for _, layer in ipairs(window.layers or {}) do
+                if layer.kind == "tiled" and layer.layout then
+                  local block = pane_leaves(layer.layout, {})[args.index]
+                  if block then
+                    rex.call("session.focus_block", {
+                      session_id = ctx.session_id,
+                      block_id = block,
+                    })
+                  end
+                  return block
+                end
+              end
+            end
+          end
+        end,
+      }
+
+      -- Kitty-style direct navigation: Ctrl+Shift (kitty_mod) for vertical
+      -- tabs and side-by-side panes, Cmd+1–9 for panes.
+      rex.bind("ctrl+shift+k", "client.tab.previous")
+      rex.bind("ctrl+shift+j", "client.tab.next")
+      rex.bind("ctrl+shift+h", "pane.focus_previous")
+      rex.bind("ctrl+shift+l", "pane.focus_next")
+      rex.bind("ctrl+shift+z", "pane.zoom")
+      rex.bind("cmd+t", "client.tab.new")
+      for i = 1, 9 do
+        rex.bind("cmd+" .. i, "pane_goto", { index = i })
+        rex.bind("ctrl+shift+" .. i, "client.tab.goto", { index = i })
+      end
       rex.bind("cmd+enter", "pane.split", { direction = "right" })
       rex.bind("cmd+shift+enter", "pane.split", { direction = "down" })
 

@@ -312,12 +312,22 @@ badge and exits capture when another app gains focus.
 | Escape / Return / Right Cmd+Right Option+Space | Exit mode |
 | Right Cmd+Right Option+W / R | Switch to window / resize mode |
 
-Outside navigation mode, hold **Right Option**: K/J selects the previous/next
-tab, H/L selects the previous/next pane, and N creates a tab. **Cmd+Enter**
-splits right and **Cmd+Shift+Enter** splits down, both inside and outside
-navigation mode. Left Option retains character composition. These directions match
-vertical tabs and panes arranged left to right; Ctrl+H/J/K/L in navigation mode
-still focuses panes spatially (left/down/up/right).
+Outside navigation mode, the direct shortcuts follow Kitty:
+
+| Key | Action |
+|---|---|
+| Ctrl+Shift+K / J | Previous / next tab |
+| Ctrl+Shift+H / L | Previous / next pane |
+| Ctrl+Shift+1–9 | Jump to tab |
+| Cmd+1–9 | Jump to pane, counted in layout order (left/top first) |
+| Ctrl+Shift+Z | Toggle pane zoom |
+| Cmd+T | New tab |
+| Cmd+Enter / Cmd+Shift+Enter | Split right / down, also in navigation mode |
+
+Cmd+1–9 uses the module's `pane_goto` action, since Rex has no built-in
+action for a pane by number. These directions match vertical tabs and panes
+arranged left to right; Ctrl+H/J/K/L in navigation mode still focuses panes
+spatially (left/down/up/right).
 
 The mode forwards Ctrl+Alt aliases defined in the Home Manager Rex module
 to the focused client. For remote sessions, install the same Rex Lua bindings
