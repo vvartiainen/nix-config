@@ -18,30 +18,41 @@ let
     cp "$HOME/.agents/skills/rex/SKILL.md" "$out/SKILL.md"
     cmp "$HOME/.claude/skills/rex/SKILL.md" "$out/SKILL.md"
   '';
+
+  # The package ships no completions; the generated script supports autoload.
+  zshCompletion = pkgs.runCommand "rex-zsh-completion" { } ''
+    mkdir -p "$out/share/zsh/site-functions"
+    ${lib.getExe config.programs.rex.package} --autostart=false completion zsh \
+      > "$out/share/zsh/site-functions/_rex"
+  '';
 in
 {
   imports = [ inputs.rex.homeManagerModules.default ];
 
-  # Codex, OpenCode and Pi share .agents/skills; Claude uses its own directory.
-  # Cleanup archives the previous copies before linkGeneration restores these.
-  home.file = lib.genAttrs [ ".agents/skills/rex" ".claude/skills/rex" ] (_: {
-    source = skill;
-    force = true;
-  });
+  home = {
+    packages = [ zshCompletion ];
 
-  # The pinned CLI recognizes the identical linked skills as unchanged and
-  # reconciles only its hooks, preserving other integrations and settings.
-  home.activation.rexAgentHooks =
-    lib.hm.dag.entryAfter
-      [
-        "linkGeneration"
-        "claudeCodeConfig"
-        "codexMutableConfig"
-      ]
-      ''
-        run ${lib.getExe config.programs.rex.package} --autostart=false skill setup \
-          --agent claude --agent codex
-      '';
+    # Codex, OpenCode and Pi share .agents/skills; Claude uses its own directory.
+    # Cleanup archives the previous copies before linkGeneration restores these.
+    file = lib.genAttrs [ ".agents/skills/rex" ".claude/skills/rex" ] (_: {
+      source = skill;
+      force = true;
+    });
+
+    # The pinned CLI recognizes the identical linked skills as unchanged and
+    # reconciles only its hooks, preserving other integrations and settings.
+    activation.rexAgentHooks =
+      lib.hm.dag.entryAfter
+        [
+          "linkGeneration"
+          "claudeCodeConfig"
+          "codexMutableConfig"
+        ]
+        ''
+          run ${lib.getExe config.programs.rex.package} --autostart=false skill setup \
+            --agent claude --agent codex
+        '';
+  };
 
   # The GUI package runs the macOS server; this flake supplies CLI and terminfo.
   programs.rex = {

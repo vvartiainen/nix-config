@@ -1,7 +1,26 @@
-{ pkgs, ... }:
+{
+  lib,
+  pkgs,
+  config,
+  ...
+}:
+let
+  # The generated script only registers itself with compdef, so an autoloaded
+  # copy also has to complete the first call.
+  zshCompletion = pkgs.runCommand "lazygit-zsh-completion" { } ''
+    mkdir -p "$out/share/zsh/site-functions"
+    {
+      ${lib.getExe config.programs.lazygit.package} completion zsh
+      echo '_lazygit "$@"'
+    } > "$out/share/zsh/site-functions/_lazygit"
+  '';
+in
 {
   # The configured diff renderer invokes delta, including when imported alone.
-  home.packages = [ pkgs.delta ];
+  home.packages = [
+    pkgs.delta
+    zshCompletion
+  ];
 
   programs.lazygit = {
     enable = true;
