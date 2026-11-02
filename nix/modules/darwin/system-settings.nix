@@ -6,6 +6,10 @@
 }:
 let
   homeDir = config.users.users.${userName}.home;
+  asUser = ''/bin/launchctl asuser "$(id -u -- ${userName})" sudo --user=${userName} --'';
+  disabledShortcut = lib.escapeShellArg (
+    lib.generators.toPlist { escape = true; } { enabled = false; }
+  );
 
   # Caches, toolchains and VM disks that can be rebuilt or downloaded again.
   timeMachineExcludedPaths = [
@@ -22,10 +26,15 @@ let
   ];
 in
 {
-  # nix-darwin has no Time Machine options. The store can be rebuilt from this
-  # flake, so keep its volume out of backups too. A failure only warns, so it
-  # never stops activation.
   system.activationScripts.postActivation.text = lib.mkAfter ''
+    # Reserve Ctrl+Space for the quick-access terminal. CustomUserPreferences
+    # would replace all AppleSymbolicHotKeys; merge only previous input source.
+    ${asUser} defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 60 ${disabledShortcut}
+    ${asUser} /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
+
+    # nix-darwin has no Time Machine options. The store can be rebuilt from this
+    # flake, so keep its volume out of backups too. A failure only warns, so it
+    # never stops activation.
     if ! /usr/bin/tmutil isexcluded /nix | /usr/bin/grep -q '^\[Excluded\]'; then
       /usr/bin/tmutil addexclusion -v /nix \
         || echo "warning: failed to exclude /nix from Time Machine" >&2

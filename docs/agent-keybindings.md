@@ -13,7 +13,8 @@ Option**; Left Option remains available for keyboard-layout characters.
 | Ctrl+1–6 / Left / Right | yabai space selection / previous / next space |
 | Ctrl+Alt+H/J/K/L | yabai directional window focus |
 | Ctrl+Alt+P/N | yabai previous / next window, including stack navigation |
-| Ctrl+Alt+Cmd | yabai swaps, window moves, layouts and space management; T opens the quick-access terminal |
+| Ctrl+Alt+Cmd | yabai swaps, window moves, layouts and space management |
+| Ctrl+Space | Toggle the quick-access terminal |
 | Cmd+Left Option+H/J/K/L | yabai window resizing |
 | Right Cmd+Right Option+W (also Ctrl+Alt+W) | Window mode: H/J/K/L focus; Shift+H/J/K/L warp; Cmd+H/J/K/L resize |
 | Right Cmd+Right Option+Space | Navigation mode for the focused app: Herdr in a Herdr window, Kitty in other Kitty windows, Zen in Zen, Rex in Rex; press again to exit |
@@ -85,7 +86,10 @@ it registers the shortcut. To try the same binding immediately, record it in
 **Ctrl+Cmd+Shift+U** toggles a dedicated quick-access **Metrics** dashboard.
 **Esc**, **Q**, **Ctrl+C**, or **Cmd+W** hides it immediately; clicking another
 window also hides it. **R** requests a refresh, and **Ctrl+D** stops the dashboard.
-The existing Ctrl+Alt+Cmd+T quick-access shell is a separate instance.
+The Ctrl+Space quick-access shell is a separate instance. `system-settings.nix`
+disables macOS's “Select the previous input source” shortcut on activation to
+reserve Ctrl+Space for this shell. This global binding also takes precedence
+over app-specific Ctrl+Space actions such as editor completion.
 
 The dashboard keeps each provider's last successful quota report in memory while
 hidden. Reopening shows those reports immediately, including their ages, while

@@ -1,4 +1,4 @@
-$window - t : kitten quick-access-terminal
+ctrl - space : kitten quick-access-terminal
 
 # Open or focus apps by bundle ID; leave Ctrl+Cmd+F for fullscreen.
 $app - z : /usr/bin/open -b app.zen-browser.zen
