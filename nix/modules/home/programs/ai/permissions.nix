@@ -1,6 +1,32 @@
 { lib, config }:
 let
   # Shared policy only; each CLI module renders its native permission format.
+  # Include absolute spellings: prefix rules need not resolve symlinks or PATH.
+  rexExecutables = lib.unique (
+    [
+      "rex"
+      "${config.home.profileDirectory}/bin/rex"
+      "${config.home.homeDirectory}/.nix-profile/bin/rex"
+      "/etc/profiles/per-user/${config.home.username}/bin/rex"
+      "/run/current-system/sw/bin/rex"
+    ]
+    ++ lib.optional ((config.programs.rex.enable or false) && (config.programs.rex.package or null) != null) (
+      lib.getExe config.programs.rex.package
+    )
+    ++
+      lib.concatMap
+        (app: [
+          "${app}/Contents/Helpers/Rex Server.rex/Contents/MacOS/rex"
+        ])
+        [
+          "/Applications/Rex.app"
+          "/Applications/Rex Beta.app"
+          "/Applications/Nix Apps/Rex.app"
+          "/Applications/Nix Apps/Rex Beta.app"
+          "${config.home.homeDirectory}/Applications/Rex.app"
+          "${config.home.homeDirectory}/Applications/Rex Beta.app"
+        ]
+  );
   commands = {
     # Canonical command prefixes allowed without prompting. Each entry is argv.
     allowed = [
@@ -154,8 +180,8 @@ let
       ]
     ];
 
-    # Daemon-backed Nix commands build outside the agent sandbox, so they
-    # still need review inside it. `nix fmt` can build the flake's formatter.
+    # These commands can delegate work outside the agent sandbox. Rex can
+    # start commands or type into an unsandboxed terminal through its server.
     sandboxAsk = [
       [
         "nix"
@@ -165,7 +191,8 @@ let
         "nix"
         "build"
       ]
-    ];
+    ]
+    ++ map (exe: [ exe ]) rexExecutables;
 
     # Project-code runners and wrappers. The sandboxed CLIs run them without
     # prompts; OpenCode has no sandbox, so it asks.

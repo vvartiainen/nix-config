@@ -289,6 +289,12 @@ turned on.
   switch. Session-start hooks installed by `rex skill setup` remain separate;
   this declaration installs the skill only.
 
+  Codex and Claude require approval for Rex CLI calls, including the skill's
+  guide command. Their sandbox socket allowlists exclude Rex, since a running
+  server can execute commands with the user's normal permissions. See
+  [Rex control permissions](agent-permissions.md#rex-control-requires-review)
+  for supported agents and remaining limits.
+
   GUI settings are separate from Lua: the Darwin module selects dark
   appearance and expanded vertical tabs on the left. It sets right Option to
   act as Alt, matching Kitty, while left Option keeps character composition.

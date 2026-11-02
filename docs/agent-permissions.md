@@ -41,7 +41,7 @@ from the importing Home Manager configuration.
 |---|---|
 | `commands.allowed` | Read-only prefixes (`git status`, `nix eval`, `gh pr view`, `terraform fmt`, …) allowed everywhere, including outside a sandbox |
 | `commands.exact` | Allowed only as written (`git branch --show-current`); their prefixes would allow destructive forms |
-| `commands.sandboxAsk` | Daemon-backed Nix commands (`nix fmt`, `nix build`) that build outside the agent sandbox; prompt in Codex and Claude |
+| `commands.sandboxAsk` | Commands that delegate work outside the agent sandbox: `nix fmt`, `nix build`, and Rex through PATH, profile links, its pinned Nix package and standard app bundles; prompt in Codex and Claude |
 | `commands.routine` | Project-code runners and wrappers (`just`, `npm run`, `npx`, `npm test`, `cargo test`, `terraform validate`); sandbox approval everywhere except Claude Terraform, ask in OpenCode |
 | `commands.denied` | Never auto-approved (`op`, `security`, `gh auth`, `gh api`, `sudo`, `darwin-rebuild`, `just switch`, `git push --force`, `mise trust`) |
 | `paths.homeReadable` | Home paths sandboxed commands may read (`.config`, `.local/share`, `.local/state`, `.cache`, shell startup files, Nix profiles, toolchains); the rest of `~` is denied |
@@ -106,6 +106,41 @@ anything outside the working directory prompts. `--add-dir` lifts that for
 `.github/agents` there. Its `write()` rules match trailing path components,
 and it has no `read()` rule, so `paths.secretFiles` and `.env` reads are not
 denied for Copilot.
+
+### Rex control requires review
+
+Rex can start commands through a separately running server or type into an
+existing terminal. Those processes use the server's account and permissions;
+they do not inherit the calling agent's sandbox. Treat approved Rex control
+as access to that account. The GUI's Remote Control toggle gates app actions,
+not necessarily server commands such as `run`, `split`, `send` and API calls.
+See [Rex shell scripting](https://www.superlogical.com/rex/docs/automate/shell-scripting).
+
+Codex and Claude prompt for all Rex invocations, including guide and help
+commands. The shared list covers `rex`, profile links, the pinned CLI's store
+path and the helper executable in standard system/user Rex app bundles.
+Codex 0.166.0 also resolves other absolute paths ending in `/rex` through its
+basename rule; Claude has additional `/rex` path wildcard ask rules. OpenCode
+receives the shared ask rules and already asks for unlisted commands.
+These rules apply after switching and restarting the agent CLI.
+
+The stronger boundary is connection access: Codex's network proxy and Claude's
+Unix-socket allowlist permit only the Nix daemon socket, with allow-all socket
+access explicitly false. No Rex endpoint is added to the network allowlist.
+Keep it that way: enabling a Rex socket or control host can delegate execution
+outside the sandbox. Tailscale authentication does not sandbox commands.
+
+Command rules do not inspect arbitrary scripts, renamed binaries or every
+wrapper. A broader executable allow rule may also affect path matching, so
+review saved approvals. Avoid persistent broad Rex approvals. `/Applications`
+execution retains the calling process's sandbox; its directory location alone
+does not grant server access. A blanket application-directory prompt is not
+used here.
+
+Cursor and Copilot have no equivalent per-command ask rule in this setup, and
+Pi has no permission boundary. They are not covered by the Rex prompt policy.
+Do not assume their Rex skill implies safe server access; use an isolated
+account or VM when a hard account boundary is required.
 
 ### CLI-specific lists
 

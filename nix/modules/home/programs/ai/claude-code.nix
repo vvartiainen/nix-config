@@ -29,15 +29,22 @@ let
       ++ map (name: "mcp__${name}__*") permissions.mcpServers;
     # Terraform is deliberately excluded from Claude's sandbox for macOS TLS
     # compatibility, so validation still needs explicit review there.
-    ask = map (cmd: "Bash(${commandString cmd}:*)") (
-      commands.sandboxAsk
-      ++ [
-        [
-          "terraform"
-          "validate"
+    ask =
+      map (cmd: "Bash(${commandString cmd}:*)") (
+        commands.sandboxAsk
+        ++ [
+          [
+            "terraform"
+            "validate"
+          ]
         ]
-      ]
-    );
+      )
+      # Cover other absolute Rex locations too, including app/store versions
+      # outside the explicitly declared list. Include invocation with no args.
+      ++ [
+        "Bash(*/rex)"
+        "Bash(*/rex *)"
+      ];
     deny =
       map (cmd: "Bash(${commandString cmd}:*)") commands.denied
       ++ [
@@ -209,6 +216,8 @@ let
         # Let sandboxed nix commands reach the daemon; the user is not a
         # trusted nix user, so builds run unprivileged as nixbld.
         allowUnixSockets = [ paths.nixDaemonSocket ];
+        # A reachable Rex server could start processes outside this sandbox.
+        allowAllUnixSockets = false;
       };
     };
   };

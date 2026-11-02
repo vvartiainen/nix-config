@@ -7,7 +7,9 @@ let
   permissions = import ./permissions.nix { inherit lib config; };
   inherit (permissions) commands;
 
-  commandString = lib.concatStringsSep " ";
+  # Permission patterns become attribute names, which cannot carry Nix store
+  # context. The Rex module already installs the package named in its rule.
+  commandString = cmd: builtins.unsafeDiscardStringContext (lib.concatStringsSep " " cmd);
   # OpenCode has no OS sandbox, so routine runners also need approval.
   askCommands = commands.sandboxAsk ++ commands.routine;
 

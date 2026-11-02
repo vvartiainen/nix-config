@@ -40,6 +40,8 @@ let
         domains = lib.genAttrs network.sandbox (_: "allow");
         allow_local_binding = false;
         allow_upstream_proxy = false;
+        # Keep Rex and other user-session control sockets out of the sandbox.
+        dangerously_allow_all_unix_sockets = false;
         # Nix builds run through the daemon, outside the agent sandbox.
         unix_sockets.${paths.nixDaemonSocket} = "allow";
       };
@@ -83,7 +85,7 @@ let
 
   # Leave routine commands to the sandbox and on-request approval policy.
   # Explicit prompt rules also prompt inside the sandbox, while allow rules
-  # can authorize leaving it. Only commands needing extra review get rules.
+  # can authorize leaving it. Delegation to Rex needs review even inside it.
   commandRules = pkgs.writeText "codex-nix-config.rules" (
     lib.concatMapStringsSep "\n" (toCodexRule "prompt") commands.sandboxAsk
     + "\n"
