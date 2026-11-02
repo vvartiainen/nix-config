@@ -8,6 +8,8 @@ Option**; Left Option remains available for keyboard-layout characters.
 | Layer | Purpose |
 |---|---|
 | Ctrl+Cmd+Z/K/C/O/M/E | Open or focus Zen / Kitty / Calendar / Obsidian / Mail / Finder |
+| Ctrl+Cmd+U | Toggle CodexBar's usage menu (CodexBar must be running) |
+| Ctrl+Cmd+Shift+U | Show Codex and Claude quota cards in a Kitty window |
 | Ctrl+1–6 / Left / Right | yabai space selection / previous / next space |
 | Ctrl+Alt+H/J/K/L | yabai directional window focus |
 | Ctrl+Alt+P/N | yabai previous / next window, including stack navigation |
@@ -72,6 +74,42 @@ Raycast. After reloading skhd, test each app with Raycast stopped, then remove
 the old Raycast application assignments manually. Their original bindings
 have not been inventoried; this is the replacement scheme. H/L and J/K retain
 their existing spatial navigation behavior in Zen and Kitty.
+
+## CodexBar quotas
+
+**Ctrl+Cmd+U** toggles CodexBar's usage menu through its native global shortcut.
+Quit CodexBar before applying the configuration manually, then relaunch it so
+it registers the shortcut. To try the same binding immediately, record it in
+**CodexBar Settings → General → Keyboard shortcut → Open menu**.
+
+**Ctrl+Cmd+Shift+U** opens a Kitty window with Codex and Claude quota cards,
+using the bundled CLI's `cards --provider both --source oauth` command. This
+command was verified manually after the default multi-provider command stalled.
+It avoids automatic browser/terminal source selection and excludes other
+providers. Both subscriptions need an available OAuth login. No separate CLI
+installation is needed. Reload skhd with `skhd --reload` after changing this
+binding. The window stays open after the report finishes; close it with Cmd+W
+and use the shortcut again for a fresh report.
+
+Enable **Merge Icons** in CodexBar's menu bar settings to browse subscriptions
+in one menu. CodexBar 0.83.0's tab shortcuts were reported to switch only
+intermittently and then stop responding during manual testing. Use the terminal
+shortcut above when that happens. The native defaults in the source are:
+
+| Key | Action |
+|---|---|
+| Left / Right | Previous / next provider tab, wrapping at the ends |
+| Cmd+1–9 | Select a switcher tab by position |
+| Cmd+R | Refresh usage |
+| Escape | Close the menu |
+
+Overview participates in the tab order when enabled, so it occupies the first
+position. These are CodexBar's native defaults, checked against
+[0.83.0's switcher shortcuts](https://github.com/steipete/CodexBar/blob/v0.83.0/Sources/CodexBarCore/Config/ProviderSwitcherShortcuts.swift)
+and [provider navigation](https://github.com/steipete/CodexBar/blob/v0.83.0/Sources/CodexBar/StatusItem/StatusItemController%2BProviderNavigation.swift).
+The menu binding is configured in `nix/modules/darwin/programs/codexbar.nix`;
+the terminal shortcut is in `dotfiles/skhd/hotkeys`. The card command is
+documented in [CodexBar's CLI reference](https://github.com/steipete/CodexBar/blob/v0.83.0/docs/cli.md).
 
 ## Shared actions
 

@@ -8,6 +8,9 @@ $app - o : /usr/bin/open -b md.obsidian
 $app - m : /usr/bin/open -b com.apple.mail
 $app - e : /usr/bin/open -b com.apple.finder
 
+# OAuth works for Codex/Claude; automatic multi-provider fetching can stall.
+ctrl + cmd + shift - u : kitty --single-instance --title "Agent quotas" --hold /Applications/CodexBar.app/Contents/Helpers/CodexBarCLI cards --provider both --source oauth
+
 # Require a second Cmd+Q within 500ms to quit Zen or Kitty.
 cmd - q, cmd - q [
   "zen" | cmd - q
