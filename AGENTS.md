@@ -101,14 +101,27 @@ the sandboxes").
 
 Ideas and open work are tracked in a Backlog.md backlog through the `backlog-nix-config` MCP server, not in the repo.
 
-- Read `backlog://workflow/overview` or call `get_backlog_instructions` first
-- Search for an existing task before creating one
-- Keep the task status and notes current while working
-- Before creating or changing tasks, read `doc-4`, "Agent handoff and review
-  workflow", using `document_view` on `backlog-nix-config`. Follow its review
-  queue, user acceptance, and end-of-session handoff rules alongside the
-  built-in workflow guides.
+- Read `backlog://workflow/overview` or call `get_backlog_instructions` first,
+  and the matching guide (`task-creation`, `task-execution`,
+  `task-finalization`) before each of those steps
+- Search for an existing task before creating one, and ask before creating
+  follow-up tasks
+- Take a task into progress and record its plan before implementing; keep the
+  status and notes current while working
+- Check an acceptance criterion only with evidence such as a passing check;
+  leave the task In Progress with a note on what is still unverified, for
+  example private-host validation
+- Work that spans repositories gets a task in each repository's backlog
+  (`backlog-nix-config`, `backlog-agent-server`, `backlog-agent-sandbox`,
+  `backlog-cli-toolbox`, `backlog-agent-secret-proxy`), each referring to the
+  others as `<repo> TASK-N`
+- Before creating or changing tasks, find the document titled "Agent handoff
+  and review workflow" with `document_search` on `backlog-nix-config` and
+  read it with `document_view`. Follow its review queue, user acceptance, and
+  end-of-session handoff rules alongside the built-in workflow guides.
 - Create or update a session handoff task tagged `handoff` and `needs-review`
-  after changing tasks or repository files, as described in `doc-4`. The user
-  completes review tasks; do not maintain `doc-2` as a session handoff.
-- Simple tasks do not need handoffs, ask if the user wants you to create the handoff after implementation
+  after changing tasks or repository files, as that document describes. The user
+  completes and archives tasks; agents do not mark them Done. Do not maintain
+  the archived "Latest session handoff" document.
+- Simple tasks do not need handoffs; ask whether the user wants a handoff
+  after implementation.
