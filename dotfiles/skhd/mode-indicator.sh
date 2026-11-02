@@ -111,9 +111,9 @@ case "$mode" in
   rex)
     title=REX
     color="$PEACH"
-    keys="H / L tabs    J / K panes    Ctrl+HJKL focus    1-9 tabs"
-    resize_keys="T tab    V / Shift+V split    Z zoom    B balance"
-    actions="Ctrl+T close tab    Ctrl+V close pane    F palette    S sessions"
+    keys="J / K tabs    H / L panes    Ctrl+HJKL focus    1-9 tabs"
+    resize_keys="T tab    N / V split right    Shift+V split down    Z zoom    B balance"
+    actions="Ctrl+T close tab    Ctrl+N / V close pane    G / F palette    S sessions"
     extra_rows=on
     navigation="Esc / Return exit    Right Cmd+Option+Space toggle"
     ;;

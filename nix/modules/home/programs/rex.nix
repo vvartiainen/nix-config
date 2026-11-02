@@ -63,11 +63,19 @@ in
         end,
       }
 
+      -- Direct navigation follows vertical tabs and side-by-side panes.
+      rex.bind("alt+k", "client.tab.previous")
+      rex.bind("alt+j", "client.tab.next")
+      rex.bind("alt+h", "pane.focus_previous")
+      rex.bind("alt+l", "pane.focus_next")
+      rex.bind("alt+n", "client.tab.new")
+      rex.bind("cmd+enter", "pane.split", { direction = "right" })
+
       -- Aliases forwarded by skhd's Rex mode to the focused client.
-      rex.bind("ctrl+alt+h", "client.tab.previous")
-      rex.bind("ctrl+alt+l", "client.tab.next")
-      rex.bind("ctrl+alt+j", "pane.focus_next")
-      rex.bind("ctrl+alt+k", "pane.focus_previous")
+      rex.bind("ctrl+alt+h", "pane.focus_previous")
+      rex.bind("ctrl+alt+l", "pane.focus_next")
+      rex.bind("ctrl+alt+j", "client.tab.next")
+      rex.bind("ctrl+alt+k", "client.tab.previous")
       rex.bind("ctrl+alt+t", "client.tab.new")
       rex.bind("ctrl+alt+v", "pane.split", { direction = "right" })
       rex.bind("ctrl+alt+shift+v", "pane.split", { direction = "down" })

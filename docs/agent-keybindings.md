@@ -286,17 +286,23 @@ badge and exits capture when another app gains focus.
 
 | Key in Rex mode | Action |
 |---|---|
-| H / L | Previous / next tab |
-| J / K | Next / previous pane |
+| K / J | Previous / next tab |
+| H / L | Previous / next pane |
 | Ctrl+H / J / K / L | Focus pane left / down / up / right |
 | 1–9 | Jump to tab |
 | T | New tab |
-| V / Shift+V | Split right / down |
+| N or V / Shift+V | Split right / down |
 | Z / B | Zoom pane / balance splits |
-| Ctrl+V / Ctrl+T | Close pane / tab; stay in mode for repeated closes |
-| F / S | Exit mode and open command palette / session picker |
+| Ctrl+N or Ctrl+V / Ctrl+T | Close pane / tab; stay in mode for repeated closes |
+| G or F / S | Exit mode and open command palette / session picker |
 | Escape / Return / Right Cmd+Right Option+Space | Exit mode |
 | Right Cmd+Right Option+W / R | Switch to window / resize mode |
+
+Outside navigation mode, hold **Right Option**: K/J selects the previous/next
+tab, H/L selects the previous/next pane, and N creates a tab. **Cmd+Enter**
+splits right. Left Option retains character composition. These directions match
+vertical tabs and panes arranged left to right; Ctrl+H/J/K/L in navigation mode
+still focuses panes spatially (left/down/up/right).
 
 The mode forwards Ctrl+Alt aliases defined in the Home Manager Rex module
 to the focused client. For remote sessions, install the same Rex Lua bindings
