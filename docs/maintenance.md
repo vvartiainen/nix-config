@@ -276,10 +276,19 @@ turned on.
   the running app/server. Outside Rex, the pinned Nix CLI is available.
   SSH is managed outside Home Manager, so run `rex terminfo setup` once after
   applying to add the SSH terminal fallback, then check `rex terminfo status`.
+
   Existing app-installed terminfo may need to be moved aside if Home Manager
   reports a collision; inspect it before replacing it. The Lua configuration
   at `~/.config/rex/init.lua` is managed by Home Manager; reload it with
   `rex config reload`. See [Rex mode](agent-keybindings.md#rex) for shortcuts.
+
+  Home Manager installs Rex's official bootstrap skill in `~/.agents/skills/rex`
+  (Codex, OpenCode and Pi) and `~/.claude/skills/rex`. It is generated from the
+  pinned Rex CLI; the guide comes from the running CLI when invoked. Global
+  cleanup runs before Home Manager restores these declared skills on each
+  switch. Session-start hooks installed by `rex skill setup` remain separate;
+  this declaration installs the skill only.
+
   GUI settings are separate from Lua: the Darwin module selects dark
   appearance and expanded vertical tabs on the left. It sets right Option to
   act as Alt, matching Kitty, while left Option keeps character composition.

@@ -15,16 +15,18 @@ in
 {
   home.packages = [ cleanup ];
 
-  # Clear user-level tools before applying each CLI's declared settings.
+  # Clear global tools before Home Manager restores Nix-declared skills and
+  # each CLI merges its settings. Force-owned skills pass checkLinkTargets.
   home.activation.agentToolsCleanup =
     lib.hm.dag.entryBetween
       [
+        "linkGeneration"
         "claudeCodeConfig"
         "codexMutableConfig"
         "cursorCliConfig"
         "githubCopilotCliSettings"
       ]
-      [ "linkGeneration" ]
+      [ "writeBoundary" ]
       ''
         run ${lib.getExe cleanup}
       '';

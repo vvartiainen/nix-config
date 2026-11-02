@@ -4,7 +4,8 @@ MCP servers and skills live in each project's own agent files, committed with
 it. Nix installs the server commands on `PATH` and builds a catalog of
 everything available; `ct agents` (cli-toolbox) picks the project's agents,
 servers and skills from it and writes each agent's project files. Nothing is
-configured globally and no server runs unless a project's files list it. See
+configured globally by the catalog and no server runs unless a project's files
+list it. The Rex module separately declares its global integration skill. See
 cli-toolbox's
 [agent tools guide](https://github.com/vvartiainen/cli-toolbox/blob/main/docs/agent-tools.md).
 
@@ -118,13 +119,18 @@ section from your sandbox's documentation before using it for automatic launch.
 
 ## Global cleanup
 
-Every switch runs `cleanup-agent-config` before merging the CLI settings.
+Every switch runs `cleanup-agent-config` before Home Manager links files and
+merges the CLI settings. Home Manager then restores Nix-declared global skills,
+currently Rex in `~/.agents/skills/rex` and `~/.claude/skills/rex`. Other global
+skills are archived; project skills stay in place.
 It can also be run manually after the first switch that installs it:
 
 ```sh
 just cleanup-agent-config --dry-run
 just cleanup-agent-config
 ```
+
+A manual cleanup also archives declared skills; switch again to restore them.
 
 Close the agent CLIs before switching or cleaning, then restart them so they
 load the updated settings. An open CLI can write its old settings back.

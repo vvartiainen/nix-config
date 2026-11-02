@@ -1,6 +1,33 @@
-{ inputs, lib, ... }:
+{
+  inputs,
+  lib,
+  pkgs,
+  config,
+  ...
+}:
+let
+  # Generate the vendor's bootstrap skill with the pinned CLI, away from HOME.
+  # Its guide is read from the running Rex CLI, including the app's CLI in Rex.
+  skill = pkgs.runCommand "rex-skill" { } ''
+    export HOME="$TMPDIR/home"
+    export XDG_CONFIG_HOME="$HOME/.config"
+    mkdir -p "$HOME"
+    ${lib.getExe config.programs.rex.package} --autostart=false skill setup \
+      --agent claude --agent codex
+    mkdir -p "$out"
+    cp "$HOME/.agents/skills/rex/SKILL.md" "$out/SKILL.md"
+    cmp "$HOME/.claude/skills/rex/SKILL.md" "$out/SKILL.md"
+  '';
+in
 {
   imports = [ inputs.rex.homeManagerModules.default ];
+
+  # Codex, OpenCode and Pi share .agents/skills; Claude uses its own directory.
+  # Cleanup archives the previous copies before linkGeneration restores these.
+  home.file = lib.genAttrs [ ".agents/skills/rex" ".claude/skills/rex" ] (_: {
+    source = skill;
+    force = true;
+  });
 
   # The GUI package runs the macOS server; this flake supplies CLI and terminfo.
   programs.rex = {
