@@ -14,6 +14,8 @@ rex_mode < t | ctrl + alt - t
 rex_mode < n | ctrl + alt - v
 rex_mode < v | ctrl + alt - v
 rex_mode < shift - v | ctrl + alt + shift - v
+rex_mode < cmd - return | ctrl + alt - v
+rex_mode < cmd + shift - return | ctrl + alt + shift - v
 rex_mode < z | ctrl + alt - z
 rex_mode < b | ctrl + alt - b
 

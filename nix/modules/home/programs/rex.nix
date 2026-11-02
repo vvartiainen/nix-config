@@ -70,6 +70,7 @@ in
       rex.bind("alt+l", "pane.focus_next")
       rex.bind("alt+n", "client.tab.new")
       rex.bind("cmd+enter", "pane.split", { direction = "right" })
+      rex.bind("cmd+shift+enter", "pane.split", { direction = "down" })
 
       -- Aliases forwarded by skhd's Rex mode to the focused client.
       rex.bind("ctrl+alt+h", "pane.focus_previous")

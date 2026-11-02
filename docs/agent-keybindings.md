@@ -305,6 +305,7 @@ badge and exits capture when another app gains focus.
 | 1–9 | Jump to tab |
 | T | New tab |
 | N or V / Shift+V | Split right / down |
+| Cmd+Enter / Cmd+Shift+Enter | Split right / down; stay in mode |
 | Z / B | Zoom pane / balance splits |
 | Ctrl+N or Ctrl+V / Ctrl+T | Close pane / tab; stay in mode for repeated closes |
 | G or F / S | Exit mode and open command palette / session picker |
@@ -313,7 +314,8 @@ badge and exits capture when another app gains focus.
 
 Outside navigation mode, hold **Right Option**: K/J selects the previous/next
 tab, H/L selects the previous/next pane, and N creates a tab. **Cmd+Enter**
-splits right. Left Option retains character composition. These directions match
+splits right and **Cmd+Shift+Enter** splits down, both inside and outside
+navigation mode. Left Option retains character composition. These directions match
 vertical tabs and panes arranged left to right; Ctrl+H/J/K/L in navigation mode
 still focuses panes spatially (left/down/up/right).
 
