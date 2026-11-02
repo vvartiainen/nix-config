@@ -91,6 +91,13 @@ disables macOS's “Select the previous input source” shortcut on activation t
 reserve Ctrl+Space for this shell. This global binding also takes precedence
 over app-specific Ctrl+Space actions such as editor completion.
 
+macOS system shortcut overrides are declared through
+`system.defaults.CustomUserPreferences."com.apple.symbolichotkeys".AppleSymbolicHotKeys`.
+`system-settings.nix` declares the input-source override and `spotlight.nix`
+adds the Spotlight overrides. Nix merges these entries into one dictionary;
+activation replaces the saved dictionary, so additional system shortcut
+customizations must also be declared there to persist.
+
 The dashboard keeps each provider's last successful quota report in memory while
 hidden. Reopening shows those reports immediately, including their ages, while
 independent refreshes run every five minutes in separate processes. A refresh

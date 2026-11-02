@@ -6,10 +6,6 @@
 }:
 let
   homeDir = config.users.users.${userName}.home;
-  asUser = ''/bin/launchctl asuser "$(id -u -- ${userName})" sudo --user=${userName} --'';
-  disabledShortcut = lib.escapeShellArg (
-    lib.generators.toPlist { escape = true; } { enabled = false; }
-  );
 
   # Caches, toolchains and VM disks that can be rebuilt or downloaded again.
   timeMachineExcludedPaths = [
@@ -27,11 +23,6 @@ let
 in
 {
   system.activationScripts.postActivation.text = lib.mkAfter ''
-    # Reserve Ctrl+Space for the quick-access terminal. CustomUserPreferences
-    # would replace all AppleSymbolicHotKeys; merge only previous input source.
-    ${asUser} defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 60 ${disabledShortcut}
-    ${asUser} /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
-
     # nix-darwin has no Time Machine options. The store can be rebuilt from this
     # flake, so keep its volume out of backups too. A failure only warns, so it
     # never stops activation.
@@ -185,6 +176,12 @@ in
       # All custom entries can be found by running `defaults read` command.
       # or `defaults read xxx` to read a specific domain.
       CustomUserPreferences = {
+        # This dictionary is managed as a whole. Program modules add their
+        # shortcut entries here through Nix's attribute-set merging.
+        "com.apple.symbolichotkeys".AppleSymbolicHotKeys = {
+          # Select the previous input source: off; Ctrl+Space toggles Kitty.
+          "60".enabled = false;
+        };
         NSGlobalDomain = {
           # Add a context menu item for showing the Web Inspector in web views
           WebKitDeveloperExtras = true;
