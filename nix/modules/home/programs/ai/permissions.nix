@@ -254,6 +254,8 @@ let
     # The rest of the home directory is denied apart from the workspace;
     # reading it needs an approved command outside the sandbox.
     homeReadable = [
+      # Shared agent skills.
+      ".agents"
       ".config"
       ".local/share"
       ".local/state"

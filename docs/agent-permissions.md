@@ -46,7 +46,7 @@ from the importing Home Manager configuration.
 | `commands.sandboxAsk` | Commands that delegate work outside the agent sandbox: `nix fmt`, `nix build`, and Rex through PATH, profile links, its pinned Nix package and standard app bundles; prompt in Codex and Claude |
 | `commands.routine` | Project-code runners and wrappers (`just`, `npm run`, `npx`, `npm test`, `cargo test`, `terraform validate`); sandbox approval everywhere except Claude Terraform, ask in OpenCode |
 | `commands.denied` | Never auto-approved (`op`, `security`, `gh auth`, `gh api`, `sudo`, `darwin-rebuild`, `just switch`, `git push --force`, `mise trust`) |
-| `paths.homeReadable` | Home paths sandboxed commands may read (`.config`, `.local/share`, `.local/state`, `.cache`, shell startup files, Nix profiles, toolchains); the rest of `~` is denied |
+| `paths.homeReadable` | Home paths sandboxed commands may read (`.agents` for shared skills, `.config`, `.local/share`, `.local/state`, `.cache`, shell startup files, Nix profiles, toolchains); the rest of `~` is denied |
 | `paths.readable` | `paths.homeReadable` as absolute paths |
 | `paths.homeSecrets` | Credential paths under `~` denied for reads, also inside `paths.homeReadable` (`.ssh`, `.aws`, `.docker`, `.config/gh`, `.config/op`, agent auth and state, shell secrets, …) |
 | `paths.secretFiles` | Key files denied everywhere (`**/*.pem`, `**/*.key`); `.env` files are denied per CLI |
