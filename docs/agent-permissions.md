@@ -19,16 +19,18 @@ for anything that has to run outside the sandbox.
 | Codex | Run without approval (`on-request`) | Auto-applied in the workspace | Ask rules, sandbox escapes |
 | Claude | Run without approval (`autoAllowBashIfSandboxed`) | Auto-accepted in the workspace (`acceptEdits`) | Ask rules, sandbox escapes, unlisted hosts |
 | Cursor | Run without approval (`Run in Sandbox`) | CLI default | Sandbox escapes |
-| Copilot | Run without approval (`--allow-tool shell`) | Prompted | Sandbox bypasses, unlisted hosts, file edits |
+| Copilot | Shared safe command allowlist | Prompted | Unlisted commands, sandbox bypasses, unlisted hosts, file edits |
 | OpenCode | No sandbox; `*` is ask | CLI default | Everything not allowlisted |
 | Pi | No permission config | — | — |
 
-Copilot has no "approve if sandboxed" setting, so it gets a blanket
-`--allow-tool shell` grant; deny rules still take precedence, and running a
-command outside the sandbox is a separate bypass prompt. Its sandbox network
-is limited to `network.sandbox`, like Codex and Claude. The grant does not
-depend on the sandbox: after `/sandbox disable`, shell commands run
-unsandboxed without prompts. OpenCode has no OS sandbox, so its
+Copilot has no "approve if sandboxed" setting or per-command ask override.
+It allows only the shared `commands.allowed` prefixes and `commands.exact`
+entries, plus configured MCP servers. Other commands, including Rex control
+and arbitrary project runners, need normal approval; deny rules still win.
+The allowlist applies outside the sandbox too. Keep sandboxing enabled.
+Its sandbox network is limited to `network.sandbox`, with local-network access
+explicitly disabled so localhost is not added to the allowlist.
+OpenCode has no OS sandbox, so its
 rules are the only boundary. Pi has neither; anything it runs uses the user's
 normal access.
 
@@ -66,10 +68,10 @@ a prompt, but only inside the sandbox.
 
 | List | Codex | Claude | Cursor | Copilot | OpenCode |
 |---|---|---|---|---|---|
-| `commands.allowed` | — (left to the sandbox) | `Bash(…)` allow | `Shell(…)` allow | — (`--allow-tool shell`) | allow |
-| `commands.exact` | — (prefix rules only) | `Bash(…)` allow | `Shell(…)` allow | — (`--allow-tool shell`) | allow |
-| `commands.sandboxAsk` | `prompt` rule | ask | — | — (`--allow-tool shell`) | — |
-| `commands.routine` | — (sandbox policy) | — except `terraform validate` ask | — | — (`--allow-tool shell`) | — |
+| `commands.allowed` | — (left to the sandbox) | `Bash(…)` allow | `Shell(…)` allow | `--allow-tool` prefixes | allow |
+| `commands.exact` | — (prefix rules only) | `Bash(…)` allow | `Shell(…)` allow | `--allow-tool` without prefix wildcard | allow |
+| `commands.sandboxAsk` | `prompt` rule | ask | — | Unlisted; normal approval | — |
+| `commands.routine` | — (sandbox policy) | — except `terraform validate` ask | — | Unlisted; normal approval | — |
 | `commands.sandboxAsk ++ commands.routine` | — | — | — | — | ask |
 | `commands.denied` | `forbidden` rule | deny | deny | `--deny-tool` | deny |
 | `paths.homeReadable` | `read` (`paths.readable`) | — (home readable) | — | `readonlyPaths` (`paths.readable`) | — |
@@ -85,16 +87,17 @@ a prompt, but only inside the sandbox.
 | `caches` | `shell_environment_policy`, `write` | `env`, `allowWrite` | wrapped binary, `additionalReadwritePaths` | wrapper env, `readwritePaths` | — |
 | `mcpServers` | — | `mcp__<server>__*` allow | `Mcp(…)` allow | `--allow-tool` | — |
 
-Codex, Claude, and Copilot run project code (`just`, `npm run`, `npx`,
+Codex and Claude run project code (`just`, `npm run`, `npx`,
 `npm test`, `cargo test`, installed formatters) inside their sandboxes
 without prompts; access beyond the sandbox grants still needs approval. Claude
 retains its `terraform validate` ask rule because `terraform *` is
 deliberately excluded from its sandbox for macOS TLS compatibility.
+Copilot leaves these runners unlisted so they require normal approval.
 
 `nix build` and `nix fmt` keep approval in Codex and Claude because they build
 through the Nix daemon, outside the agent sandbox. Wrappers such as `just` can
 still reach the daemon without that prompt; prefix rules don't see inside
-them. Copilot's blanket shell grant also covers `nix build`. Cursor and
+them. Copilot leaves `nix build` and `nix fmt` unlisted. Cursor and
 OpenCode retain their existing behavior.
 
 Claude's WebFetch allow rules also widen its Bash sandbox network, so Claude
@@ -137,8 +140,15 @@ execution retains the calling process's sandbox; its directory location alone
 does not grant server access. A blanket application-directory prompt is not
 used here.
 
-Cursor and Copilot have no equivalent per-command ask rule in this setup, and
-Pi has no permission boundary. They are not covered by the Rex prompt policy.
+Copilot has no blanket shell grant: Rex control calls are unlisted and require
+normal approval. Reset saved session grants with `/reset-allowed-tools` after
+restarting with the new flags; an old broad shell approval can defeat this
+default. Its `allowLocalNetwork = false` prevents automatic localhost access;
+the filesystem policy grants no Rex control socket. Actual prompts and
+connection blocking still need verification after applying.
+
+Cursor has no equivalent per-command ask rule in this setup, and Pi has no
+permission boundary. They are not covered by the Rex prompt policy.
 Do not assume their Rex skill implies safe server access; use an isolated
 account or VM when a hard account boundary is required.
 
@@ -154,7 +164,8 @@ account or VM when a hard account boundary is required.
 | Claude | `sandbox.network.strictAllowlist` | `false`: unlisted hosts prompt |
 | Codex | `filesystem` | Workspace `.git` writable, hooks and config read-only, `~/.codex/skills` |
 | Copilot | `readonlyPaths` / `readwritePaths` | Copilot hooks; herdr socket and backlog vault |
-| Copilot | `--allow-tool shell` | All shell commands; deny rules and bypass prompts still apply |
+| Copilot | `--allow-tool` | Shared safe prefixes/exact commands and catalog MCP servers; no blanket shell grant |
+| Copilot | `sandbox.userPolicy.network.allowLocalNetwork` | `false`; localhost/private-network access is not implicitly granted |
 | Copilot | `--deny-tool` | `write(.git/config)`, for its file tools only |
 | Copilot | `clearPolicyOnExit` | `true` |
 
@@ -310,6 +321,7 @@ Hosts outside `network.sandbox` should ask, not fail:
   offers to re-run the command outside the sandbox (changelog: "Sandboxed
   shell commands offer a network bypass prompt whenever the proxy blocks a
   destination").
+  Local-network access is explicitly off, including implicit localhost grants.
 - Cursor: unlisted hosts are blocked inside the sandbox; whether Cursor
   then offers to run the command outside it is not verified.
 
@@ -503,8 +515,8 @@ and network approval rules still apply; never activate the fixture system.
 | `gh`, `terraform`, `go get`, `go mod download`, `go mod tidy` | Claude runs them outside the sandbox after a prompt unless an allow rule matches; other CLIs need an escalation |
 | `go build` or `go test` that downloads a toolchain or missing module | Escalation, because Go TLS fails in the sandbox |
 | Codex, Claude: `nix build`, `nix fmt` | Prompt: they build through the daemon, outside the agent sandbox |
-| `just`, `npm run`, `npx`, `npm test`, `cargo test` | Sandboxed in Codex, Claude, and Copilot without prompts; OpenCode retains ask rules |
-| `terraform validate` | Codex and Copilot run it sandboxed; Claude still prompts because Terraform runs outside its sandbox; OpenCode retains its ask rule |
+| `just`, `npm run`, `npx`, `npm test`, `cargo test` | Codex and Claude run sandboxed without prompts; Copilot requires normal approval; OpenCode retains ask rules |
+| `terraform validate` | Codex runs it sandboxed; Copilot requires normal approval; Claude prompts because Terraform runs outside its sandbox; OpenCode retains its ask rule |
 | `mise install`, `mise trust` | Run outside the sandbox; `mise trust` is denied for agents, so ask the user |
 | Claude commands with `$VAR`, `$(...)` or backticks | Prompt ("A variable in this command can't be checked"), since the expansion could match an ask or excluded command; the global `CLAUDE.md` tells Claude to use literal paths instead |
 

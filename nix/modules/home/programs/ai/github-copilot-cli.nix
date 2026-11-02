@@ -20,10 +20,12 @@ let
   # Copilot has no config file setting for tool rules or file tool paths,
   # only the `--allow-tool` / `--deny-tool` / `--add-dir` CLI flags.
   toolPermissions = {
-    # Copilot has no "approve if sandboxed" setting, so allow all shell
-    # commands like the other CLIs' sandbox approval. Deny rules still win,
-    # and running outside the sandbox is a separate bypass prompt.
-    allowTools = [ "shell" ] ++ permissions.mcpServers;
+    # Copilot has no per-command ask override for a blanket shell grant.
+    # Keep Rex, arbitrary runners and wrappers subject to normal approval.
+    allowTools =
+      map (cmd: "shell(${commandString cmd}:*)") commands.allowed
+      ++ map (cmd: "shell(${commandString cmd})") commands.exact
+      ++ permissions.mcpServers;
     # A relative write() path matches trailing components in any directory.
     # Copilot has no read() rule, so reads can't be denied this way.
     denyTools = map (cmd: "shell(${commandString cmd}:*)") commands.denied ++ [
@@ -75,9 +77,12 @@ let
         deniedPaths = paths.denied;
         clearPolicyOnExit = true;
       };
-      # Shell commands run without approval, so limit the network like the
-      # other sandboxes. Blocked hosts offer a sandbox bypass prompt.
-      userPolicy.network.allowedHosts = network.sandbox;
+      # Local access otherwise adds localhost to a nonempty host allowlist,
+      # exposing user-session services such as Rex outside this sandbox.
+      userPolicy.network = {
+        allowedHosts = network.sandbox;
+        allowLocalNetwork = false;
+      };
     };
     footer = {
       showModelEffort = true;

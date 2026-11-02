@@ -315,6 +315,11 @@ turned on.
   [Rex control permissions](agent-permissions.md#rex-control-requires-review)
   for supported agents and remaining limits.
 
+  Copilot uses a selective shell allowlist and leaves Rex control calls for
+  normal approval. Its sandbox disables local-network access. After applying,
+  restart Copilot and run `/reset-allowed-tools` to clear old broad session
+  grants before testing Rex approval behavior.
+
   GUI settings are separate from Lua: the Darwin module selects dark
   appearance and expanded vertical tabs on the left. It sets right Option to
   act as Alt, matching Kitty, while left Option keeps character composition.
