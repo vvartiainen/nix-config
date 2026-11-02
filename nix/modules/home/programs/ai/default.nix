@@ -1,4 +1,7 @@
-{ ... }:
+{ lib, config, ... }:
+let
+  permissions = import ./permissions.nix { inherit lib config; };
+in
 {
   imports = [
     ./agents-catalog.nix
@@ -14,4 +17,11 @@
     ./opencode.nix
     ./pi-coding-agent.nix
   ];
+
+  # Homebrew checks that its cache (or its parent) is writable before use.
+  # Create the granted directories before sessions start; their parent is
+  # intentionally read-only in the sandbox.
+  home.activation.agentCaches = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    run mkdir -p ${lib.escapeShellArgs permissions.caches.writePaths}
+  '';
 }

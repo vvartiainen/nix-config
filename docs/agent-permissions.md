@@ -291,6 +291,12 @@ under `~/.cache/<tool>-agent` instead:
 | Go | `GOCACHE`, `GOMODCACHE` | `~/.cache/go-agent/{build,mod}` |
 | mise | `MISE_CACHE_DIR` | `~/.cache/mise-agent` |
 | npm | `npm_config_cache` | `~/.cache/npm-agent` |
+| Homebrew | `HOMEBREW_CACHE` | `~/.cache/homebrew-agent` |
+
+Home Manager creates these directories on activation. Homebrew checks that
+its cache or parent is writable before use; without the dedicated cache,
+sandboxed hooks can fall back to `/opt/homebrew/tmp/cache` and fail because
+the Homebrew installation is read-only.
 
 Codex and Claude set the variables in their own config. Copilot's zsh wrapper
 sets them when starting a session, and Cursor's binary is wrapped to set them;
@@ -435,7 +441,7 @@ boundary working, not a bug to work around.
 - **Writes:** the workspace, `$TMPDIR`, `/tmp`, and `~/.cache/<tool>-agent`.
   Use `/tmp` or `$TMPDIR` for scratch files, not the home directory. Claude
   prompts for commands with variables, so it uses literal `/tmp` paths.
-- **Package caches:** Nix, Cargo, Go, mise, and npm already point at the
+- **Package caches:** Nix, Cargo, Go, mise, npm, and Homebrew already point at the
   agent caches through env vars. Builds and tests that only need cached
   dependencies run without prompts. The first build in a session's cache
   downloads dependencies again.
