@@ -134,13 +134,37 @@ class QuotaTests(unittest.TestCase):
         self.assertEqual(self.quotas.error, "")
 
     def test_input_stays_responsive_during_fetch_and_terminal_is_restored(self):
+        sources = [("Synthetic", [PYTHON, "-c", "import time; time.sleep(30)"])]
+        self.exercise_terminal(sources, b"Fetching first report")
+
+    def test_fast_provider_is_visible_while_other_provider_is_stalled(self):
+        sources = [
+            ("Fast", [PYTHON, "-c", "print('Fast quota: 75% left')"]),
+            ("Slow", [PYTHON, "-c", "import time; time.sleep(30)"]),
+        ]
+        self.exercise_terminal(sources, b"Fast quota: 75% left")
+
+    def test_independent_provider_ages_and_errors_are_visible_together(self):
+        self.get_success()
+        failed = metrics.Quotas(["/nonexistent-synthetic-codexbar"])
+        failed.error = "Synthetic Claude credentials unavailable"
+        reports = [("Codex", self.quotas), ("Claude", failed)]
+        lines = "\n".join(metrics.dashboard_lines(reports, 100))
+        self.assertIn("75% left", lines)
+        self.assertIn("No successful report yet", lines)
+        self.assertIn("Synthetic Claude credentials", lines)
+        self.assertIn("unavailable", lines)
+        self.assertIn("Codex", lines)
+        self.assertIn("Claude", lines)
+
+    def exercise_terminal(self, sources, expected):
         master, slave = pty.openpty()
         self.addCleanup(os.close, master)
         self.addCleanup(os.close, slave)
         previous = termios.tcgetattr(slave)
         program = (
             f"import runpy; ns = runpy.run_path({str(SCRIPT)!r}); "
-            f"ns['main'](command={[PYTHON, '-c', 'import time; time.sleep(30)']!r})"
+            f"ns['main'](sources={sources!r})"
         )
         child = subprocess.Popen(
             [PYTHON, "-c", program], stdin=slave, stdout=slave, stderr=slave,
@@ -154,11 +178,11 @@ class QuotaTests(unittest.TestCase):
         self.addCleanup(cleanup)
         output = b""
         deadline = time.monotonic() + 3
-        while b"Fetching first report" not in output and time.monotonic() < deadline:
+        while expected not in output and time.monotonic() < deadline:
             readable, _, _ = select.select([master], [], [], 0.1)
             if readable:
                 output += os.read(master, 8192)
-        self.assertIn(b"Fetching first report", output)
+        self.assertIn(expected, output)
         os.write(master, b"\x04")
         self.assertEqual(child.wait(timeout=2), 0)
         restored = termios.tcgetattr(slave)

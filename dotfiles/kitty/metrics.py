@@ -1,6 +1,7 @@
 """Persistent quick-access quota view, run with Kitty's bundled Python."""
 
 import os
+from itertools import zip_longest
 import select
 import shutil
 import signal
@@ -13,9 +14,10 @@ import time
 import tty
 
 
-COMMAND = [
-    "/Applications/CodexBar.app/Contents/Helpers/CodexBarCLI",
-    "cards", "--provider", "both", "--source", "oauth", "--no-color",
+CODEXBAR = "/Applications/CodexBar.app/Contents/Helpers/CodexBarCLI"
+SOURCES = [
+    ("CODEX · OAuth", [CODEXBAR, "cards", "--provider", "codex", "--source", "oauth", "--no-color"]),
+    ("CLAUDE · CLI", [CODEXBAR, "cards", "--provider", "claude", "--source", "cli", "--no-color"]),
 ]
 REFRESH_INTERVAL = 300
 FETCH_TIMEOUT = 30
@@ -24,7 +26,7 @@ FETCH_TIMEOUT = 30
 class Quotas:
     """Keep the last good report while a separate process fetches the next one."""
 
-    def __init__(self, command=COMMAND, interval=REFRESH_INTERVAL, timeout=FETCH_TIMEOUT):
+    def __init__(self, command, interval=REFRESH_INTERVAL, timeout=FETCH_TIMEOUT):
         self.command = command
         self.interval = interval
         self.timeout = timeout
@@ -117,7 +119,7 @@ def report_lines(quotas, now=None, columns=100):
             status += " · refreshing…"
     elif quotas.error and quotas.process is None:
         status = "No successful report yet."
-    lines = ["METRICS · Codex / Claude", "Esc / Q hide · R refresh · Ctrl+D stop", status, ""]
+    lines = ["Quota report", "Esc / Q hide · R refresh · Ctrl+D stop", status, ""]
     if quotas.error:
         message = "Refresh failed: " + " ".join(quotas.error.split())
         lines += textwrap.wrap(message, width=max(1, columns - 1)) + [""]
@@ -130,8 +132,32 @@ def report_lines(quotas, now=None, columns=100):
     return lines
 
 
-def draw(quotas, size):
-    lines = report_lines(quotas, columns=size.columns)
+def report_width(columns, count):
+    if count > 1 and columns >= 80:
+        return max(1, (columns - 3 * (count - 1)) // count)
+    return columns
+
+
+def dashboard_lines(reports, columns, now=None):
+    lines = ["METRICS · agent quotas", "Esc / Q hide · R refresh · Ctrl+D stop", ""]
+    width = report_width(columns, len(reports))
+    blocks = [
+        [title] + report_lines(quotas, now=now, columns=width)[2:]
+        for title, quotas in reports
+    ]
+    if len(reports) > 1 and columns >= 80:
+        lines += [
+            " │ ".join(cell[:width].ljust(width) for cell in row).rstrip()
+            for row in zip_longest(*blocks, fillvalue="")
+        ]
+    else:
+        for block in blocks:
+            lines += block + [""]
+    return lines
+
+
+def draw(reports, size):
+    lines = dashboard_lines(reports, size.columns)
     visible = lines[:size.lines]
     if len(lines) > size.lines:
         visible[-1] = "… Resize the dashboard to see the full report."
@@ -140,8 +166,10 @@ def draw(quotas, size):
     sys.stdout.flush()
 
 
-def main(command=COMMAND, interval=REFRESH_INTERVAL, timeout=FETCH_TIMEOUT):
-    quotas = Quotas(command, interval, timeout)
+def main(command=None, interval=REFRESH_INTERVAL, timeout=FETCH_TIMEOUT, sources=None):
+    if sources is None:
+        sources = [("QUOTAS", command)] if command is not None else SOURCES
+    reports = [(title, Quotas(cmd, interval, timeout)) for title, cmd in sources]
     fd = sys.stdin.fileno()
     previous = termios.tcgetattr(fd)
     previous_sigterm = signal.getsignal(signal.SIGTERM)
@@ -155,12 +183,14 @@ def main(command=COMMAND, interval=REFRESH_INTERVAL, timeout=FETCH_TIMEOUT):
         sys.stdout.write("\x1b]2;Metrics\x07\x1b[?1049h\x1b[?25l")
         next_draw = 0
         while True:
-            quotas.poll()
             size = shutil.get_terminal_size((100, 28))
-            if quotas.process is None and time.monotonic() >= quotas.next_refresh:
-                quotas.refresh(size.columns)
+            width = report_width(size.columns, len(reports))
+            for _title, quotas in reports:
+                quotas.poll()
+                if quotas.process is None and time.monotonic() >= quotas.next_refresh:
+                    quotas.refresh(width)
             if time.monotonic() >= next_draw:
-                draw(quotas, size)
+                draw(reports, size)
                 next_draw = time.monotonic() + 1
             readable, _, _ = select.select([fd], [], [], 0.2)
             if readable:
@@ -168,12 +198,14 @@ def main(command=COMMAND, interval=REFRESH_INTERVAL, timeout=FETCH_TIMEOUT):
                 if not keys or b"\x04" in keys:
                     break
                 if b"r" in keys.lower():
-                    quotas.refresh(size.columns)
+                    for _title, quotas in reports:
+                        quotas.refresh(width)
                     next_draw = 0
     except KeyboardInterrupt:
         pass
     finally:
-        quotas.close()
+        for _title, quotas in reports:
+            quotas.close()
         termios.tcsetattr(fd, termios.TCSADRAIN, previous)
         signal.signal(signal.SIGTERM, previous_sigterm)
         sys.stdout.write("\x1b[?25h\x1b[?1049l")

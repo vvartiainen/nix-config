@@ -87,19 +87,24 @@ it registers the shortcut. To try the same binding immediately, record it in
 window also hides it. **R** requests a refresh, and **Ctrl+D** stops the dashboard.
 The existing Ctrl+Alt+Cmd+T quick-access shell is a separate instance.
 
-The dashboard keeps its last successful quota report in memory while hidden.
-Reopening shows that report immediately, including its age, while refreshes run
-every five minutes in a separate process. A refresh times out after 30 seconds;
-errors keep the last successful report visible and show the CLI's failure
+The dashboard keeps each provider's last successful quota report in memory while
+hidden. Reopening shows those reports immediately, including their ages, while
+independent refreshes run every five minutes in separate processes. A refresh
+times out after 30 seconds; one slow or failing provider does not block the other.
+Errors keep that provider's last successful report visible and show the CLI's failure
 details. If the first refresh produces only a partial report, its available
 quotas are shown as incomplete. The first open after stopping
 the dashboard or restarting Kitty needs a fresh fetch. No login daemon or quota
 cache on disk is installed.
 
-Quotas use the bundled CodexBar CLI's `cards --provider both --source oauth`
-command, verified manually after the default multi-provider command stalled.
-Both Codex and Claude need an available OAuth login. Kitty's bundled Python runs
-the dashboard; no separate Python or CLI installation is needed. Only quotas
+Quotas use the bundled CodexBar CLI's `cards` command. Codex uses
+`--provider codex --source oauth`; Claude uses `--provider claude --source cli`.
+Both sources were verified manually. Claude's own CLI avoids the recurring
+CodexBar re-grant prompt when Claude Code rotates its OAuth Keychain item.
+Claude's roughly two-second fetch runs in the background; it does not delay
+showing the previous report. Codex needs its OAuth login and Claude Code must
+be installed and signed in. Kitty's bundled Python runs the dashboard; no
+separate Python or CodexBar CLI installation is needed. Only quotas
 are shown for now; the persistent view can gain other metrics later.
 
 Apply the configuration manually once to link the new `metrics.sh`,
@@ -114,6 +119,14 @@ The launcher uses Kitty's foreground mode; skhd already runs its commands in
 the background. Its named `metrics-dashboard` instance is separate from the
 ordinary quick-access shell and the earlier `metrics`/`metrics-debug` instances.
 Stop an older diagnostic dashboard with Ctrl+D before retesting the shortcut.
+
+If native CodexBar repeatedly says **Claude Code credentials changed** and
+requires Refresh, its documented cause is the lifecycle of Claude Code's
+Keychain item and CodexBar's access policy. In **CodexBar Settings → Providers →
+Claude**, select **Usage source → CLI** to use the same source tested for this
+dashboard. This is a manual, local app setting. It avoids relying on repeated
+foreign-Keychain re-grants; CLI usage may expose less detail than OAuth. See
+[CodexBar's Claude source guidance](https://github.com/steipete/CodexBar/blob/v0.83.0/docs/claude.md#keychain-prompt-policy-claude-oauth).
 
 Enable **Merge Icons** in CodexBar's menu bar settings to browse subscriptions
 in one menu. CodexBar 0.83.0's tab shortcuts were reported to switch only
