@@ -1,22 +1,10 @@
 {
-  config,
-  lib,
   pkgs,
   repoRoot,
   userName,
   ...
 }:
-let
-  homeDir = config.users.users.${userName}.home;
-in
 {
-  # sketchybar allows one instance, so stop the Homebrew service before brew
-  # bundle removes the formula and Home Manager starts the new agent.
-  system.activationScripts.extraActivation.text = ''
-    /bin/launchctl bootout "gui/$(/usr/bin/id -u ${lib.escapeShellArg userName})/homebrew.mxcl.sketchybar" 2>/dev/null || true
-    /bin/rm -f "${homeDir}/Library/LaunchAgents/homebrew.mxcl.sketchybar.plist"
-  '';
-
   # App icons for the spaces and front app items.
   fonts.packages = [ pkgs.sketchybar-app-font ];
 
