@@ -29,9 +29,11 @@ in
       PasteboardHistoryEnabled = true; # clipboard history
       # Result categories turned off in System Settings → Spotlight.
       DisabledUTTypes = [ ];
-      # Optional result sources turned on in System Settings → Spotlight.
-      # Related content and iPhone apps are off.
-      EnabledPreferenceRules = [ ];
+      # Enabled exclusion rules: keep related content and iPhone apps off.
+      EnabledPreferenceRules = [
+        "Custom.relatedContents"
+        "System.iphoneApps"
+      ];
     };
 
     "com.apple.symbolichotkeys".AppleSymbolicHotKeys = {

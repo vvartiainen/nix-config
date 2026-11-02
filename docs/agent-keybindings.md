@@ -99,6 +99,13 @@ saved settings, including disabled shortcuts and their key parameters;
 into one dictionary. Activation replaces the saved dictionary, so additional system shortcut
 customizations must also be declared there to persist.
 
+`spotlight.nix` also preserves the saved result-source lists: `DisabledUTTypes`
+is empty and `EnabledPreferenceRules` contains the exclusion rules
+`Custom.relatedContents` and `System.iphoneApps`, intended to keep related
+content and iPhone apps off. The preference name refers to enabling the rules.
+After applying, confirm both are off in System Settings → Spotlight. Changes
+made there must be reflected in Nix to persist after activation.
+
 The dashboard keeps each provider's last successful quota report in memory while
 hidden. Reopening shows those reports immediately, including their ages, while
 independent refreshes run every five minutes in separate processes. A refresh
