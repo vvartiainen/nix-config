@@ -289,6 +289,18 @@ Escape or Return first, or use the address/search shortcuts above.
 
 ## Kitty
 
+Automatic tab labels show the repository name, or `repository:worktree` in a
+linked Git worktree, including when an agent runs from a subdirectory of it.
+The worktree part is its directory name, so detached worktrees also have a
+useful label. Manually named tabs take precedence. Outside Git repositories,
+labels show the directory name (`~` for home).
+
+After applying manually, restart Kitty to reload `tab_bar.py`. Compare tabs
+opened in the main checkout and a linked worktree, then run an agent in the
+worktree and check that its label remains distinct. The renderer uses Kitty's
+[oldest foreground process directory](https://sw.kovidgoyal.net/kitty/conf/#opt-kitty.tab_title_template),
+so it follows the agent's working directory rather than its terminal title.
+
 With a Kitty window that is not running Herdr focused, press
 **Right Cmd+Right Option+Space**, release the modifiers, then navigate
 repeatedly. SketchyBar shows a green KITTY badge and key hints:
