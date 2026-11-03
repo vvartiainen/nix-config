@@ -282,6 +282,7 @@ turned on.
   CLI and terminfo through `programs.rex`. The nix-darwin
   [`rex.nix`](../nix/modules/darwin/programs/rex.nix) module packages the signed
   GUI DMG and exposes `Rex Beta.app` through `/Applications/Nix Apps`.
+  The GUI is pinned to preview 1758 (0.1.0), released on 2026-11-02.
   Update its version, URL and checksum together using the official preview
   appcast linked in that module; update the CLI input with `just up rex`.
   The GUI runs the macOS server; no Linux server service is enabled.
