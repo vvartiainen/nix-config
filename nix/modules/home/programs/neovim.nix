@@ -152,7 +152,7 @@ let
   neovim = pkgs.writeShellScriptBin "nvim-nightly" ''
     export NVIM_APPNAME=nvim-nightly
     export NVIM_NIX_PLUGINS=${pluginPaths}
-    # Keep the caller's PATH intact so project dev shells own development tools.
+    # Keep project overrides ahead of the shared Nix language-tool baseline.
     exec ${lib.getExe nightly} --cmd 'set runtimepath^=${configSnapshot}' -u ${configSnapshot}/init.lua "$@"
   '';
 in

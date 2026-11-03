@@ -1,5 +1,6 @@
 {
   lib,
+  pkgs,
   config,
   ...
 }:
@@ -48,7 +49,7 @@ let
     provider.openai.models."gpt-6.1-sol".options.reasoningEffort = "medium";
     lsp.typescript = {
       command = [
-        "${config.xdg.dataHome}/mise/shims/tsc"
+        (lib.getExe pkgs.typescript)
         "--lsp"
         "--stdio"
       ];

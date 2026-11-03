@@ -38,34 +38,30 @@ end
 
 return {
   "stevearc/conform.nvim",
-  --- @type conform.setupOpts
-  opts = {
-    formatters_by_ft = {
-      bash = { "shfmt", "shellcheck" },
-      css = { "prettier" },
+  --- @param opts conform.setupOpts
+  opts = function(_, opts)
+    -- Override after language extras so they don't chain competing formatters.
+    local formatters = {
+      bash = { "shfmt" },
+      sh = { "shfmt" },
       go = { "gofmt" },
-      html = { "prettier" },
-      javascript = web_formatter("biome"),
-      javascriptreact = web_formatter("biome"),
-      json = web_formatter("prettier"),
-      jsonc = web_formatter("prettier"),
-      lua = { "stylua" },
-      markdown = { "markdownlint" },
-      python = { "black" },
-      scss = { "prettier" },
-      sh = { "shfmt", "shellcheck" },
-      shell = { "shfmt", "shellcheck" },
-      sql = { "pg_format" },
-      -- sql = { "sqlfluff" },
-      svelte = { "prettier", "rustywind" },
+      python = { "ruff_format" },
+      rust = { "rustfmt" },
       terraform = { "terraform_fmt" },
-      tf = { "terraform_fmt" },
-      tfvars = { "terraform_fmt" },
-      typescript = web_formatter("biome"),
-      typescriptreact = web_formatter("biome"),
+      ["terraform-vars"] = { "terraform_fmt" },
+      zig = { "zigfmt" },
       xml = { "xmlformatter" },
-      yaml = { "prettier" },
-      zsh = { "shfmt", "shellcheck" },
-    },
-  },
+    }
+    for _, ft in ipairs({ "javascript", "javascriptreact", "typescript", "typescriptreact" }) do
+      formatters[ft] = web_formatter("biome")
+    end
+    for _, ft in ipairs({ "json", "jsonc", "css", "scss", "svelte", "vue", "astro" }) do
+      formatters[ft] = web_formatter("prettier")
+    end
+    for ft, tools in pairs(formatters) do
+      opts.formatters_by_ft[ft] = tools
+    end
+    -- Lua, Nix, Markdown and other markup retain their enabled extras' defaults.
+    -- ShellCheck remains a diagnostic tool in lint.lua; SQL has no global owner.
+  end,
 }

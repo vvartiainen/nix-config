@@ -124,9 +124,8 @@ let
 
   lspSettings = {
     lspServers.typescript = {
-      # The mise shim execs /opt/homebrew/Cellar/mise, which the sandbox can't
-      # read; the install's `latest` symlink stays within granted mise paths.
-      command = "${config.xdg.dataHome}/mise/installs/npm-typescript/latest/node_modules/.bin/tsc";
+      # Generated package path works without mise activation or shim access.
+      command = lib.getExe pkgs.typescript;
       args = [
         "--lsp"
         "--stdio"

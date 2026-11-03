@@ -87,14 +87,6 @@ backend = "npm:puppeteer"
 version = "1.7.2"
 backend = "npm:skills"
 
-[[tools."npm:typescript"]]
-version = "7.0.2"
-backend = "npm:typescript"
-
-[[tools."npm:typescript-language-server"]]
-version = "6.0.2"
-backend = "npm:typescript-language-server"
-
 [[tools.python]]
 version = "3.15.0"
 backend = "core:python"

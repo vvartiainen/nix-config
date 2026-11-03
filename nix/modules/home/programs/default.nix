@@ -10,6 +10,7 @@
     ./go.nix
     ./herdr.nix
     ./kitty.nix
+    ./language-tools.nix
     ./lazygit.nix
     ./neovim.nix
     ./rex.nix
