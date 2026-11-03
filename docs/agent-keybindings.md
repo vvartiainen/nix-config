@@ -13,6 +13,7 @@ Option**; Left Option remains available for keyboard-layout characters.
 | Ctrl+1–6 / Left / Right | yabai space selection / previous / next space |
 | Ctrl+Alt+H/J/K/L | yabai directional window focus |
 | Ctrl+Alt+P/N | yabai previous / next window, including stack navigation |
+| Ctrl+N/P in Slack | Down / Up arrow in menus, search and the message editor |
 | Ctrl+Alt+Cmd | yabai swaps, window moves, layouts and space management |
 | Ctrl+Space | Toggle the quick-access terminal |
 | Cmd+Left Option+H/J/K/L | yabai window resizing |

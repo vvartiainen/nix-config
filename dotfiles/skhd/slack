@@ -1,0 +1,10 @@
+# Arrow navigation in Slack menus, search and the message editor.
+ctrl - n [
+  "Slack" | down
+  * ~
+]
+
+ctrl - p [
+  "Slack" | up
+  * ~
+]
