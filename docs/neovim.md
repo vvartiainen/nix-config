@@ -59,6 +59,16 @@ Add plugin packages or parser languages in
 Nix-specific loading and tool overrides live beside that module under
 [`neovim/`](../nix/modules/home/programs/neovim).
 
+Markdown line-length diagnostics (`markdownlint` rule `MD013`) are hidden from
+inline virtual text across projects. The rule remains enabled: use `<leader>cd`
+to open the diagnostic float or `<leader>xx` to open the diagnostics list.
+Other diagnostics still show inline. This is configured in
+[`lsp.lua`](../dotfiles/nvim/lua/plugins/lsp.lua).
+
+For an optional vertical guide after 80 columns, run `:setlocal colorcolumn=81`.
+To enable it by default, add `vim.opt.colorcolumn = "81"` to
+[`options.lua`](../dotfiles/nvim/lua/config/options.lua).
+
 ## Compare the editors
 
 Compare `:checkhealth`, file search, completion, formatting, LSP, tests, and
