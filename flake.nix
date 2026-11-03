@@ -4,6 +4,9 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
+    # Keep the Rosetta VM image independent of desktop package updates.
+    nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-26.05";
+
     # Use the upstream package and dependency pins for the experimental editor.
     neovim-nightly.url = "github:nix-community/neovim-nightly-overlay";
 
@@ -35,10 +38,10 @@
       };
     };
 
-    # On-demand Lima/Rosetta Linux builder; its VM image builds from our nixpkgs.
+    # On-demand Lima/Rosetta Linux builder; update its VM image separately.
     nix-rosetta-builder = {
       url = "github:cpick/nix-rosetta-builder";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-stable";
     };
 
     # asmvik/yabai fork with macOS 27.0-27.2 support. Pinned to a release tag:

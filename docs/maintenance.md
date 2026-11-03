@@ -72,6 +72,13 @@ just up               # all inputs
 just up <INPUT>...    # selected inputs
 ```
 
+For routine desktop updates, use `just up nixpkgs` (and name any other inputs
+you want to update). The main `nixpkgs` input tracks unstable; the Rosetta VM
+image follows the separate `nixpkgs-stable` input on `nixos-26.05`. Update that
+image deliberately with `just up nixpkgs-stable nix-rosetta-builder`, including
+stable security fixes. A bare `just up` still updates every input, so it can
+rebuild the image even with this separation.
+
 After updating inputs, run `just build <HOSTNAME>` to review the resulting
 Nix package changes before applying with `just switch <HOSTNAME>`. The build
 uses [nh](https://github.com/nix-community/nh) from the pinned nixpkgs input,
@@ -113,7 +120,10 @@ When the linux-builder is stopped, Nix reports `cannot build on
 where tests fall back to slow emulation.
 
 The rosetta-builder VM image is an `aarch64-linux` build from this flake's
-nixpkgs. The first switch with it needs another Linux builder, so run
+`nixpkgs-stable`. Updating only the main unstable `nixpkgs` input leaves the
+image pin unchanged. The host-side Lima service and the VZ linux-builder still
+use the main unstable package set. The first switch with it needs another Linux
+builder, so run
 `just builder-start` first. The image build requires `kvm`, which the
 linux-builder advertises even without nested virtualization; there it runs
 under slow emulation. If the applied `/etc/nix/machines` lacks `kvm` on the
