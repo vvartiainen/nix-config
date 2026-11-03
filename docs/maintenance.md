@@ -92,6 +92,21 @@ The diff includes all pending Nix configuration changes since the active
 generation, not only input updates. Updating the lock file alone does not show
 package changes. Homebrew and mise updates are outside this Nix package diff.
 
+### Tool installation ownership
+
+`btop` is installed by Home Manager through
+[`programs/btop.nix`](../nix/modules/home/programs/btop.nix). `uv` is installed
+by mise through [`config.toml`](../dotfiles/mise/config.toml), with its resolved
+version in [`mise.lock`](../dotfiles/mise/mise.lock). Keep these tools out of
+the Homebrew brew list to avoid competing versions on `PATH`.
+
+When applying the removal of Homebrew's `uv`, run Homebrew bundle as part of
+the switch (omit `skip_homebrew=1`); its configured cleanup removes unneeded
+formulas. After activation, open a fresh shell and run `type -a btop uv` to
+check the selected binaries. A mise shim and its resolved installation are
+the same owner. If Homebrew's `uv` remains, check `brew uses --installed uv`
+before removing it: another formula may still require it as a dependency.
+
 ## Linux builders and backups
 
 Two Linux builders handle `aarch64-linux` and `x86_64-linux` builds:

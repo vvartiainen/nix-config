@@ -43,7 +43,6 @@
       "thefuck"
       "tlrc"
       "tmux"
-      "uv"
       "wget"
       "yt-dlp"
     ];
