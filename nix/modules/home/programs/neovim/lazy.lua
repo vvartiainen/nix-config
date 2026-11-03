@@ -1,5 +1,5 @@
--- This replaces only nvim-nix's bootstrap; the live Homebrew config is unchanged.
-local plugins = assert(vim.env.NVIM_NIX_PLUGINS, "Launch this configuration with nvim-nix")
+-- This replaces only nvim-nightly's bootstrap; the live Homebrew config is unchanged.
+local plugins = assert(vim.env.NVIM_NIX_PLUGINS, "Launch this configuration with nvim-nightly")
 local config = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":h:h:h")
 vim.opt.rtp:prepend(config)
 vim.opt.rtp:prepend(plugins .. "/lazy.nvim")

@@ -1,18 +1,36 @@
-# Parallel Nix-managed Neovim
+# Parallel Neovim nightly
 
 After building and manually applying the configuration, run the two setups side
 by side:
 
 ```sh
-nvim path/to/file       # Homebrew binary and live dotfiles
-nvim-nix path/to/file   # Nix binary and build-time config snapshot
+nvim path/to/file           # Homebrew binary and live dotfiles
+nvim-nightly path/to/file   # Pinned nightly and build-time config snapshot
 ```
 
-The default `EDITOR`, `VISUAL`, and integrations use `nvim`. The `nvim-nix`
-wrapper selects the Nix binary and sets `NVIM_APPNAME=nvim-nix`, selecting
-separate standard directories: `~/.config/nvim-nix`, `~/.local/share/nvim-nix`,
-`~/.local/state/nvim-nix`, and `~/.cache/nvim-nix` (or their XDG overrides).
+The default `EDITOR`, `VISUAL`, and integrations use `nvim`. The `nvim-nightly`
+wrapper selects the Nix-built nightly binary and sets
+`NVIM_APPNAME=nvim-nightly`, selecting separate standard directories:
+`~/.config/nvim-nightly`, `~/.local/share/nvim-nightly`,
+`~/.local/state/nvim-nightly`, and `~/.cache/nvim-nightly` (or their XDG overrides).
+The old `nvim-nix` command is replaced by `nvim-nightly`; its existing data
+directories are left on disk and are not reused.
 Setting `NVIM_APPNAME` alone on the Homebrew binary only selects another config.
+
+## Update nightly
+
+The nightly binary comes from `nix-community/neovim-nightly-overlay`, pinned in
+`flake.lock` with its own build dependencies. It does not update automatically.
+To refresh only that input (from the repository root):
+
+```sh
+nix flake update neovim-nightly
+```
+
+Review the lock-file diff, rebuild, and apply the configuration manually. Plugin
+versions still come from the repository's existing `nixpkgs` pin; updating nightly
+does not update those plugins. The nightly input keeps its own dependencies so
+its Neovim build matches upstream. Stable `nvim` remains the Homebrew binary.
 
 ## Plugins and project tools
 
@@ -28,9 +46,9 @@ debug adapters, and test runners come from that shell:
 
 ```sh
 nix develop
-nvim-nix path/to/file
+nvim-nightly path/to/file
 # or, from outside the shell:
-nix develop --command nvim-nix path/to/file
+nix develop --command nvim-nightly path/to/file
 ```
 
 The launcher inherits `PATH`; it does not install or prepend development tools.
@@ -50,7 +68,7 @@ builds, so LazyVim doesn't fetch it with Mason.
 ## Change the configuration
 
 Edit Lua settings and extras in [`dotfiles/nvim`](../dotfiles/nvim) and rebuild
-to update `nvim-nix`. The original editor sees those edits immediately.
+to update `nvim-nightly`. The original editor sees those edits immediately.
 The experimental extras list is the immutable `lazyvim.json` snapshot; change
 the repository file rather than using `:LazyExtras`.
 
@@ -80,5 +98,5 @@ debugging on the same projects, inside the same dev shell. In either editor:
 :lua print(vim.fn.exepath("nil"))
 ```
 
-In `nvim-nix`, `:Lazy` plugin directories should point into `/nix/store`.
+In `nvim-nightly`, `:Lazy` plugin directories should point into `/nix/store`.
 Use `:ConformInfo` and `:LspInfo` to check project tool resolution.

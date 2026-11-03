@@ -1,4 +1,9 @@
-{ pkgs, lib, ... }:
+{
+  pkgs,
+  lib,
+  inputs,
+  ...
+}:
 let
   configSrc = lib.cleanSourceWith {
     src = ../../../../dotfiles/nvim;
@@ -143,11 +148,12 @@ let
     cp ${./neovim/lazy.lua} "$out/lua/config/lazy.lua"
     cp ${./neovim/nix.lua} "$out/lua/config/nix.lua"
   '';
-  neovim = pkgs.writeShellScriptBin "nvim-nix" ''
-    export NVIM_APPNAME=nvim-nix
+  nightly = inputs.neovim-nightly.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  neovim = pkgs.writeShellScriptBin "nvim-nightly" ''
+    export NVIM_APPNAME=nvim-nightly
     export NVIM_NIX_PLUGINS=${pluginPaths}
     # Keep the caller's PATH intact so project dev shells own development tools.
-    exec ${lib.getExe pkgs.neovim} --cmd 'set runtimepath^=${configSnapshot}' -u ${configSnapshot}/init.lua "$@"
+    exec ${lib.getExe nightly} --cmd 'set runtimepath^=${configSnapshot}' -u ${configSnapshot}/init.lua "$@"
   '';
 in
 {

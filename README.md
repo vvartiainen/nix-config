@@ -54,7 +54,7 @@ expects a configured `nvim` on `PATH`.
 
 - [Setup and host data](docs/setup.md)
 - [Maintenance and validation](docs/maintenance.md)
-- [Parallel Nix-managed Neovim](docs/neovim.md)
+- [Parallel Neovim nightly](docs/neovim.md)
 - [Agent keybindings](docs/agent-keybindings.md)
 - [Agent permissions and sandboxes](docs/agent-permissions.md)
 - [Per-project MCP servers and skills](docs/agent-project-tools.md)
