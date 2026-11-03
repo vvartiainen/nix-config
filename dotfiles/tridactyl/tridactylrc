@@ -1,0 +1,38 @@
+" Stay out of the way until explicitly activated on each page.
+autocmd DocStart .* mode ignore
+set modeindicatormodes.ignore false
+set leavegithubalone true
+set newtab about:blank
+
+" Keep only deliberate activation keys while inactive; preserve native shortcuts.
+unbind --all --mode=ignore
+bind --mode=ignore <S-Escape> mode normal
+
+" Small navigation layer, without replacing browser search, tabs or address entry.
+unbind --all --mode=normal
+unbind --all --mode=browser
+bind <S-Escape> mode ignore
+bind <Escape> mode ignore
+bind : fillcmdline_notrail
+bind j scrollline 10
+bind k scrollline -10
+bind h scrollpx -50
+bind l scrollpx 50
+bind gg scrollto 0
+bind G scrollto 100
+bind f hint
+bind F hint -b
+bind H back
+bind L forward
+bind J tabnext
+bind K tabprev
+bind yy clipboard yank
+
+" Essentials are pinned too. Hidden tabs belong to other workspaces.
+bind g0 jsb browser.tabs.query({currentWindow:true,pinned:false,hidden:false}).then(tabs => { const first = tabs.sort((a,b) => a.index-b.index)[0]; if (first) return browser.tabs.update(first.id,{active:true}); })
+
+" Let text fields keep their native editing keys, with an explicit mode exit.
+unbind --all --mode=insert
+unbind --all --mode=input
+bind --mode=insert <S-Escape> mode ignore
+bind --mode=input <S-Escape> mode ignore

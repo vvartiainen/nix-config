@@ -34,8 +34,12 @@ in
     fi
   '';
 
+  xdg.configFile."tridactyl/tridactylrc".source = ../../../../dotfiles/tridactyl/tridactylrc;
+
   programs.zen-browser = {
     enable = true;
+    # Tridactyl needs the native helper to load its local rc automatically.
+    nativeMessagingHosts = [ pkgs.tridactyl-native ];
 
     # Zen rewrites extension-settings.json from memory, so this is skipped while it is running.
     activationFragments.default = [
@@ -82,8 +86,12 @@ in
             "addon@darkreader.org" = "darkreader";
             "{d634138d-c276-4fc8-924b-40a0ea21d284}" = "1password-x-password-manager";
             "idcac-pub@guus.ninja" = "istilldontcareaboutcookies";
-            "{d7742d87-e61d-4b78-b8a1-b469842139fa}" = "vimium-ff";
-          };
+            "tridactyl.vim@cmcaine.co.uk" = "tridactyl-vim";
+          }
+        // {
+          # Removing the force-install entry alone leaves Vimium installed.
+          "{d7742d87-e61d-4b78-b8a1-b469842139fa}".installation_mode = "blocked";
+        };
 
       # Tracking protection blocks Outlook Web's background sign-in, which signs it out right after login.
       EnableTrackingProtection.Exceptions = [
@@ -114,6 +122,8 @@ in
       settings = {
         "browser.ctrlTab.sortByRecentlyUsed" = false;
         "browser.translations.automaticallyPopup" = false;
+        # Keep Cmd+T using Zen's floating URL bar instead of the extension's new-tab page.
+        "zen.urlbar.replace-newtab" = true;
         # Ctrl+Tab cycles within essentials or within space tabs, depending on the current tab.
         "zen.tabs.ctrl-tab.ignore-essential-tabs" = true;
       };

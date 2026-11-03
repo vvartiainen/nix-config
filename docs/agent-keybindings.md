@@ -282,6 +282,46 @@ order, N/O/F, native search shortcuts, mode exits and switching apps. Mouse
 clicks into a text field inside Zen do not automatically exit capture; press
 Escape or Return first, or use the address/search shortcuts above.
 
+### On-demand page navigation (Tridactyl)
+
+Tridactyl replaces Vimium FF and starts each page in ignore mode: ordinary
+typing and native browser shortcuts pass through. Its indicator is hidden
+while inactive. These bindings work on web pages where extensions may run;
+they do not work in the address bar, internal browser pages or protected
+extension-store pages.
+
+| Key | Action |
+|---|---|
+| Shift+Escape | Activate Tridactyl; press again to deactivate (also from text fields) |
+| Escape in normal mode | Deactivate Tridactyl |
+| g, then 0 | First regular tab in the current workspace; skip Essentials, pinned and hidden tabs |
+| J / K | Next / previous tab |
+| H / L | Back / forward in page history |
+| h / j / k / l | Scroll left / down / up / right |
+| gg / G | Top / bottom of page |
+| f / F | Follow a link / open it in a background tab using hints |
+| y, then y | Copy the current URL |
+| : | Open Tridactyl's command line (`:help` for help) |
+
+Zen's native Cmd+T/L/F shortcuts remain available, including while Tridactyl
+is active. Cmd+T uses Zen's floating URL bar. Tridactyl's legacy new-tab page
+redirects to `about:blank` instead of displaying its dashboard. Existing skhd
+Zen navigation mode remains separate; exit it before using Tridactyl.
+
+The Zen module installs the native messaging helper to load
+[`tridactylrc`](../dotfiles/tridactyl/tridactylrc) automatically from
+`~/.config/tridactyl/tridactylrc`. The helper is for loading the file; the
+first-regular-tab command itself uses the browser's extension API. Vimium FF
+is explicitly blocked so an existing installation cannot capture the same
+keys after migration.
+
+Quit Zen before applying manually and restart it after the extension's first
+installation so the rc is loaded. Verify ordinary typing and Cmd+T/L/F while
+inactive, Shift+Escape activation and exit, link hints, and `g0` from both an
+Essential and a regular tab. With regular tabs in multiple workspaces, `g0`
+must stay in the current workspace; with none, it must do nothing. Runtime
+behavior and the private host configuration require manual validation.
+
 ## Kitty
 
 With a Kitty window that is not running Herdr focused, press

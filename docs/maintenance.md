@@ -213,6 +213,11 @@ turned on.
   [`zen-browser.nix`](../nix/modules/home/programs/zen-browser.nix). It installs
   the browser and internal-page styles and selects dark mode. Quit Zen before
   applying the configuration manually, then reopen it to load the theme.
+- Zen uses Tridactyl for on-demand page navigation, replacing Vimium FF.
+  Shift+Escape activates it; `g0` selects the first regular tab in the current
+  workspace. Nix installs its native messaging helper and rc file, so no
+  `:nativeinstall` is needed. See the [Zen keybindings](agent-keybindings.md#on-demand-page-navigation-tridactyl)
+  for activation, migration and manual verification steps.
 - Slack's theme is an account preference, configured manually in each
   workspace. Select dark mode in **Preferences → Appearance**, then open
   **Custom theme → Import theme** (older versions use **Preferences → Themes**)
