@@ -6,7 +6,7 @@ Validate your real host configuration manually before applying it:
 
 ```sh
 just check <HOSTNAME>      # statix, system evaluation, installed agent config
-just build <HOSTNAME>      # system build and installed agent config validation
+just build <HOSTNAME>      # build, package diff, installed agent config validation
 just switch <HOSTNAME>     # apply manually when ready
 ```
 
@@ -71,6 +71,19 @@ Update flake inputs deliberately:
 just up               # all inputs
 just up <INPUT>...    # selected inputs
 ```
+
+After updating inputs, run `just build <HOSTNAME>` to review the resulting
+Nix package changes before applying with `just switch <HOSTNAME>`. The build
+uses [nh](https://github.com/nix-community/nh) from the pinned nixpkgs input,
+shows build progress and a package diff against the active system, and keeps
+the build at `./result` without activating it. It forwards the private host
+input override and still runs `just validate-agent-config` after the build.
+The recipe works before `nh` is installed; the next switch also adds `nh` to
+your user packages for direct use.
+
+The diff includes all pending Nix configuration changes since the active
+generation, not only input updates. Updating the lock file alone does not show
+package changes. Homebrew and mise updates are outside this Nix package diff.
 
 ## Linux builders and backups
 

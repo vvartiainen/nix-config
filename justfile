@@ -53,9 +53,9 @@ check host=host: require-host
     nix eval --raw '.#darwinConfigurations.{{ host }}.system.drvPath' {{ host_flags }}
     just validate-agent-config
 
-# Build the darwin system derivation without applying it.
+# Build without applying, showing package changes against the active system.
 build host=host: require-host
-    nix build '.#darwinConfigurations.{{ host }}.system' {{ host_flags }}
+    nix run '.#darwinConfigurations.{{ host }}.pkgs.nh' {{ host_flags }} -- darwin build . --hostname '{{ host }}' --out-link result --diff always {{ host_flags }}
     just validate-agent-config
 
 # Apply the nix-darwin configuration (skip_homebrew=1 skips brew bundle).

@@ -24,7 +24,7 @@ Validate your real host configuration before applying changes manually:
 
 ```sh
 just check <HOSTNAME>      # lint, evaluate, and validate installed agent config
-just build <HOSTNAME>      # build without applying; validate installed agent config
+just build <HOSTNAME>      # build, show package changes, validate installed agent config
 just switch <HOSTNAME>     # apply
 just switch <HOSTNAME> 1   # apply without running Homebrew bundle
 just up                   # update all flake inputs; pass names to update a subset
