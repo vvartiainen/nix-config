@@ -11,12 +11,6 @@ $app - e : /usr/bin/open -b com.apple.finder
 # Toggle a persistent quota dashboard, independent of the quick-access shell.
 ctrl + cmd + shift - u : /bin/sh "$HOME/.config/kitty/metrics.sh"
 
-# Require a second Cmd+Q within 500ms to quit Zen or Kitty.
-cmd - q, cmd - q [
-  "zen" | cmd - q
-  "kitty" | cmd - q
-]
-
 # Zen has no remappable next/prev tab shortcut
 ctrl + shift - j [
   "zen" | ctrl - tab
