@@ -195,6 +195,24 @@ turned on.
 
 ## Desktop and tool notes
 
+- Zen's default profile uses Catppuccin Mocha with the mauve accent through
+  the pinned Zen module's preset in
+  [`zen-browser.nix`](../nix/modules/home/programs/zen-browser.nix). It installs
+  the browser and internal-page styles and selects dark mode. Quit Zen before
+  applying the configuration manually, then reopen it to load the theme.
+- Slack's theme is an account preference, configured manually in each
+  workspace. Select dark mode in **Preferences → Appearance**, then open
+  **Custom theme → Import theme** (older versions use **Preferences → Themes**)
+  and paste the official
+  [Catppuccin Mocha theme string](https://github.com/catppuccin/slack#theme-strings):
+
+  ```text
+  #1E1E2E,#F8F8FA,#CBA6F7,#1E1E2E,#11111B,#CDD6F4,#CBA6F7,#EBA0AC,#1E1E2E,#CDD6F4
+  ```
+
+  Apply the imported theme. Current Slack versions map imported colors to
+  Slack's built-in palette, so this approximates Mocha rather than preserving
+  its exact colors. Nix installs Slack but does not manage this preference.
 - Yabai sends Obsidian, Notion, Notes, and Linear to Space 5 (`Notes`), and Mail
   and Calendar to Space 6 (`Mail`). Create missing Spaces in Mission Control,
   then restart yabai with Ctrl+Alt+Cmd+R.

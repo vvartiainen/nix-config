@@ -105,6 +105,12 @@ in
       id = 0;
       isDefault = true;
 
+      presets.catppuccin = {
+        enable = true;
+        flavor = "Mocha";
+        accent = "Mauve";
+      };
+
       settings = {
         "browser.ctrlTab.sortByRecentlyUsed" = false;
         "browser.translations.automaticallyPopup" = false;
