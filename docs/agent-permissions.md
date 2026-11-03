@@ -12,6 +12,12 @@ leaving it.** Routine commands and workspace edits run without approval inside
 an OS sandbox. Prompts are reserved for commands that need extra review and
 for anything that has to run outside the sandbox.
 
+Host- and user-specific tool inventories and sandbox workflow skills belong
+in the [private host skill catalog](agent-project-tools.md#skill-library),
+registered through `agents.localSkills`. Keep those guides in step with this
+document and the shared policy when changing agent capabilities. Skills do not
+change permissions; the active session policy controls access.
+
 ## Approval behavior
 
 | CLI | Sandboxed commands | File edits | Still prompts |

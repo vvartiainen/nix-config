@@ -72,6 +72,28 @@ checks the review criteria, removes `needs-review`, and marks accepted work Done
 Then turn them on per project with `ct agents set skills <name> enable` and
 sync; their files are copied into the project.
 
+Host- and user-specific guides, such as a workstation tool inventory and
+sandbox workflow, belong in the private host catalog. Keep their skill
+directories alongside private host data, and register them in a Home Manager
+module under the host's `homeModules`:
+
+```nix
+homeModules = [
+  {
+    agents.localSkills.system-tools = ./skills/system-tools;
+  }
+];
+```
+
+This example goes in the private host's `default.nix`; add the module to the
+existing list. The directory must contain `SKILL.md`. After manually rebuilding
+and applying the catalog, select it with
+`ct agents set skills system-tools enable`, review `ct agents sync --dry-run`,
+then run `ct agents sync` and start a new agent session. The public fixture
+does not include private host skills. See [host data](setup.md#host-data).
+Skill directories are copied into the Nix store and enabled skills into project
+files; keep credentials out and review generated files before committing them.
+
 The reusable workflow skills in this repo are:
 
 | Skill | Use |
