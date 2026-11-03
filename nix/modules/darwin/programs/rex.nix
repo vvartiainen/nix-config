@@ -39,13 +39,29 @@ in
   # Match Kitty: keep left Option for composing characters, right Option for Alt.
   system.defaults.CustomUserPreferences."com.superlogical.rex" = {
     "Workspace.appearance" = "dark";
+    "Workspace.animationStyle" = "off";
+    "Workspace.appIconVisibility" = "dockOnly";
     "Workspace.tabStyle" = "vertical";
+    "Workspace.tabIconTintMode" = "off";
     "Workspace.sidebarPosition" = "left";
     "Workspace.sidebarCollapsed" = false;
+    "Workspace.inactivePaneFadeMode" = "both";
+    "Workspace.usesStandardInactiveWindowPaneStyles" = true;
+    "Workspace.cursorShadersEnabled" = true;
+    "Workspace.terminalCursorStyle" = "bar";
+    "Workspace.terminalFontName" = "JetBrainsMono Nerd Font Mono";
     "Workspace.terminalOptionKeyBehavior" = "rightActsAsAlt";
     # Native macOS notifications for program activity (agents waiting or
     # finished) and OSC 9/777. macOS still asks once for permission.
     "Workspace.showsProgramActivityNotifications" = true;
     "Workspace.allowsTerminalNotifications" = true;
+    "Workspace.notificationPosition" = "top-right";
+
+    "rex.agents.names-sessions" = false;
+    "rex.developer-mode-enabled" = true;
+    "rex.server.automatic-restart-enabled" = true;
+    "rex.server.block-plugin-reload-enabled" = false;
+    "rex.server.run-mode" = "bundled";
+    "rex.server.web-client-origin-patterns" = [ "https://rex.superlogical.com" ];
   };
 }

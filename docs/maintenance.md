@@ -353,8 +353,17 @@ turned on.
   grants before testing Rex approval behavior.
 
   GUI settings are separate from Lua: the Darwin module selects dark
-  appearance and expanded vertical tabs on the left. It sets right Option to
-  act as Alt, matching Kitty, while left Option keeps character composition.
+  appearance, expanded vertical tabs on the left without icon tinting, a Dock
+  icon without a menu-bar icon, and no animations. Terminals use JetBrainsMono
+  Nerd Font Mono and a bar cursor with cursor shaders enabled. Inactive panes
+  fade both text and background, using standard styles in inactive windows.
+  Program activity and terminal notifications are enabled at the top right.
+  The module also enables developer mode and automatic restart of the bundled
+  server, disables block plugin reload and agent session naming, and allows
+  the official Rex web client origin. Window positions, cached server routes,
+  session history and updater state remain app-managed.
+  It sets right Option to act as Alt, matching Kitty, while left Option keeps
+  character composition.
   Quit Rex before applying preferences, then relaunch it. To test immediately,
   choose **Option Key Behavior** in Settings and select the right-Option Alt
   behavior. Verify your terminal Alt shortcuts with the right Option key.
