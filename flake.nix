@@ -28,8 +28,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Pin the CLI snapshot to the GUI build in nix/modules/darwin/programs/rex.nix.
+    # The CLI and app share an API revision, so bump both together.
     rex = {
-      url = "https://pkgs.superlogical.com/rex/nix/snapshot.tar.gz";
+      url = "https://pkgs.superlogical.com/rex/nix/snapshot/0.0.1793645657-gd018d2.tar.gz";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

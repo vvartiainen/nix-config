@@ -1,5 +1,5 @@
 # Catppuccin Mocha, matching ../kitty/current-theme.conf (MIT).
-# Import in Rex with the command palette's "Import Theme File" action.
+# Refresh it with the palette's "Apply Catppuccin Mocha" action.
 background = #1e1e2e
 foreground = #cdd6f4
 cursor-color = #f5e0dc
