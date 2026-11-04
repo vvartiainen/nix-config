@@ -296,6 +296,35 @@ The worktree part is its directory name, so detached worktrees also have a
 useful label. Manually named tabs take precedence. Outside Git repositories,
 labels show the directory name (`~` for home).
 
+Kitty 0.50+ also shows the most urgent program status beside the label using
+[OSC 7501](https://sw.kovidgoyal.net/kitty/misc-protocol/#reporting-the-status-of-a-program):
+working, waiting for the user, finished or failed. Home Manager registers
+global lifecycle hooks for Codex, Claude Code and Copilot CLI, preserving
+other integrations. Hooks report approval requests and supported question
+events as blocked, and clear that state when tools finish or a new prompt
+starts. Individual tool failures do not mark the whole turn failed.
+
+Launch these agents through the configured interactive zsh functions. They
+capture Kitty's terminal device because hooks have captured output and may
+have no controlling terminal. Direct executable launches, other terminals,
+tmux sessions and subagent events do not report to the parent Kitty pane.
+If the agent's hook sandbox blocks the terminal device, status delivery is
+skipped; verify with fresh sessions after applying. Codex may require trusting
+new hooks in `/hooks`. Its question indicator depends on the CLI dispatching
+`PreToolUse` for `request_user_input`.
+
+SketchyBar polls the current Kitty status records every three seconds. When
+a pane needs input, the left-side item shows the agent, approval/answer action
+and directory, plus a count of other waiting panes. Click it to focus the
+first waiting pane. It hides when no pane is blocked. It uses Kitty's existing
+remote-control sockets; it does not maintain a separate session registry.
+
+After applying manually, fully quit and restart Kitty to load 0.50+, start a
+fresh shell, and reload SketchyBar. Test an approval and a question in each
+agent, click the bar item, answer, and verify the status clears. The fixture
+build validates public configuration only; live hook delivery, private
+modules, real machine identity and nested virtualization need manual checks.
+
 After applying manually, restart Kitty to reload `tab_bar.py`. Compare tabs
 opened in the main checkout and a linked worktree, then run an agent in the
 worktree and check that its label remains distinct. The renderer uses Kitty's

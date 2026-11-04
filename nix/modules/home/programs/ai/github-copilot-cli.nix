@@ -198,7 +198,7 @@ in
         app|login|help|init|update|version|workflow|sessions|memories|plugin|mcp|skill|instruction|lsp|sandbox|completion)
           command copilot "$@" ;;
         *)
-          ${cacheEnv} command copilot ${lib.escapeShellArgs toolFlags} "$@" ;;
+          ${cacheEnv} _nix_config_agent_tty command copilot ${lib.escapeShellArgs toolFlags} "$@" ;;
       esac
     }
   '';

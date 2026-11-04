@@ -16,6 +16,7 @@ in
     ./mcp.nix
     ./opencode.nix
     ./pi-coding-agent.nix
+    ./terminal-status.nix
   ];
 
   # Homebrew checks that its cache (or its parent) is writable before use.
