@@ -10,6 +10,15 @@ let
   permissionFile = "${agentDir}/extensions/pi-permission-system/config.json";
   commandString = cmd: builtins.unsafeDiscardStringContext (lib.concatStringsSep " " cmd);
   rules = value: commands: lib.genAttrs (map (cmd: "${commandString cmd} *") commands) (_: value);
+  # Mirror the OS deny list on the permission layer. The sandbox is the
+  # boundary, but an exact-path deny misses a directory read, so deny each
+  # secret path and everything beneath it too.
+  secretPathRules = lib.genAttrs (
+    lib.concatMap (path: [
+      path
+      "${path}/*"
+    ]) policy.paths.denied
+  ) (_: "deny");
   permissionSettings = {
     yoloMode = false;
     permissionReviewLog = true;
@@ -34,16 +43,18 @@ let
       // lib.genAttrs (map commandString policy.commands.exact) (_: "allow")
       // rules "ask" policy.commands.sandboxAsk
       // rules "deny" policy.commands.denied;
-      path = {
-        "*" = "allow";
-        "*.env" = "deny";
-        "*.env.*" = "deny";
-        "*.env.example" = "allow";
-        "*.pem" = "deny";
-        "*.key" = "deny";
-        # Pi itself needs its credentials; model tools do not.
-        "${agentDir}/auth.json" = "deny";
-      };
+      path =
+        {
+          "*" = "allow";
+          "*.env" = "deny";
+          "*.env.*" = "deny";
+          "*.env.example" = "allow";
+          "*.pem" = "deny";
+          "*.key" = "deny";
+          # Pi itself needs its credentials; model tools do not.
+          "${agentDir}/auth.json" = "deny";
+        }
+        // secretPathRules;
     };
   };
   sandboxSpec = pkgs.writeText "pi-safehouse.json" (
@@ -59,6 +70,8 @@ let
         "${agentDir}/models.json"
         "${agentDir}/keybindings.json"
         "${agentDir}/agents"
+        # Persisting an MCP server would run its command in later sessions.
+        "${agentDir}/mcp.json"
       ];
       # Nixpkgs' OpenSSL, which Node uses, has no roots when SSL_CERT_FILE is
       # unreadable. Safehouse can't follow /etc/ssl/certs through /etc/static.

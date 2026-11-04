@@ -38,17 +38,26 @@ Permissions are an approval layer, not a security boundary: trusted project
 configuration and extensions can affect their behavior. Do not load untrusted
 extensions or disable the permission package.
 
+The sandbox also denies writes to extension code under Pi state (except the
+permission extension's review log) and to the user-level `mcp.json`, so a session
+cannot persist code or servers for a later one. Nix profile links are readable,
+so Home Manager tools such as `statix` and `bl` resolve inside Pi.
+
 Safehouse leaves IP networking open, including local TCP services; it does not
 provide the domain allowlist used by Codex and Claude or prevent exfiltration
 of readable data. UNIX-socket connections to host daemons are blocked. An
 approval does not escape Safehouse: run blocked Nix builds and host-service
 operations manually outside Pi. Pi must read its own stored credentials;
-tool-level rules deny `auth.json`, but extensions share Pi's process access.
-The wrapper also passes `DEEPSEEK_API_KEY` when set and otherwise sanitizes the
-environment. Existing stored provider logins remain usable.
-MCP servers started by Pi inherit these limits too; servers using data outside
-the granted paths, including an external Backlog vault, need a separately
-reviewed grant before they can work.
+tool-level rules deny `auth.json`, but extensions share Pi's process access and
+the path deny is exact, so a recursive read of the agent directory or a program
+that computes the path still reaches it. Prefer provider keys passed through the
+environment over stored logins: the wrapper passes `DEEPSEEK_API_KEY` when set
+and otherwise sanitizes the environment, and existing stored provider logins
+remain usable. The installed npm package directory stays writable: a blocked
+write makes Pi skip a package instead of failing, so vendoring the pinned
+packages is open work. MCP servers started by Pi inherit these limits too;
+servers using data outside the granted paths, including an external Backlog
+vault, need a separately reviewed grant before they can work.
 
 ## Working in the sandboxes
 

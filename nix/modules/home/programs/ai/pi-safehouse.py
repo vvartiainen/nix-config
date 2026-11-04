@@ -19,6 +19,8 @@ def subpath(path):
 
 def make_profile(spec, workdir, tmpdir):
     writable = [workdir, tmpdir, "/tmp", "/private/tmp", "/dev", *spec["writable"]]
+    extensions = f'{spec["agentDir"]}/extensions'
+    extension_logs = f"{extensions}/pi-permission-system/logs"
     # Safehouse's toolchain profiles permit normal user-cache writes. Narrow
     # those grants to our disposable caches, Pi state and this invocation's cwd.
     profile = [
@@ -36,6 +38,10 @@ def make_profile(spec, workdir, tmpdir):
     profile.extend([
         r'(deny file-write* (require-all (regex #"/\.pi(/|$)") '
         f'(require-not {subpath(spec["agentDir"])})))',
+        # Extension files are code that loads in later sessions. The permission
+        # extension's review log is the only write this directory needs.
+        "(deny file-write* (require-all "
+        f"{subpath(extensions)} (require-not {subpath(extension_logs)})))",
         r'(deny file-write* (regex #"/\.git/(config$|hooks(/|$))"))',
         r'(deny file-read* file-write* (regex #"/[^/]+\.(pem|key)$"))',
         r'(deny file-read* file-write* (require-all '

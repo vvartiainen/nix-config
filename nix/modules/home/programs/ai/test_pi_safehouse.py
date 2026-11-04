@@ -28,7 +28,9 @@ class SafehouseTests(unittest.TestCase):
         for path in [cls.work, cls.agent, cls.cache, cls.home / ".aws", cls.home / ".npm"]:
             path.mkdir(parents=True)
         cls.policy = cls.agent / "extensions/pi-permission-system/config.json"
+        cls.logs = cls.agent / "extensions/pi-permission-system/logs"
         cls.policy.parent.mkdir(parents=True)
+        cls.logs.mkdir()
         cls.policy.write_text("{}")
         (cls.home / ".aws/synthetic").write_text("synthetic")
         (cls.home / "unrelated-read").write_text("synthetic")
@@ -71,6 +73,7 @@ class SafehouseTests(unittest.TestCase):
     def test_denials_also_apply_to_child_processes(self):
         targets = [
             self.home / "unrelated", self.home / ".npm/output", self.policy,
+            self.agent / "extensions/evil.ts",
             self.work / ".env", self.work / ".pi/settings.json",
             self.work / ".git/config", self.work / ".git/hooks/pre-commit",
         ]
@@ -87,6 +90,7 @@ class SafehouseTests(unittest.TestCase):
             " try: Path(target).read_text()\n"
             " except PermissionError: pass\n"
             " else: raise AssertionError(target)\n"
+            f"Path({str(self.logs / 'review.jsonl')!r}).write_text('ok')\n"
         )
         result = self.run_probe(
             "import subprocess, sys; "
