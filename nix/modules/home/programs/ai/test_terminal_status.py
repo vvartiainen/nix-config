@@ -21,6 +21,72 @@ spec.loader.exec_module(status)
 
 
 class TerminalStatusTests(unittest.TestCase):
+    def setUp(self):
+        scratch = tempfile.TemporaryDirectory()
+        self.addCleanup(scratch.cleanup)
+        self.directory = Path(scratch.name)
+        directory = patch.object(status, "state_directory", return_value=self.directory)
+        self.addCleanup(directory.stop)
+        directory.start()
+        bar = patch.object(status, "bar_command")
+        self.addCleanup(bar.stop)
+        self.bar = bar.start()
+        environment = patch.dict(os.environ, {"NIX_CONFIG_AGENT_LAUNCH": ""})
+        self.addCleanup(environment.stop)
+        environment.start()
+
+    def send(self, launch, state="blocked", terminal="", kind="permission"):
+        with patch.dict(os.environ, {
+            "NIX_CONFIG_AGENT_LAUNCH": launch,
+            "NIX_CONFIG_AGENT_PID": str(os.getpid()),
+            "NIX_CONFIG_AGENT_TTY": terminal,
+            "KITTY_LISTEN_ON": "unix:/tmp/kitty-fixture",
+            "KITTY_WINDOW_ID": "7",
+        }), patch.object(status.sys, "stdin", io.StringIO('{"cwd":"/fixture/project"}')):
+            status.report("claude", state, kind)
+
+    def test_sketchybar_receives_hooks_without_kitty_or_a_terminal(self):
+        self.send("first")
+        self.bar.assert_called_with("--trigger", "agent_status_update")
+        with patch.object(status, "run_quietly") as external:
+            status.render_bar("agent_status", "agent_status_update")
+            external.assert_not_called()  # No Kitty query or other process.
+        self.bar.assert_called_with("--set", "agent_status", "drawing=on",
+                                    "label=claude: approval · project")
+
+    def test_kitty_delivery_failure_does_not_prevent_sketchybar(self):
+        self.send("first", terminal="/dev/tty-nix-config-missing")
+        self.assertEqual(len(status.waiting_records(self.directory)), 1)
+        self.bar.assert_called_with("--trigger", "agent_status_update")
+
+    def test_sessions_clear_independently_and_wrapper_cleanup_is_idempotent(self):
+        self.send("first")
+        self.send("second", kind="question")
+        status.render_bar("agent_status", "agent_status_update")
+        self.assertIn("(+1)", self.bar.call_args.args[-1])
+        self.send("first", state="working")
+        records = status.waiting_records(self.directory)
+        self.assertEqual([record["kind"] for record in records], ["question"])
+        status.clear("second")
+        status.clear("second")
+        status.render_bar("agent_status", "agent_status_update")
+        self.bar.assert_called_with("--set", "agent_status", "drawing=off")
+
+    def test_dead_launch_shell_is_removed(self):
+        self.send("first")
+        with patch.object(status.os, "kill", side_effect=ProcessLookupError):
+            self.assertEqual(status.waiting_records(self.directory), [])
+        self.assertFalse(list(self.directory.glob("*.json")))
+
+    def test_click_uses_hook_address_without_querying_kitty(self):
+        self.send("first", terminal="/dev/tty-nix-config-missing")
+        with patch.object(status, "run_quietly") as external:
+            status.render_bar("agent_status", "mouse.clicked")
+            external.assert_called_once_with([
+                "/opt/homebrew/bin/kitten", "@", "--to", "unix:/tmp/kitty-fixture",
+                "focus-window", "--match", "id:7",
+            ])
+
     def test_install_preserves_other_handlers_and_is_idempotent(self):
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory) / "source.json"

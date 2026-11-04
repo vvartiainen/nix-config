@@ -5,7 +5,9 @@
   ...
 }:
 let
+  sketchybar = lib.optionalString pkgs.stdenv.isDarwin "${pkgs.sketchybar}/bin/sketchybar";
   reporter = pkgs.writeShellScriptBin "nix-config-terminal-status" ''
+    export NIX_CONFIG_SKETCHYBAR=${lib.escapeShellArg sketchybar}
     exec ${pkgs.python3}/bin/python3 ${./terminal-status.py} "$@"
   '';
   command = lib.getExe reporter;
@@ -74,14 +76,21 @@ in
   # the launch terminal explicitly; do not inherit a parent agent's terminal.
   programs.zsh.initContent = ''
     _nix_config_agent_tty() {
-      local terminal=""
+      local terminal="" launch="$$-$RANDOM-$RANDOM"
       if [[ $TERM == xterm-kitty && -n $KITTY_WINDOW_ID && -z $TMUX && -t 1 ]]; then
         terminal=$(tty)
       fi
-      NIX_CONFIG_AGENT_TTY="$terminal" "$@"
+      {
+        NIX_CONFIG_AGENT_TTY="$terminal" NIX_CONFIG_AGENT_LAUNCH="$launch" \
+          NIX_CONFIG_AGENT_PID="$$" "$@"
+      } always {
+        ${command} clear "$launch" >/dev/null 2>&1
+      }
     }
     claude() { _nix_config_agent_tty command claude "$@"; }
   '';
+
+  programs.sketchybar.extraPackages = lib.optionals pkgs.stdenv.isDarwin [ reporter ];
 
   home.file."${config.programs.github-copilot-cli.configDir}/hooks/nix-config-terminal-status.json".source =
     json.generate "copilot-terminal-status.json" {

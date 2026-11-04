@@ -313,11 +313,20 @@ skipped; verify with fresh sessions after applying. Codex may require trusting
 new hooks in `/hooks`. Its question indicator depends on the CLI dispatching
 `PreToolUse` for `request_user_input`.
 
-SketchyBar polls the current Kitty status records every three seconds. When
-a pane needs input, the left-side item shows the agent, approval/answer action
-and directory, plus a count of other waiting panes. Click it to focus the
-first waiting pane. It hides when no pane is blocked. It uses Kitty's existing
-remote-control sockets; it does not maintain a separate session registry.
+The hooks also report directly to SketchyBar, independently of Kitty. Each
+zsh-launched agent gets a unique launch ID; blocked hooks atomically write a
+private record under `/tmp/nix-config-agent-status-<uid>` and trigger the
+`agent_status_update` event. The left-side item shows the agent, approval/answer
+action and directory, plus a count of other waiting sessions. Resuming work,
+ending the session or exiting the CLI removes its record. A thirty-second
+cleanup check also removes records whose launch shell has exited.
+
+SketchyBar never queries Kitty for status. The hooks work from other terminals
+too, even when Kitty terminal delivery is unavailable. For Kitty sessions,
+clicking the item sends a focus command to the pane address captured by the
+hook; no socket discovery or status queries are needed. Other terminals show
+the action but do not currently support click-to-focus. SketchyBar IPC must be
+accessible to the hook; delivery failures never block the agent.
 
 After applying manually, fully quit and restart Kitty to load 0.50+, start a
 fresh shell, and reload SketchyBar. Test an approval and a question in each
