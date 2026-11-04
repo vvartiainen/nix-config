@@ -20,7 +20,7 @@
         keybinding = "emacs";
         providers.macos-settings.enabled = true;
         tray.enabled = false;
-        # Preserves the current shortcut; blocks IDE completion on Ctrl+Space.
+        # Cmd+Space: Qt maps "control" to Cmd on macOS.
         global_shortcuts.toggle = "control+SPACE";
         font.normal = {
           family = "JetBrainsMono Nerd Font";

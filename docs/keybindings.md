@@ -10,7 +10,7 @@ characters. Agent prompt controls are in [agent CLI keybindings](agent-keybindin
 | Left Cmd+Option+Space | Open Spotlight |
 | Ctrl+Cmd+Z / K / C / O / M / E | Open or focus Zen / Kitty / Calendar / Obsidian / Mail / Finder |
 | Ctrl+Shift+Space | Toggle the quick-access terminal |
-| Ctrl+Space | Toggle Vicinae (see [launcher setup](setup.md#vicinae-launcher-trial)) |
+| Cmd+Space | Toggle Vicinae (see [launcher setup](setup.md#vicinae-launcher-trial)) |
 | Ctrl+Cmd+U | Toggle CodexBar's usage menu |
 | Ctrl+Cmd+Shift+U | Toggle the quota dashboard |
 | Ctrl+Cmd+Shift+M | Toggle microphone input volume between zero and its previous level (requires SketchyBar) |
@@ -24,9 +24,9 @@ characters. Agent prompt controls are in [agent CLI keybindings](agent-keybindin
 | Ctrl+N/P in Slack | Down / up in menus, search and message editing |
 | Ctrl+Shift+J/K in Slack | Next / previous channel or DM |
 
-Global shortcuts take precedence over app actions: Vicinae's Ctrl+Space blocks
-IDE completion, and Ctrl+Shift+Space blocks JetBrains smart completion. The
-macOS input-source shortcuts are disabled. Left Cmd+Option+Space keeps
+Global shortcuts take precedence over app actions: Ctrl+Shift+Space blocks
+JetBrains smart completion. The macOS input-source shortcuts are disabled so
+Ctrl+Space reaches apps for completion. Left Cmd+Option+Space keeps
 Spotlight. CodexBar must be running for its menu shortcut.
 
 ## Window and resize modes
