@@ -8,12 +8,11 @@ source "$CONFIG_DIR/colors.sh"
 sketchybar --add item clock right \
 	--set clock label.color="$SKY" \
 	icon.drawing=off \
-	padding_left=0 \
+	padding_left=4 \
 	label.padding_left=2 \
 	label.width=78 \
 	--add item calendar right \
-	--set calendar icon=􀧞 \
-	--set calendar icon.color="$MAUVE" \
+	--set calendar icon.drawing=off \
 	--set calendar label.color="$SKY" \
 	padding_right=0 \
 	label.padding_right=2 \
