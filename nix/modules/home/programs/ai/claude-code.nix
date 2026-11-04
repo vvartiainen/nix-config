@@ -18,10 +18,22 @@ let
 
   commandString = lib.concatStringsSep " ";
 
+  # Commands listed in sandbox.excludedCommands always run outside the
+  # sandbox; every other command runs inside it without a prompt.
+  unsandboxedPrograms = [
+    "gh"
+    "terraform"
+    "go"
+  ];
+
   permissionSettings = {
+    # Allow rules only matter outside the sandbox, so keep them for the
+    # excluded programs. Elsewhere they would let a retry outside the
+    # sandbox, e.g. a read under a denied home path, run without a prompt.
     allow =
-      map (cmd: "Bash(${commandString cmd}:*)") commands.allowed
-      ++ map (cmd: "Bash(${commandString cmd})") commands.exact
+      map (cmd: "Bash(${commandString cmd}:*)") (
+        lib.filter (cmd: lib.elem (lib.head cmd) unsandboxedPrograms) commands.allowed
+      )
       ++ [ "Read(//nix/store/**)" ]
       # WebFetch allows also widen the Bash sandbox's network allowlist.
       ++ map (domain: "WebFetch(domain:${domain})") network.sandbox

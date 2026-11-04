@@ -54,7 +54,7 @@ from the importing Home Manager configuration.
 | `commands.denied` | Never auto-approved (`op`, `security`, `gh auth`, `gh api`, `sudo`, `darwin-rebuild`, `just switch`, `git push --force`, `mise trust`) |
 | `paths.homeReadable` | Home paths sandboxed commands may read (`.agents` for shared skills, `.config`, `.local/share`, `.local/state`, `.cache`, shell startup files, Nix profiles, toolchains); the rest of `~` is denied |
 | `paths.readable` | `paths.homeReadable` as absolute paths |
-| `paths.homeSecrets` | Credential paths under `~` denied for reads, also inside `paths.homeReadable` (`.ssh`, `.aws`, `.docker`, `.config/gh`, `.config/op`, agent auth and state, shell secrets, …) |
+| `paths.homeSecrets` | Credential paths under `~` denied for reads, also inside `paths.homeReadable` (`.ssh`, `.aws`, `.docker`, `.kube`, `.config/gh`, `.config/op`, sops/age keys, agent auth and state, shell secrets and history, keychains, browser profiles, …) |
 | `paths.secretFiles` | Key files denied everywhere (`**/*.pem`, `**/*.key`); `.env` files are denied per CLI |
 | `paths.denied` | `paths.homeSecrets` as plain absolute paths, for sandboxes that don't take globs |
 | `network.fetch` | Docs and registry sites the web-fetch tools may read |
@@ -74,8 +74,8 @@ a prompt, but only inside the sandbox.
 
 | List | Codex | Claude | Cursor | Copilot | OpenCode |
 |---|---|---|---|---|---|
-| `commands.allowed` | — (left to the sandbox) | `Bash(…)` allow | `Shell(…)` allow | `--allow-tool` prefixes | allow |
-| `commands.exact` | — (prefix rules only) | `Bash(…)` allow | `Shell(…)` allow | `--allow-tool` without prefix wildcard | allow |
+| `commands.allowed` | — (left to the sandbox) | `Bash(…)` allow for `gh` and `terraform` only | `Shell(…)` allow | `--allow-tool` prefixes | allow |
+| `commands.exact` | — (prefix rules only) | — (left to the sandbox) | `Shell(…)` allow | `--allow-tool` without prefix wildcard | allow |
 | `commands.sandboxAsk` | `prompt` rule | ask | — | Unlisted; normal approval | — |
 | `commands.routine` | — (sandbox policy) | — except `terraform validate` ask | — | Unlisted; normal approval | — |
 | `commands.sandboxAsk ++ commands.routine` | — | — | — | — | ask |
@@ -207,6 +207,14 @@ readable, and a project outside that directory needs a per-project
 `allowRead: ["."]`. Claude 2.1.316 re-applies credential denies and denies
 nested inside an allowed path after the allows, so `paths.homeSecrets` stay
 denied within `.config` and the other grants.
+
+Other home reads fail in the sandbox and prompt when retried outside it.
+Claude keeps `commands.allowed` rules only for the programs it runs outside
+the sandbox (`gh`, `terraform`): sandboxed commands, including `python3` or
+`sed` scripts, run without prompts anyway, and a broad rule such as
+`Bash(cat:*)` would let that retry run unprompted. `paths.homeSecrets` stay
+denied for the Read tool in either case; a command approved outside the
+sandbox runs with the user's normal access.
 
 ### Codex permission profiles and workspace modes
 
