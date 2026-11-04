@@ -308,6 +308,14 @@ turned on.
   install them alongside the Nix agent.
 - Sketchybar comes from nixpkgs. Home Manager runs it and logs to
   `~/Library/Logs/sketchybar`.
+- After applying manually, `reloadall` reloads yabai's scripting addition,
+  restarts the managed yabai and skhd agents, reloads SketchyBar, and reloads
+  Rex's Lua configuration. It is an executable from
+  [`reloadall.nix`](../nix/modules/darwin/programs/reloadall.nix), available
+  outside interactive zsh too. Each step reports failures and the remaining
+  steps still run; the command exits nonzero if any step failed. Rex uses the
+  running app's CLI inside Rex and does not start a missing server or restart
+  terminal sessions. GUI preferences still require a manual app restart.
 - Activation signs yabai and skhd with a local certificate, kept root-only in
   `/var/db/nix-config/code-signing`
   ([`signed-binaries.nix`](../nix/modules/darwin/signed-binaries.nix)).

@@ -5,6 +5,7 @@
     ./agentsview.nix
     ./onepassword.nix
     ./podman.nix
+    ./reloadall.nix
     ./tailscale.nix
   ];
 }

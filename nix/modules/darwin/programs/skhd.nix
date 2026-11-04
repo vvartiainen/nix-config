@@ -68,7 +68,6 @@ in
 
       programs.zsh.shellAliases = {
         reloadskhd = ''launchctl kickstart -k gui/"$(id -u)"/${label}'';
-        reloadall = ''sudo yabai --load-sa ; launchctl kickstart -k gui/"$(id -u)"/org.nixos.yabai ; launchctl kickstart -k gui/"$(id -u)"/${label} ; sketchybar --reload'';
       };
     };
 }
