@@ -92,6 +92,31 @@ The diff includes all pending Nix configuration changes since the active
 generation, not only input updates. Updating the lock file alone does not show
 package changes. Homebrew and mise updates are outside this Nix package diff.
 
+### Mise changes after activation
+
+Home Manager prints a reminder when the live managed `mise/config.toml` or
+`mise/mise.lock` contents differ from the last notification. The first
+activation with this tracking also prints it. Unchanged inputs stay quiet.
+The [mise module](../nix/modules/home/programs/mise.nix) owns these dotfile links
+and stores fingerprints under `$XDG_STATE_HOME/nix-config/mise` (normally
+`~/.local/state/nix-config/mise`). This works with live repository symlinks;
+Home Manager dry runs do not change the notification state.
+
+Run the suggested install command from the global/home context, then preview
+unused versions before deciding whether to remove any:
+
+```sh
+mise -C ~ install
+mise prune --dry-run
+# Only after reviewing the listed removals:
+mise prune
+```
+
+Activation only prints instructions; it does not run mise or remove tools.
+The fingerprint records that the reminder was shown, not that installation
+succeeded. Pruning considers mise's tracked projects, so review the list before
+removing versions you still need in a project or an ad hoc command.
+
 ### Tool installation ownership
 
 `btop` is installed by Home Manager through

@@ -12,6 +12,7 @@
     ./kitty.nix
     ./language-tools.nix
     ./lazygit.nix
+    ./mise.nix
     ./neovim.nix
     ./rex.nix
     ./rust.nix

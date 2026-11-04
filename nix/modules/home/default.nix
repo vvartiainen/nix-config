@@ -51,7 +51,6 @@ in
     enable = true;
     configFile = lib.mkMerge [
       (linkTree "kitty")
-      (linkTree "mise")
       (linkTree "nvim")
       (linkTree "yazi")
       {
