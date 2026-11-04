@@ -15,6 +15,10 @@ _: {
       # The linux-builder fetches from caches itself instead of receiving
       # every dependency from the host.
       builders-use-substitutes = true;
+      # Sandbox daemon builds, which agents can start from their own
+      # sandbox. Relaxed lets the few packages that need it opt out with
+      # __noChroot. Fixed-output fetches keep network access regardless.
+      sandbox = "relaxed";
       # Build locally when a substituter can't be reached, and don't wait long
       # for one.
       fallback = true;
