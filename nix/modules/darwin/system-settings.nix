@@ -216,7 +216,7 @@ in
             (_: hotkey false 65535 65535 0)
           // {
             "59" = hotkey false 65535 96 9437184;
-            # Input-source switching stays off; Ctrl+Space toggles Kitty.
+            # Input-source switching stays off so Ctrl+Space stays free.
             "60" = hotkey false 32 49 262144;
             "61" = hotkey false 32 49 786432;
             "79" = hotkey true 65535 123 8650752;

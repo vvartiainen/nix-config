@@ -126,10 +126,10 @@ preference module is inactive.
    app's separate login item disabled to avoid duplicate startup. Restart
    with `vicinae server` if you have quit it; use the CLI so declared settings
    are loaded through its wrapper.
-   The current declared launcher shortcut is Ctrl+Space, which conflicts
-   with the quick-access terminal. Change `global_shortcuts.toggle` in
-   `nix/modules/darwin/programs/vicinae.nix` if you want to reserve Ctrl+Space
-   for the terminal; Cmd+Space is available once Raycast is quit.
+   The current declared launcher shortcut is Ctrl+Space, which blocks IDE
+   completion. Change `global_shortcuts.toggle` in
+   `nix/modules/darwin/programs/vicinae.nix` to free it; Cmd+Space is
+   available once Raycast is quit.
 4. Recreate aliases, quicklinks and command shortcuts in Vicinae. Reinstall
    needed extensions from its store integration and configure/sign in to each
    again. [Raycast extension compatibility](https://docs.vicinae.com/) varies

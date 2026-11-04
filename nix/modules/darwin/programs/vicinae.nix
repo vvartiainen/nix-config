@@ -20,7 +20,7 @@
         keybinding = "emacs";
         providers.macos-settings.enabled = true;
         tray.enabled = false;
-        # Preserves the current shortcut; also used by the quick-access terminal.
+        # Preserves the current shortcut; blocks IDE completion on Ctrl+Space.
         global_shortcuts.toggle = "control+SPACE";
         font.normal = {
           family = "JetBrainsMono Nerd Font";
