@@ -80,7 +80,7 @@ a prompt, but only inside the sandbox.
 | `commands.routine` | — (sandbox policy) | — except `terraform validate` ask | — | Unlisted; normal approval | — |
 | `commands.sandboxAsk ++ commands.routine` | — | — | — | — | ask |
 | `commands.denied` | `forbidden` rule | deny | deny | `--deny-tool` | deny |
-| `paths.homeReadable` | `read` (`paths.readable`) | — (home readable) | — | `readonlyPaths` (`paths.readable`) | — |
+| `paths.homeReadable` | `read` (`paths.readable`) | `allowRead` (`paths.readable`) inside a home `denyRead` | — | `readonlyPaths` (`paths.readable`) | — |
 | `paths.homeSecrets` | `deny` (`paths.denied`) | `Read(…)` deny, also a sandbox read deny | `Read(…)` deny | sandbox `deniedPaths` | — |
 | `paths.secretFiles` | workspace deny | `Read(…)` deny | `Read(…)` deny | — | — |
 | `.env` files | workspace deny | `Read`/`Edit` deny | `Read`/`Write` deny | `write(.env)` deny | `read` deny |
@@ -179,7 +179,7 @@ account or VM when a hard account boundary is required.
 
 | | Codex | Claude | Cursor | Copilot |
 |---|---|---|---|---|
-| Reads | Under `~`: workspace and `paths.homeReadable`; elsewhere only tool paths and Codex's runtime set | Allowed everywhere except denied reads | Allowed (system read boundary) | Working directory, PATH, temp, `paths.homeReadable`, dev-tool paths |
+| Reads | Under `~`: workspace and `paths.homeReadable`; elsewhere only tool paths and Codex's runtime set | Under `~`: the projects directory, `paths.homeReadable` and shell snapshots; elsewhere allowed except denied reads | Allowed (system read boundary) | Working directory, PATH, temp, `paths.homeReadable`, dev-tool paths |
 | Denied reads | `paths.homeSecrets`, `.env`, keys | `paths.homeSecrets`, `.env`, keys | Credential paths | `paths.homeSecrets` |
 | Writes | Workspace, `$TMPDIR`, `/tmp`, agent caches, macOS runtime scratch (`/var/tmp`) | Working directory, `$TMPDIR`, `/tmp`, agent caches | Workspace, temp, `/tmp`, agent caches | Working directory, temp, `/tmp`, agent caches, dev-tool caches (`allowDevToolAccess`) |
 | Read-only in the workspace | `.git/hooks`, `.git/config` | `.git/hooks`, `.git/config` | `.git/hooks`, `.git/config` (sandbox default, plus `Write(…)` deny) | `.git/config` for file tools only |
@@ -188,18 +188,25 @@ account or VM when a hard account boundary is required.
 | Unix sockets | Nix daemon only | Nix daemon only | — | Nix daemon, herdr |
 
 Git runs hooks and config outside the sandbox, so both are read-only to
-prevent an escape. Nix builds run unprivileged through the daemon.
+prevent an escape. Nix builds run unprivileged through the daemon, outside
+the agent sandbox, and any sandboxed `nix` command can start them. The daemon
+sandboxes them (`sandbox = "relaxed"` in `nix/modules/shared/nix.nix`), but
+fixed-output fetches keep network access. Data a sandboxed command can read
+could leave that way, which is why the home directory reads are narrowed.
 
 Codex and Copilot deny reads under `~` except the workspace and
 `paths.homeReadable`, and deny `paths.homeSecrets` inside those; the narrower
 path wins. Reading elsewhere in `~` fails in the sandbox, so the agent has to
 ask to run the command outside it.
 
-Claude keeps the home directory readable and denies only `paths.homeSecrets`,
-`.env` files and keys. A `~/` deny in its user settings would also block the
-project, because user settings can't name it (`.` there means `~/.claude`);
-only a per-project `allowRead: ["."]` or a launch wrapper could allow it
-back. The network allowlist limits where readable data could go.
+Claude denies the home directory with `denyRead` and allows back
+`paths.readable`, its shell snapshot directories, and the directory holding
+this checkout (`dirOf repoRoot`, e.g. `~/prog`). User settings can't name
+each project (`.` there means `~/.claude`), so sibling repositories stay
+readable, and a project outside that directory needs a per-project
+`allowRead: ["."]`. Claude 2.1.316 re-applies credential denies and denies
+nested inside an allowed path after the allows, so `paths.homeSecrets` stay
+denied within `.config` and the other grants.
 
 ### Codex permission profiles and workspace modes
 
@@ -530,7 +537,8 @@ and network approval rules still apply; never activate the fixture system.
 
 - Codex and Copilot: reading the home directory outside the workspace and
   `paths.homeReadable` (other projects, `~/Documents`, `~/Library`,
-  shell history).
+  shell history). Claude likewise, except that it reads the whole projects
+  directory.
 - Reading credentials: `~/.ssh`, `~/.aws`, `~/.gnupg`,
   `~/.config/gh`, `~/.config/op`, `~/.netrc`, `~/.npmrc`, agent auth files,
   `.env` files, `*.pem`, `*.key`. Ask the user if a task really needs one.

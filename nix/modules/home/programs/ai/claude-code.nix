@@ -201,12 +201,25 @@ let
           "**/.git/hooks"
           "**/.git/config"
         ];
-        # The home directory stays readable: user settings can't name the
-        # project, so a `~/` deny would block it too. Credential paths are
-        # denied through the Read rules above.
-        # ~/.npmrc links to this tracked file; flake evaluation copies every
-        # tracked file, so nix must be able to read it.
-        allowRead = [ "/${repoRoot}/dotfiles/.npmrc" ];
+        # Like Codex, deny the home directory apart from the projects
+        # directory and the tool paths. Sandboxed commands can hand what they
+        # read to Nix daemon builds, which have network access. Claude applies
+        # nested and credential denies after these grants, so the Read
+        # denies above still win inside them.
+        denyRead = [ config.home.homeDirectory ];
+        allowRead =
+          [
+            # User settings can't name each project, so allow the directory
+            # that holds this checkout and its sibling repositories.
+            (builtins.dirOf repoRoot)
+            # The Bash tool sources its shell snapshot from here.
+            "${config.programs.claude-code.configDir}/shell-snapshots"
+            "${config.programs.claude-code.configDir}/session-env"
+          ]
+          ++ paths.readable
+          # ~/.npmrc links to this tracked file; flake evaluation copies every
+          # tracked file, so nix must be able to read it.
+          ++ [ "/${repoRoot}/dotfiles/.npmrc" ];
       };
       network = {
         allowedDomains = network.sandbox;
