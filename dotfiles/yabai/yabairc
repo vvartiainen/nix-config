@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
-yabai -m signal --add event=dock_did_restart action="sudo yabai --load-sa"
-sudo yabai --load-sa
+yabai -m signal --add label=load_sa event=dock_did_restart action="sudo -n yabai --load-sa"
+sudo -n yabai --load-sa
 
 yabai -m config external_bar all:49:0 \
   mouse_follows_focus off \
@@ -47,7 +47,7 @@ setup_space 6 Mail 2
 # Skip app assignments when their destination Space does not exist.
 assign_app() {
   yabai -m query --spaces --space "$2" >/dev/null 2>&1 || return 0
-  yabai -m rule --add app="$1" space="$2"
+  yabai -m rule --add label="assign_$1" app="$1" space="$2"
 }
 
 # Start
@@ -75,19 +75,19 @@ assign_app "Spotify" "Misc"
 assign_app "Discord" "Misc"
 assign_app "Whatsapp" "Misc"
 
-yabai -m rule --add app="^(Software Update|Dictionary|Photo Booth|Archive Utility|App Store)$" manage=off
+yabai -m rule --add label="system_utilities" app="^(Software Update|Dictionary|Photo Booth|Archive Utility|App Store)$" manage=off
 yabai -m rule --add label="Finder" app="^Finder$" title="(Co(py|nnect)|Move|Info|Pref)" manage=off
 yabai -m rule --add label="Safari" app="^Safari$" title="^(General|(Tab|Password|Website|Extension)s|AutoFill|Se(arch|curity)|Privacy|Advance)$" manage=off
 yabai -m rule --add label="About This Mac" app="System Information" title="About This Mac" manage=off
 
 # Catch 1Password's specific extension helpers and system level unlock overlays
 # # 1. Force the system ControlCenter biometric prompt completely out of the window tree
-yabai -m rule --add app="^ControlCenter$" manage=off sub-layer=above
+yabai -m rule --add label="ControlCenter" app="^ControlCenter$" manage=off sub-layer=above
 # 2. Add an explicit regex rule to target ALL variations of 1Password's sub-windows
 # Keep these windows unmanaged and fully opaque.
-yabai -m rule --add app="^1Password.*$" manage=off sub-layer=above opacity=1.0
+yabai -m rule --add label="1Password" app="^1Password.*$" manage=off sub-layer=above opacity=1.0
 # 3. Handle the browser extensions specifically (e.g. if using Arc or Safari)
-yabai -m rule --add app="^1Password Extension$" manage=off sub-layer=above opacity=1.0
+yabai -m rule --add label="1Password Extension" app="^1Password Extension$" manage=off sub-layer=above opacity=1.0
 
 # Focus a pending auth prompt (1Password unlock/sudo, Touch ID, keychain) when switching spaces.
 focus_auth_prompt="osascript -l JavaScript $HOME/.config/yabai/focus-auth-prompt.js"

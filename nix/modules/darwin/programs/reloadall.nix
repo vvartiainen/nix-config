@@ -5,24 +5,28 @@
       name = "reloadall";
       runtimeInputs = [
         pkgs.sketchybar
+        pkgs.jq
         config.programs.rex.package
       ];
       text = ''
         failed=0
         reload() {
           local service="$1"
+          local started=$SECONDS
           shift
           printf 'Reloading %s...\n' "$service"
           if ! "$@"; then
             printf 'reloadall: %s failed\n' "$service" >&2
             failed=1
           fi
+          printf '%s finished in %ss\n' "$service" "$((SECONDS - started))"
         }
 
-        gui_domain="gui/$(/usr/bin/id -u)"
-        reload "yabai scripting addition" /usr/bin/sudo -n /opt/yabai/bin/yabai --load-sa
-        reload yabai /bin/launchctl kickstart -k "$gui_domain/org.nixos.yabai"
-        reload skhd /bin/launchctl kickstart -k "$gui_domain/org.nixos.skhd"
+        # Reapply settings without taking desktop controls offline. yabairc
+        # loads the scripting addition and replaces rules/signals by label.
+        export PATH="/opt/yabai/bin:$PATH"
+        reload "yabai configuration" /bin/sh -e "''${XDG_CONFIG_HOME:-$HOME/.config}/yabai/yabairc"
+        reload skhd /opt/skhd/bin/skhd --reload
         reload SketchyBar sketchybar --reload
 
         # Inside Rex, use the CLI bundled with the running app/server.

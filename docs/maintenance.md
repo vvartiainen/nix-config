@@ -308,14 +308,25 @@ turned on.
   install them alongside the Nix agent.
 - Sketchybar comes from nixpkgs. Home Manager runs it and logs to
   `~/Library/Logs/sketchybar`.
-- After applying manually, `reloadall` reloads yabai's scripting addition,
-  restarts the managed yabai and skhd agents, reloads SketchyBar, and reloads
-  Rex's Lua configuration. It is an executable from
+- After applying manually, `reloadall` reapplies `yabairc` (including loading
+  yabai's scripting addition), reloads skhd bindings in place, reloads
+  SketchyBar, and reloads Rex's Lua configuration. It is an executable from
   [`reloadall.nix`](../nix/modules/darwin/programs/reloadall.nix), available
-  outside interactive zsh too. Each step reports failures and the remaining
-  steps still run; the command exits nonzero if any step failed. Rex uses the
+  outside interactive zsh too. Each step reports elapsed whole seconds and
+  failures; the remaining steps still run, and the command exits nonzero if
+  any step failed. Rex uses the
   running app's CLI inside Rex and does not start a missing server or restart
   terminal sessions. GUI preferences still require a manual app restart.
+  Yabai and skhd stay running, avoiding hotkey downtime and their 60-second
+  launchd restart throttles. Yabai rules and signals use labels so repeated
+  reloads replace existing entries. Removing or renaming an entry still needs
+  `reloadyabai` to clear the old entry; use `reloadskhd` if skhd itself needs
+  restarting. These explicit recovery commands can take longer. A failed
+  scripting-addition load reports an error without prompting for a password.
+- Kitty's zsh integration is also initialized from the Kitty Home Manager
+  module, so `exec zsh` keeps prompt tracking and the bar cursor. Automatic
+  integration only covers the initial shell. After applying, open a fresh
+  Kitty shell or run `exec zsh`, then check the cursor and Cmd+K behavior.
 - Activation signs yabai and skhd with a local certificate, kept root-only in
   `/var/db/nix-config/code-signing`
   ([`signed-binaries.nix`](../nix/modules/darwin/signed-binaries.nix)).
