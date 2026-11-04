@@ -146,14 +146,7 @@ let
       # nixpkgs sets CLAUDE_CODE_CERT_STORE=system, which on macOS holds only
       # keychain certificates, not Apple's roots. Add the Nix bundle, which
       # follows cacert and nix-darwin distrust updates.
-      NODE_EXTRA_CA_CERTS = "/etc/ssl/certs/ca-certificates.crt";
-      # The sandbox blocks trustd, which Go uses to verify TLS on macOS.
-      # Nixpkgs' Go reads this bundle instead, so Go module and toolchain
-      # downloads work inside the sandbox.
-      SSL_CERT_FILE = "/etc/ssl/certs/ca-certificates.crt";
-      # Skip Terraform's version check, an unlisted host that would prompt.
-      CHECKPOINT_DISABLE = "1";
-      # Compact at 80% of the auto-compact window, like the other CLIs.
+      NODE_EXTRA_CA_CERTS = "/etc/ssl/certs/ca-certificates.crt";      # Compact at 80% of the auto-compact window, like the other CLIs.
       CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = "80";
     };
     # MCP servers come from the projects (`ct agents`), not claude.ai.

@@ -474,6 +474,12 @@ let
         # Sandboxed nvim can't open its server socket or its log in
         # ~/.local/state, so it logs the failure to ./nvim.log instead.
         NVIM_LOG_FILE = "/dev/null";
+        # Sandboxes block trustd, which Go uses to verify TLS on macOS.
+        # Nixpkgs' Go reads this bundle instead, so Go module and toolchain
+        # downloads work inside the sandboxes.
+        SSL_CERT_FILE = "/etc/ssl/certs/ca-certificates.crt";
+        # Skip Terraform's version check, an unlisted host.
+        CHECKPOINT_DISABLE = "1";
       };
       writePaths = map dir [
         "nix"

@@ -161,7 +161,6 @@ account or VM when a hard account boundary is required.
 | CLI | Setting | Contents |
 |---|---|---|
 | Claude | `sandbox.excludedCommands` | `gh *`: runs outside the sandbox through the normal permission flow |
-| Claude | `env` | `SSL_CERT_FILE` for nixpkgs Go TLS, `CHECKPOINT_DISABLE`; see [Go CLIs and TLS](#go-clis-and-tls) |
 | Claude | `sandbox.filesystem.denyWrite` | `**/.git/hooks`, `**/.git/config` |
 | Claude | `sandbox.filesystem.allowRead` | The repo's `dotfiles/.npmrc`, which `~/.npmrc` links to |
 | Claude | `sandbox.network.allowUnixSockets` | Nix daemon socket |
@@ -374,7 +373,9 @@ again.
 The same env sets `NVIM_LOG_FILE=/dev/null`. Sandboxed Neovim can't create
 its RPC socket or open its log under `~/.local/state`, so without it every
 headless `nvim` run writes a `server_start` warning to `./nvim.log` in the
-working directory.
+working directory. It also sets `SSL_CERT_FILE` for Go TLS in the sandboxes
+and `CHECKPOINT_DISABLE=1` for Terraform; see
+[Go CLIs and TLS](#go-clis-and-tls).
 
 mise installs (`~/.local/share/mise`) stay read-only: they are programs the
 user runs outside the sandbox. Run `mise install` outside the sandbox. mise's
@@ -414,13 +415,14 @@ Apply the configuration and restart Claude Code for the setting to take effect.
 
 ## Go CLIs and TLS
 
-Go programs verify TLS on macOS through `trustd`, which Claude's Seatbelt
-sandbox blocks (`x509: OSStatus -26276`).
+Go programs verify TLS on macOS through `trustd`, which the Seatbelt
+sandboxes block (`x509: OSStatus -26276`).
 
-- Nixpkgs patches Go to read `SSL_CERT_FILE` on macOS, and `claude-code.nix`
-  sets it to `/etc/ssl/certs/ca-certificates.crt`. Nixpkgs' `go` and the
-  binaries it builds therefore work in the sandbox: module and toolchain
-  downloads from the allowlisted Go proxy succeed without a prompt.
+- Nixpkgs patches Go to read `SSL_CERT_FILE` on macOS, and the shared agent
+  env (`caches.env`) sets it to `/etc/ssl/certs/ca-certificates.crt` for
+  every CLI. Nixpkgs' `go` and the binaries it builds therefore work in the
+  sandboxes: module and toolchain downloads from the allowlisted Go proxy
+  succeed without a prompt. Verified in Claude's sandbox.
 - Upstream Go binaries (mise's Terraform, Homebrew's `gh`) ignore
   `SSL_CERT_FILE` on macOS. Terraform still runs sandboxed: `fmt`,
   `validate` and `init` without providers need no TLS. Provider downloads
@@ -436,9 +438,11 @@ sandbox blocks (`x509: OSStatus -26276`).
 - `enableWeakerNetworkIsolation = true` would open `trustd` to the sandbox
   instead, at the cost of a possible exfiltration channel. It is explicitly
   off in `claude-code.nix`.
-- Codex and Cursor have no exclusion list; a failing command goes through
-  their escalation prompt. Copilot authenticates sandboxed `gh` through its
-  masking proxy. Neither path is verified for the TLS failure.
+- Codex and Cursor have no exclusion list; a failing command, such as a
+  Terraform provider download, goes through their escalation prompt.
+  Copilot authenticates sandboxed `gh` through its masking proxy. Neither
+  path is verified for the TLS failure, and `SSL_CERT_FILE` is not yet
+  verified in their sandboxes.
 
 ## Edits through scripts
 
@@ -567,7 +571,7 @@ and network approval rules still apply; never activate the fixture system.
 | Error | Cause | Do instead |
 |---|---|---|
 | `Operation not permitted` on a write | Path outside the writable set | Write to the workspace or `$TMPDIR`; don't retarget caches |
-| `x509: OSStatus -26276` | Go TLS can't reach `trustd` in Seatbelt; in Claude, an upstream Go binary that ignores `SSL_CERT_FILE` | Run the command outside the sandbox |
+| `x509: OSStatus -26276` | Go TLS can't reach `trustd` in Seatbelt; usually an upstream Go binary that ignores `SSL_CERT_FILE` | Run the command outside the sandbox |
 | `Forbidden`, `CONNECT tunnel failed, response 403` | Host not on the sandbox list | Request approval for that host |
 | `failed to copy trust settings of system certificate` | Same `trustd` block, printed by Node tools | Harmless when the command otherwise succeeds |
 | `device not configured` on `/dev/tty` | No terminal in the sandbox | Use a non-interactive flag (`--no-pager`, `-y`, `GIT_EDITOR=true`) |
