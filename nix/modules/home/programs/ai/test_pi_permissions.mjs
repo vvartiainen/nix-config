@@ -39,18 +39,19 @@ try {
   const manager = new PermissionManager({ globalConfigPath: policyFile, agentsDir: scratch });
   for (const [command, expected] of [
     ["git status", "allow"],
-    ["git add file", "allow"],
-    ["npm test", "allow"],
-    ["just check", "allow"],
-    ["git push origin main", "ask"],
-    ["npm publish", "ask"],
+    ["sed -n 1,80p docs/agent-permissions.md", "allow"],
+    ["find . -name '*.nix'", "allow"],
+    ["cd nix && rm -rf result", "allow"],
+    ["npm publish", "allow"],
+    ["git push origin main", "allow"],
     ["nix build .#system", "ask"],
+    ["nix run .#system", "ask"],
+    ["nix develop", "ask"],
     ["rex run command", "ask"],
     ["sudo command", "deny"],
     ["darwin-rebuild switch", "deny"],
     ["just switch host", "deny"],
-    ["git branch -D branch", "ask"],
-    ["git branch --show-current", "allow"],
+    ["git push --force origin main", "deny"],
   ]) {
     assert.equal(manager.check({ kind: "tool", surface: "bash", input: { command } }).state,
       expected, command);

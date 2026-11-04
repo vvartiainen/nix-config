@@ -188,8 +188,11 @@ let
       ]
     ];
 
-    # These commands can delegate work outside the agent sandbox. Rex can
-    # start commands or type into an unsandboxed terminal through its server.
+    # These commands can delegate work outside the agent sandbox. Nix hands
+    # builds and store changes to the host daemon, and Rex can start commands or
+    # type into an unsandboxed terminal through its server. The sandboxed CLIs
+    # ask for the whole Nix build/run family, since `nix run` or `nix develop`
+    # builds just as `nix build` does.
     sandboxAsk = [
       [
         "nix"
@@ -198,6 +201,35 @@ let
       [
         "nix"
         "build"
+      ]
+      [
+        "nix"
+        "run"
+      ]
+      [
+        "nix"
+        "shell"
+      ]
+      [
+        "nix"
+        "develop"
+      ]
+      [
+        "nix"
+        "flake"
+        "check"
+      ]
+      [
+        "nix"
+        "profile"
+      ]
+      [
+        "nix"
+        "store"
+      ]
+      [
+        "nix"
+        "copy"
       ]
     ]
     ++ map (exe: [ exe ]) rexExecutables;

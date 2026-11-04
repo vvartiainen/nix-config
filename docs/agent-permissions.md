@@ -13,7 +13,7 @@ grant filesystem or command access.
 | Cursor | Run in sandbox | Escapes; Rex has no per-command ask rule here |
 | Copilot | Shared safe-command allowlist | Unlisted commands, file edits and sandbox bypasses |
 | OpenCode | No OS sandbox | Commands outside its allowlist ask |
-| Pi | Whole process runs in Safehouse | Permission extension asks for unlisted commands and external tools; OS denials require manual work outside Pi |
+| Pi | Whole process runs in Safehouse | Permission extension asks for sandbox escapes and external tools; OS denials require manual work outside Pi |
 
 Keep sandboxing enabled. Persistent broad command approvals can weaken these
 defaults. In Copilot, use `/reset-allowed-tools` to clear old broad grants before
@@ -31,12 +31,16 @@ root when the task needs the whole repository.
 
 The pinned `@gotgenes/pi-permission-system` package installs on first launch,
 like the other Pi packages. Confirm it loads without extension errors; use
-`/permission-system show` to inspect its rules. Routine file tools and the shared
-safe-command list run without prompts. Unlisted commands, pushes, publishing,
-MCP and other extension tools ask; the shared deny list remains denied.
-Permissions are an approval layer, not a security boundary: trusted project
-configuration and extensions can affect their behavior. Do not load untrusted
-extensions or disable the permission package.
+`/permission-system show` to inspect its rules. File tools and bash run without
+prompts, because Safehouse is the boundary and the path rules still deny
+secrets; asking per command only led to session-wide `*` grants. The extension
+still asks for work that leaves the sandbox (Nix daemon builds, Rex), for shell
+wrappers such as `sh -c`, `eval`, `sudo`, `xargs` and `find -exec`, and for
+unparseable input; MCP and other extension tools ask too. The shared deny list
+(the allowlist does not apply here) remains denied. Permissions are an approval
+layer, not a security boundary: trusted project configuration and extensions
+can affect their behavior. Do not load untrusted extensions or disable the
+permission package.
 
 The sandbox also denies writes to extension code under Pi state (except the
 permission extension's review log) and to the user-level `mcp.json`, so a session

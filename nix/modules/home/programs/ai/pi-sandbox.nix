@@ -36,13 +36,19 @@ let
       # including direct MCP tools, still require approval.
       external_directory = "allow";
       mcp = "ask";
-      bash = {
-        "*" = "ask";
-      }
-      // rules "allow" (policy.commands.allowed ++ policy.commands.routine)
-      // lib.genAttrs (map commandString policy.commands.exact) (_: "allow")
-      // rules "ask" policy.commands.sandboxAsk
-      // rules "deny" policy.commands.denied;
+      # Safehouse bounds what a command can touch and the path rules above still
+      # deny secrets, so asking per command only prompted for ordinary work and
+      # ended in session-wide `*` grants. Allow bash instead and keep asking for
+      # work that leaves the sandbox: Nix hands builds to the host daemon, and
+      # Rex can type into an unsandboxed terminal. The extension still floors
+      # `sh -c`/`eval`, indirection wrappers (`sudo`, `xargs`, `find -exec`) and
+      # unparseable input to ask, and the deny list still denies.
+      bash =
+        {
+          "*" = "allow";
+        }
+        // rules "ask" policy.commands.sandboxAsk
+        // rules "deny" policy.commands.denied;
       path =
         {
           "*" = "allow";
