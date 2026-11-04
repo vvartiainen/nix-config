@@ -86,6 +86,9 @@ def main():
             safehouse,
             f"--workdir={workdir}",
             "--trust-workdir-config=false",
+            # pbcopy/pbpaste and Pi's own copy/paste need the pasteboard mach
+            # service, which Safehouse keeps behind this integration.
+            "--enable=clipboard",
             f"--append-profile={overlay}",
             "--add-dirs=" + ":".join(spec["writable"]),
             *(["--add-dirs-ro=" + ":".join(readable)] if readable else []),

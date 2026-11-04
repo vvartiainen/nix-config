@@ -39,6 +39,7 @@ class StartupTests(unittest.TestCase):
                 }))
 
                 def strict_safehouse(command, env):
+                    self.assertIn("--enable=clipboard", command)
                     grants = []
                     for arg in command:
                         if arg.startswith(("--add-dirs=", "--add-dirs-ro=")):

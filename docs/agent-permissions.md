@@ -27,7 +27,9 @@ to the invocation directory, scratch space, Pi state and shared agent caches;
 unrelated home files and the shared secret paths remain restricted. Project
 `.pi` files, Git hooks/config and the global permission settings are protected
 from writes. Launching from home or `/` is refused. Launch from a repository
-root when the task needs the whole repository.
+root when the task needs the whole repository. Safehouse's clipboard
+integration is enabled, so `pbcopy`/`pbpaste` and Pi's copy/paste work without
+widening file access.
 
 The pinned `@gotgenes/pi-permission-system` package installs on first launch,
 like the other Pi packages. Confirm it loads without extension errors; use
