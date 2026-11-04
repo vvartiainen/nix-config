@@ -12,6 +12,7 @@ characters. Agent prompt controls are in [agent CLI keybindings](agent-keybindin
 | Ctrl+Space | Toggle the quick-access terminal; Vicinae currently shares this binding (see [launcher setup](setup.md#vicinae-launcher-trial)) |
 | Ctrl+Cmd+U | Toggle CodexBar's usage menu |
 | Ctrl+Cmd+Shift+U | Toggle the quota dashboard |
+| Ctrl+Cmd+Shift+M | Toggle microphone input volume between zero and its previous level (requires SketchyBar) |
 | Ctrl+1–9 / Left / Right | Select Space / previous / next Space |
 | Ctrl+Alt+H/J/K/L | Focus window left/down/up/right |
 | Ctrl+Alt+P/N | Previous / next window, including stacks |

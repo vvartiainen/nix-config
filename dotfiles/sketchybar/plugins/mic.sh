@@ -16,7 +16,7 @@ case "$VOLUME" in
 	;;
 esac
 
-if [ "$SENDER" = "mouse.clicked" ]; then
+if [ "$SENDER" = "mouse.clicked" ] || [ "$SENDER" = "mic_toggle" ]; then
 	if [ "$VOLUME" -gt 0 ]; then
 		mkdir -p "$(dirname "$saved")"
 		echo "$VOLUME" >"$saved"
