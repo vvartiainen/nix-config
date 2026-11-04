@@ -16,7 +16,7 @@ case "${1:-}" in
   action)
     shift
     # listen_on in kitty.conf creates one socket per Kitty process.
-    socket="/tmp/kitty-$(jq -r '.pid // empty' <<<"$window")"
+    socket="$HOME/.local/state/kitty/rc-$(jq -r '.pid // empty' <<<"$window")"
     [ -S "$socket" ] || exit 1
     exec kitten @ --to "unix:$socket" action "$@"
     ;;

@@ -1,5 +1,16 @@
-_:
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+{
+  # Protect the remote-control sockets from other local users. Kitty does not
+  # create the parent directory itself.
+  home.activation.kittySocketDirectory = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    run ${pkgs.coreutils}/bin/install -d -m 700 ${lib.escapeShellArg "${config.home.homeDirectory}/.local/state/kitty"}
+  '';
+
   # kitten ssh brings kitty shell integration to the remote: edit-in-kitty,
   # hyperlinked remote files and kitten transfer. Only in kitty itself; tmux
   # and other terminals keep plain ssh.

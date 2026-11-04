@@ -369,6 +369,26 @@ Ctrl+Shift shortcuts; the other actions use Kitty remote control through the
 `listen_on` socket of the focused Kitty process. SketchyBar exits the mode
 when another app gains focus.
 
+Remote control uses `allow_remote_control socket-only`, so programs cannot
+control Kitty through terminal output, including over SSH. Home Manager
+creates `~/.local/state/kitty` with mode `0700`; each Kitty process listens
+on `rc-<pid>` inside it. skhd uses these sockets, while the tab switcher,
+session picker, transfer overlays and SketchyBar click-to-focus inherit or
+capture `KITTY_LISTEN_ON`. The metrics terminal keeps remote control disabled.
+See Kitty's [remote-control settings](https://sw.kovidgoyal.net/kitty/conf/#opt-kitty.allow_remote_control).
+
+The socket still grants full control to local programs running as your user
+that can connect to it, including reading panes and sending shell commands.
+The private directory excludes other users; it is not a boundary against
+same-user programs or agents whose sandbox permits socket connections.
+
+After applying manually to create the directory, fully quit and restart
+Kitty: reloading the config cannot change the remote-control mode or socket.
+Verify Kitty mode, the fuzzy tab switcher, session picker, file transfer and
+SketchyBar click-to-focus from fresh agent sessions. Existing Kitty processes
+keep the old `/tmp/kitty-<pid>` sockets until they exit; skhd only looks in the
+private directory.
+
 Resizing uses Kitty's [`resize_window` action](https://sw.kovidgoyal.net/kitty/layouts/#resizing-windows)
 with its default increment. Available adjustments depend on the layout; stack
 has no visible split to resize. B restores the layout's default sizes.
