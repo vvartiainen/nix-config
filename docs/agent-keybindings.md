@@ -329,29 +329,31 @@ server have independent status without requiring a zsh launch wrapper or
 `--no-daemon`. Its hook commands use `exec` so the reporter's parent PID is
 Codex itself; cleanup follows that process rather than an inherited launch
 shell. Claude Code and Copilot CLI use a unique ID from their zsh launch wrapper.
-Blocked hooks atomically write a private record under
+Working and blocked hooks atomically write a private record under
 `/tmp/nix-config-agent-status-<uid>` and trigger the
-`agent_status_update` event. The left-side item shows the agent, approval/answer
-action and directory, plus a count of other waiting sessions. Resuming work or
-ending the session removes its record. Exiting the launch wrapper also clears
+`agent_status_update` event. Two compact left-side items show a green `▶` plus
+running count and an amber `!` plus count awaiting approval, an answer or sign-in.
+Each group hides when empty. Session locations appear only in the
+[read-only popup](https://felixkratz.github.io/SketchyBar/config/popups): click an
+icon to toggle agent, action and working-directory details for that group.
+Moving the pointer away from the bar and popup closes it. Clicking never focuses
+a terminal or runs a session action, so the display works the same in Kitty and Rex.
+Resuming work moves the session from attention to running; finishing, interrupting
+or ending a session removes it. Exiting the launch wrapper also clears
 Claude Code and Copilot CLI records. A thirty-second cleanup check removes
 records whose owning Codex process or launch shell has exited. A Codex session
 that remains active in the daemon keeps its status after a client disconnects.
 
 SketchyBar never queries Kitty for status. The hooks work from other terminals
-too, even when Kitty terminal delivery is unavailable. For Claude Code and
-Copilot CLI in Kitty, clicking the item sends a focus command to the pane
-address captured by the hook; no socket discovery or status queries are needed.
-Codex hooks ignore inherited terminal addresses because the daemon can retain
-another client's pane. Codex and other terminals show the action without
-click-to-focus. SketchyBar IPC must be accessible to the hook; delivery failures
-never block the agent.
+too, even when Kitty terminal delivery is unavailable. SketchyBar IPC must be
+accessible to the hook; delivery failures never block the agent.
 
 After applying manually, fully quit and restart Kitty to load 0.50+, start a
 fresh shell, and reload SketchyBar. Test an approval and a question in each
 agent and verify the status clears after answering. For Codex, test two sessions
-sharing the daemon and check that clearing one leaves the other visible. Check
-click-to-focus for Claude Code and Copilot CLI in Kitty. The fixture
+sharing the daemon and check that clearing one leaves the other visible. In
+Kitty and Rex, check running/attention counts, the details popup, and that clicks
+leave terminal focus unchanged. The fixture
 build validates public configuration only; live hook delivery, private
 modules, real machine identity and nested virtualization need manual checks.
 
@@ -394,7 +396,7 @@ Remote control uses `allow_remote_control socket-only`, so programs cannot
 control Kitty through terminal output, including over SSH. Home Manager
 creates `~/.local/state/kitty` with mode `0700`; each Kitty process listens
 on `rc-<pid>` inside it. skhd uses these sockets, while the tab switcher,
-session picker, transfer overlays and SketchyBar click-to-focus inherit or
+session picker and transfer overlays inherit or
 capture `KITTY_LISTEN_ON`. The metrics terminal keeps remote control disabled.
 See Kitty's [remote-control settings](https://sw.kovidgoyal.net/kitty/conf/#opt-kitty.allow_remote_control).
 
@@ -406,7 +408,7 @@ same-user programs or agents whose sandbox permits socket connections.
 After applying manually to create the directory, fully quit and restart
 Kitty: reloading the config cannot change the remote-control mode or socket.
 Verify Kitty mode, the fuzzy tab switcher, session picker, file transfer and
-SketchyBar click-to-focus from fresh agent sessions. Existing Kitty processes
+SketchyBar status from fresh agent sessions. Existing Kitty processes
 keep the old `/tmp/kitty-<pid>` sockets until they exit; skhd only looks in the
 private directory.
 

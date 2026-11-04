@@ -50,7 +50,7 @@ def clear(launch):
     bar_command("--trigger", "agent_status_update")
 
 
-def publish(app, state, kind, payload, terminal):
+def publish(app, state, kind, payload):
     if app == "codex":
         session = payload.get("session_id")
         if not isinstance(session, str) or not session:
@@ -64,17 +64,15 @@ def publish(app, state, kind, payload, terminal):
         pid = os.environ.get("NIX_CONFIG_AGENT_PID", "")
     if not launch:
         return
-    if state != "blocked":
+    if state not in {"working", "blocked"}:
         clear(launch)
         return
     try:
         directory = state_directory()
         record = {
-            "app": app, "kind": kind,
+            "app": app, "state": state, "kind": kind,
             "cwd": str(payload.get("cwd") or os.getcwd()),
             "pid": int(pid),
-            "socket": os.environ.get("KITTY_LISTEN_ON", "") if terminal else "",
-            "window": os.environ.get("KITTY_WINDOW_ID", "") if terminal else "",
         }
         fd, temporary = tempfile.mkstemp(dir=directory, prefix=".status-")
         try:
@@ -89,11 +87,13 @@ def publish(app, state, kind, payload, terminal):
     bar_command("--trigger", "agent_status_update")
 
 
-def waiting_records(directory):
+def active_records(directory):
     records = []
     for path in sorted(directory.glob("*.json")):
         try:
             record = json.loads(path.read_text())
+            # Records from the previous reporter only represented blocked agents.
+            record.setdefault("state", "blocked")
             pid = record["pid"]
             if not isinstance(pid, int) or pid <= 0:
                 raise ValueError("invalid process id")
@@ -110,23 +110,32 @@ def render_bar(name, sender):
         # Serialize renderers so an older event cannot overwrite a newer label.
         with (directory / ".render.lock").open("w") as lock:
             fcntl.flock(lock, fcntl.LOCK_EX)
-            records = waiting_records(directory)
+            state = "working" if name == "agent_status.running" else "blocked"
+            records = [r for r in active_records(directory) if r["state"] == state]
             if not records:
-                bar_command("--set", name, "drawing=off")
+                bar_command("--set", name, "drawing=off", "popup.drawing=off",
+                            "--remove", f"/^{name.replace('.', '[.]')}[.]detail[.].*/")
                 return
-            first = records[0]
+            arguments = ["--set", name, "drawing=on", f"label={len(records)}"]
             if sender == "mouse.clicked":
-                # The address was captured by the hook; never query Kitty.
-                if first.get("socket", "").startswith("unix:") and str(first.get("window", "")).isdigit():
-                    run_quietly(["/opt/homebrew/bin/kitten", "@", "--to", first["socket"],
-                                 "focus-window", "--match", f"id:{first['window']}"])
-                return
-            action = {"permission": "approval", "question": "answer", "auth": "sign in"}.get(first["kind"], "input")
-            project = Path(first["cwd"]).name or "/"
-            label = f"{first['app']}: {action} · {project}"
-            if len(records) > 1:
-                label += f" (+{len(records) - 1})"
-            bar_command("--set", name, "drawing=on", f"label={label}")
+                other = "agent_status" if state == "working" else "agent_status.running"
+                arguments += ["popup.drawing=toggle", "--set", other, "popup.drawing=off"]
+            elif sender == "mouse.exited.global":
+                arguments += ["popup.drawing=off"]
+            arguments += ["--remove", f"/^{name.replace('.', '[.]')}[.]detail[.].*/"]
+            for index, record in enumerate(records):
+                action = "running" if state == "working" else {
+                    "permission": "approval", "question": "answer", "auth": "sign in",
+                }.get(record["kind"], "input")
+                # Keep session text in one label argument, never a shell command.
+                project = " ".join(str(record["cwd"]).split())
+                label = f"{record['app']}: {action} · {project}"
+                item = f"{name}.detail.{index}"
+                arguments += ["--add", "item", item, f"popup.{name}", "--set", item,
+                              "icon.drawing=off", "label.font=SF Pro:Regular:12.0",
+                              "label.max_chars=90", "label.padding_left=10",
+                              "label.padding_right=10", f"label={label}"]
+            bar_command(*arguments)
     except (OSError, ValueError, KeyError, TypeError):
         pass
 
@@ -185,7 +194,7 @@ def report(app, state, kind):
     if state not in {"idle", "working", "done", "blocked", "error", "clear"}:
         return
     # SketchyBar delivery is independent of Kitty or terminal-device access.
-    publish(app, state, kind, payload, terminal)
+    publish(app, state, kind, payload)
     if not terminal.startswith("/dev/tty"):
         return
     sequence = f"\033]7501;state={state}:app={app}"

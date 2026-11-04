@@ -59,28 +59,29 @@ class TerminalStatusTests(unittest.TestCase):
             self.send("stale-launch", app="codex", terminal="/dev/tty-stale", kind="question", pid=999999999,
                       payload={"session_id": "second"})
             self.assertFalse(any(call.args[0] == "/dev/tty-stale" for call in open_file.call_args_list))
-        records = status.waiting_records(self.directory)
+        records = status.active_records(self.directory)
         self.assertEqual(len(records), 2)
         self.assertEqual({record["kind"] for record in records}, {"permission", "question"})
         self.assertTrue(all(record["pid"] == os.getpid() for record in records))
-        self.assertTrue(all(record["socket"] == record["window"] == "" for record in records))
+        self.assertTrue(all("socket" not in record and "window" not in record for record in records))
         status.clear("stale-launch")  # A launcher exiting cannot erase daemon state.
-        self.assertEqual(len(status.waiting_records(self.directory)), 2)
+        self.assertEqual(len(status.active_records(self.directory)), 2)
         self.send("stale-launch", app="codex", state="working", payload={"session_id": "first"})
-        self.assertEqual([record["kind"] for record in status.waiting_records(self.directory)],
-                         ["question"])
+        self.assertEqual(sorted(record["state"] for record in status.active_records(self.directory)),
+                         ["blocked", "working"])
+        self.send("stale-launch", app="codex", state="done", payload={"session_id": "first"})
         self.send("stale-launch", app="codex", state="clear", payload={"session_id": "second"})
-        self.assertEqual(status.waiting_records(self.directory), [])
+        self.assertEqual(status.active_records(self.directory), [])
 
     def test_codex_does_not_require_a_zsh_wrapper(self):
         with patch.dict(os.environ, {"NIX_CONFIG_AGENT_LAUNCH": "", "NIX_CONFIG_AGENT_PID": ""}), \
                 patch.object(status.os, "getppid", return_value=os.getpid()), \
                 patch.object(status.sys, "stdin", io.StringIO(json.dumps({"session_id": "thread"}))):
             status.report("codex", "blocked", "permission")
-        self.assertEqual(len(status.waiting_records(self.directory)), 1)
+        self.assertEqual(len(status.active_records(self.directory)), 1)
         self.bar.assert_called_with("--trigger", "agent_status_update")
         with patch.object(status.os, "kill", side_effect=ProcessLookupError):
-            self.assertEqual(status.waiting_records(self.directory), [])
+            self.assertEqual(status.active_records(self.directory), [])
 
     def test_codex_ignores_missing_session_ids_and_subagents(self):
         for payload in ({}, {"session_id": ""}, {"session_id": 7},
@@ -108,7 +109,7 @@ reporter.report("codex", "blocked", "permission")
             env={**os.environ, "NIX_CONFIG_AGENT_LAUNCH": "", "NIX_CONFIG_SKETCHYBAR": ""},
         )
         self.assertEqual((result.returncode, result.stdout, result.stderr), (0, "", ""))
-        records = status.waiting_records(self.directory)
+        records = status.active_records(self.directory)
         self.assertEqual(len(records), 1)
         self.assertEqual(records[0]["pid"], os.getpid())
 
@@ -118,12 +119,12 @@ reporter.report("codex", "blocked", "permission")
             "hook_event_name": "PostToolUse",
             "tool_name": "request_user_input_async",
         })
-        self.assertEqual([record["kind"] for record in status.waiting_records(self.directory)],
+        self.assertEqual([record["kind"] for record in status.active_records(self.directory)],
                          ["question"])
         self.send("first", app="codex", state="working", payload={
             "hook_event_name": "PostToolUse", "tool_name": "Bash",
         })
-        self.assertEqual(status.waiting_records(self.directory), [])
+        self.assertEqual([record["state"] for record in status.active_records(self.directory)], ["working"])
 
     def test_sketchybar_receives_hooks_without_kitty_or_a_terminal(self):
         self.send("first")
@@ -131,41 +132,72 @@ reporter.report("codex", "blocked", "permission")
         with patch.object(status, "run_quietly") as external:
             status.render_bar("agent_status", "agent_status_update")
             external.assert_not_called()  # No Kitty query or other process.
-        self.bar.assert_called_with("--set", "agent_status", "drawing=on",
-                                    "label=claude: approval · project")
+        arguments = self.bar.call_args.args
+        self.assertEqual(arguments[:4], ("--set", "agent_status", "drawing=on", "label=1"))
+        self.assertIn("label=claude: approval · /fixture/project", arguments)
 
     def test_kitty_delivery_failure_does_not_prevent_sketchybar(self):
         self.send("first", terminal="/dev/tty-nix-config-missing")
-        self.assertEqual(len(status.waiting_records(self.directory)), 1)
+        self.assertEqual(len(status.active_records(self.directory)), 1)
         self.bar.assert_called_with("--trigger", "agent_status_update")
 
     def test_sessions_clear_independently_and_wrapper_cleanup_is_idempotent(self):
         self.send("first")
         self.send("second", kind="question")
         status.render_bar("agent_status", "agent_status_update")
-        self.assertIn("(+1)", self.bar.call_args.args[-1])
+        self.assertEqual(self.bar.call_args.args[3], "label=2")
         self.send("first", state="working")
-        records = status.waiting_records(self.directory)
-        self.assertEqual([record["kind"] for record in records], ["question"])
+        records = status.active_records(self.directory)
+        self.assertEqual(sorted(record["state"] for record in records), ["blocked", "working"])
+        self.send("first", state="done")
         status.clear("second")
         status.clear("second")
         status.render_bar("agent_status", "agent_status_update")
-        self.bar.assert_called_with("--set", "agent_status", "drawing=off")
+        self.assertEqual(self.bar.call_args.args[:4],
+                         ("--set", "agent_status", "drawing=off", "popup.drawing=off"))
 
     def test_dead_launch_shell_is_removed(self):
         self.send("first")
         with patch.object(status.os, "kill", side_effect=ProcessLookupError):
-            self.assertEqual(status.waiting_records(self.directory), [])
+            self.assertEqual(status.active_records(self.directory), [])
         self.assertFalse(list(self.directory.glob("*.json")))
 
-    def test_click_uses_hook_address_without_querying_kitty(self):
+    def test_click_toggles_read_only_details_without_terminal_commands(self):
         self.send("first", terminal="/dev/tty-nix-config-missing")
         with patch.object(status, "run_quietly") as external:
             status.render_bar("agent_status", "mouse.clicked")
-            external.assert_called_once_with([
-                "/opt/homebrew/bin/kitten", "@", "--to", "unix:/tmp/kitty-fixture",
-                "focus-window", "--match", "id:7",
-            ])
+            external.assert_not_called()
+        self.assertIn("popup.drawing=toggle", self.bar.call_args.args)
+        self.assertIn("label=claude: approval · /fixture/project", self.bar.call_args.args)
+        status.render_bar("agent_status", "mouse.exited.global")
+        self.assertIn("popup.drawing=off", self.bar.call_args.args)
+
+    def test_running_and_blocked_counts_are_separate(self):
+        self.send("running", state="working", kind="none", app="codex")
+        self.send("approval")
+        self.send("question", kind="question", app="copilot")
+        status.render_bar("agent_status.running", "agent_status_update")
+        self.assertEqual(self.bar.call_args.args[:4],
+                         ("--set", "agent_status.running", "drawing=on", "label=1"))
+        self.assertIn("label=codex: running · /fixture/project", self.bar.call_args.args)
+        status.render_bar("agent_status", "agent_status_update")
+        self.assertEqual(self.bar.call_args.args[3], "label=2")
+        self.assertIn("label=copilot: answer · /fixture/project", self.bar.call_args.args)
+        for launch in ("running", "approval", "question"):
+            self.send(launch, state="done", app="codex" if launch == "running" else "claude")
+        for name in ("agent_status", "agent_status.running"):
+            status.render_bar(name, "agent_status_update")
+            self.assertEqual(self.bar.call_args.args[:4],
+                             ("--set", name, "drawing=off", "popup.drawing=off"))
+
+    def test_old_blocked_records_survive_upgrade(self):
+        self.send("first")
+        path = next(self.directory.glob("*.json"))
+        record = json.loads(path.read_text())
+        del record["state"]
+        path.write_text(json.dumps(record))
+        status.render_bar("agent_status", "agent_status_update")
+        self.assertEqual(self.bar.call_args.args[3], "label=1")
 
     def test_install_preserves_other_handlers_and_is_idempotent(self):
         with tempfile.TemporaryDirectory() as directory:
