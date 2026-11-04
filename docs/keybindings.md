@@ -163,6 +163,7 @@ Outside navigation mode:
 | Cmd+1–9 | Jump to pane, counted in layout order (left/top first) |
 | Ctrl+Shift+Z | Toggle pane zoom |
 | Cmd+T | New tab |
+| Cmd+K | Clear the pane, including scrollback; this replaces Rex's default session picker shortcut |
 | Cmd+Enter / Cmd+Shift+Enter | Split right / down, also in navigation mode |
 
 Tab/pane closes retain capture; release it with Escape or Return before answering

@@ -123,6 +123,9 @@ in
       rex.bind("ctrl+shift+l", "pane.focus_next")
       rex.bind("ctrl+shift+z", "pane.zoom")
       rex.bind("cmd+t", "client.tab.new")
+      -- Kitty's clear_terminal (Cmd+K), which also drops scrollback. This
+      -- replaces Rex's default Cmd+K for the session picker.
+      rex.bind("cmd+k", "com.superlogical.terminal.clear")
       for i = 1, 9 do
         rex.bind("cmd+" .. i, "pane_goto", { index = i })
         rex.bind("ctrl+shift+" .. i, "client.tab.goto", { index = i })
