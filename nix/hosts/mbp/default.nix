@@ -16,7 +16,7 @@
     ../../modules/darwin/rosetta-builder.nix
     ../../modules/darwin/signed-binaries.nix
     ../../modules/darwin/programs/codexbar.nix
-    ../../modules/darwin/programs/raycast.nix
+    ../../modules/darwin/programs/vicinae.nix
     ../../modules/darwin/programs/rex.nix
     ../../modules/darwin/programs/sketchybar.nix
     ../../modules/darwin/programs/spotlight.nix

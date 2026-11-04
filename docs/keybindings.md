@@ -7,6 +7,8 @@ characters. Agent prompt controls are in [agent CLI keybindings](agent-keybindin
 
 | Key | Action |
 | --- | --- |
+| Cmd+Space | Toggle Vicinae (set once in its General Settings; quit Raycast first) |
+| Left Cmd+Option+Space | Open Spotlight |
 | Ctrl+Cmd+Z / K / C / O / M / E | Open or focus Zen / Kitty / Calendar / Obsidian / Mail / Finder |
 | Ctrl+Space | Toggle the quick-access terminal |
 | Ctrl+Cmd+U | Toggle CodexBar's usage menu |

@@ -37,7 +37,7 @@ in
     };
 
     "com.apple.symbolichotkeys".AppleSymbolicHotKeys = {
-      # Show Spotlight search: Cmd+Option+Space, as Raycast has Cmd+Space.
+      # Show Spotlight search: Cmd+Option+Space; Cmd+Space is for Vicinae.
       "64" = spaceHotkey true (cmd + option);
       # Show Finder search window: off.
       "65" = spaceHotkey false (cmd + shift);

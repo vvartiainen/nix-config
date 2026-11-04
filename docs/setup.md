@@ -103,6 +103,62 @@ if exported). Recipes stop with a hint when host data is missing.
 For routine agent validation, use the tracked public fixture instead of reading
 private host data; see [maintenance and validation](maintenance.md).
 
+## Vicinae launcher trial
+
+[Vicinae for macOS](https://docs.vicinae.com/install/macos) requires Apple
+Silicon and macOS 14.4 or newer; macOS support is currently beta. Homebrew
+manages the app and CLI. Raycast stays installed during the trial because
+this configuration's Homebrew `cleanup = "zap"` would otherwise delete its
+data. Its Nix preference module is inactive.
+
+1. Export Raycast's settings using its export command and store the backup
+   privately. Disable Raycast's launch at login, then quit it to release
+   Cmd+Space. Keep its local data and backup until the trial is accepted.
+2. From the checkout containing this change, run `just check <HOSTNAME>` and
+   `just build <HOSTNAME>`, then apply manually with `just switch <HOSTNAME>`.
+   Homebrew must run to install Vicinae; do not use the skip-Homebrew argument.
+   A worktree still uses the private host's `repoRoot` for dotfile links.
+3. Open `/Applications/Vicinae.app`, finish onboarding, and grant the macOS
+   permissions it requests for the features you use. In General Settings,
+   assign Cmd+Space to toggle the launcher. Enable launch at login through
+   the app or System Settings → General → Login Items. Choose a dark theme
+   if desired; Raycast's appearance preferences do not transfer.
+4. Recreate aliases, quicklinks and command shortcuts in Vicinae. Reinstall
+   needed extensions from its store integration and configure/sign in to each
+   again. [Raycast extension compatibility](https://docs.vicinae.com/) varies
+   by extension; test each workflow. Do not assume Raycast's settings export,
+   snippets or clipboard history can be imported. The existing skhd app and
+   window shortcuts work independently of either launcher.
+5. Test app launch, calculator, file search, clipboard history, your essential
+   extensions, Cmd+Space and startup after logging in again. Keep Spotlight
+   on Left Cmd+Option+Space as a fallback.
+
+The main workflows to verify during this trial:
+
+| Raycast workflow | Vicinae setup |
+| --- | --- |
+| Clipboard history | Use the built-in Clipboard History command; assign a shortcut in settings. Copy fresh text and an image, then test search and paste. Existing Raycast history stays in Raycast. |
+| Amphetamine | The app remains installed through the existing App Store entry. Install the [Amphetamine extension](https://www.raycast.com/gstvds/amphetamine) through Vicinae's Raycast store integration and test starting/ending a session and a timed session. Compatibility is unverified; use Amphetamine's menu bar controls if needed. |
+| Eject all disks | Run the managed **Eject All Disks** script command. It asks Finder to eject its ejectable disks without forcing busy volumes. Approve Finder control under Privacy & Security → Automation if prompted. Test with a spare external drive; check Finder before unplugging. |
+
+The script is linked under `~/.local/share/vicinae/scripts/`.
+Run **Reload Script Directories** if the eject command is missing after
+activation. Useful extras to try are the built-in calculator and file search;
+keep window management on the existing yabai/skhd bindings during the trial.
+
+Vicinae owns the writable `~/.config/vicinae/settings.json`; do not commit
+it or replace it with a read-only Nix symlink. For declarative defaults later,
+use [configuration imports](https://docs.vicinae.com/config).
+
+To return to Raycast, disable Vicinae's launch at login and quit it, then
+launch Raycast and restore its Cmd+Space shortcut and login setting. For
+declarative Raycast preferences, re-add `programs/raycast.nix` alongside
+`programs/vicinae.nix` in the host's imports, quit Raycast, and validate and
+apply manually. Retain the Vicinae import while keeping its data: removing
+its cask also triggers Homebrew's zap cleanup. Nix generation rollback does
+not restore deleted Homebrew application data. Remove either retained cask
+only after accepting the migration and backing up any data you want to keep.
+
 ## Remote files
 
 In kitty, `ssh` runs `kitten ssh`, so nothing needs installing on the remote:
