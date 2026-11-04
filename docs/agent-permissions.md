@@ -50,7 +50,7 @@ from the importing Home Manager configuration.
 | `commands.allowed` | Read-only prefixes (`git status`, `nix eval`, `gh pr view`, `terraform fmt`, …) allowed everywhere, including outside a sandbox |
 | `commands.exact` | Allowed only as written (`git branch --show-current`); their prefixes would allow destructive forms |
 | `commands.sandboxAsk` | Commands that delegate work outside the agent sandbox: `nix fmt`, `nix build`, and Rex through PATH, profile links, its pinned Nix package and standard app bundles; prompt in Codex and Claude |
-| `commands.routine` | Project-code runners and wrappers (`just`, `npm run`, `npx`, `npm test`, `cargo test`, `terraform validate`); sandbox approval everywhere except Claude Terraform, ask in OpenCode |
+| `commands.routine` | Project-code runners and wrappers (`just`, `npm run`, `npx`, `npm test`, `cargo test`, `terraform validate`); sandbox approval everywhere, ask in OpenCode |
 | `commands.denied` | Never auto-approved (`op`, `security`, `gh auth`, `gh api`, `sudo`, `darwin-rebuild`, `just switch`, `git push --force`, `mise trust`) |
 | `paths.homeReadable` | Home paths sandboxed commands may read (`.agents` for shared skills, `.config`, `.local/share`, `.local/state`, `.cache`, shell startup files, Nix profiles, toolchains); the rest of `~` is denied |
 | `paths.readable` | `paths.homeReadable` as absolute paths |
@@ -74,10 +74,10 @@ a prompt, but only inside the sandbox.
 
 | List | Codex | Claude | Cursor | Copilot | OpenCode |
 |---|---|---|---|---|---|
-| `commands.allowed` | — (left to the sandbox) | `Bash(…)` allow for `gh` and `terraform` only | `Shell(…)` allow | `--allow-tool` prefixes | allow |
+| `commands.allowed` | — (left to the sandbox) | `Bash(…)` allow for `gh` only | `Shell(…)` allow | `--allow-tool` prefixes | allow |
 | `commands.exact` | — (prefix rules only) | — (left to the sandbox) | `Shell(…)` allow | `--allow-tool` without prefix wildcard | allow |
 | `commands.sandboxAsk` | `prompt` rule | ask | — | Unlisted; normal approval | — |
-| `commands.routine` | — (sandbox policy) | — except `terraform validate` ask | — | Unlisted; normal approval | — |
+| `commands.routine` | — (sandbox policy) | — (sandbox policy) | — | Unlisted; normal approval | — |
 | `commands.sandboxAsk ++ commands.routine` | — | — | — | — | ask |
 | `commands.denied` | `forbidden` rule | deny | deny | `--deny-tool` | deny |
 | `paths.homeReadable` | `read` (`paths.readable`) | `allowRead` (`paths.readable`) inside a home `denyRead` | — | `readonlyPaths` (`paths.readable`) | — |
@@ -94,11 +94,9 @@ a prompt, but only inside the sandbox.
 | `mcpServers` | — | `mcp__<server>__*` allow | `Mcp(…)` allow | `--allow-tool` | — |
 
 Codex and Claude run project code (`just`, `npm run`, `npx`,
-`npm test`, `cargo test`, installed formatters) inside their sandboxes
-without prompts; access beyond the sandbox grants still needs approval. Claude
-retains its `terraform validate` ask rule because `terraform *` is
-deliberately excluded from its sandbox for macOS TLS compatibility.
-Copilot leaves these runners unlisted so they require normal approval.
+`npm test`, `cargo test`, `terraform validate`, installed formatters) inside
+their sandboxes without prompts; access beyond the sandbox grants still needs
+approval. Copilot leaves these runners unlisted so they require normal approval.
 
 `nix build` and `nix fmt` keep approval in Codex and Claude because they build
 through the Nix daemon, outside the agent sandbox. Wrappers such as `just` can
@@ -162,7 +160,8 @@ account or VM when a hard account boundary is required.
 
 | CLI | Setting | Contents |
 |---|---|---|
-| Claude | `sandbox.excludedCommands` | `gh *`, `terraform *`, `go get *`, `go mod download`, `go mod tidy`: run outside the sandbox through the normal permission flow |
+| Claude | `sandbox.excludedCommands` | `gh *`: runs outside the sandbox through the normal permission flow |
+| Claude | `env` | `SSL_CERT_FILE` for nixpkgs Go TLS, `CHECKPOINT_DISABLE`; see [Go CLIs and TLS](#go-clis-and-tls) |
 | Claude | `sandbox.filesystem.denyWrite` | `**/.git/hooks`, `**/.git/config` |
 | Claude | `sandbox.filesystem.allowRead` | The repo's `dotfiles/.npmrc`, which `~/.npmrc` links to |
 | Claude | `sandbox.network.allowUnixSockets` | Nix daemon socket |
@@ -184,7 +183,7 @@ account or VM when a hard account boundary is required.
 | Writes | Workspace, `$TMPDIR`, `/tmp`, agent caches, macOS runtime scratch (`/var/tmp`) | Working directory, `$TMPDIR`, `/tmp`, agent caches | Workspace, temp, `/tmp`, agent caches | Working directory, temp, `/tmp`, agent caches, dev-tool caches (`allowDevToolAccess`) |
 | Read-only in the workspace | `.git/hooks`, `.git/config` | `.git/hooks`, `.git/config` | `.git/hooks`, `.git/config` (sandbox default, plus `Write(…)` deny) | `.git/config` for file tools only |
 | Network | `network.sandbox`; other hosts ask for approval | `network.sandbox`; other hosts prompt | `network.sandbox` plus Cursor's default list | `network.sandbox`; other hosts offer a bypass prompt |
-| Unsandboxed | Approved escalations | `gh`, `terraform`, Go module downloads, approved retries | Approved escapes | Approved bypasses |
+| Unsandboxed | Approved escalations | `gh`, approved retries | Approved escapes | Approved bypasses |
 | Unix sockets | Nix daemon only | Nix daemon only | — | Nix daemon, herdr |
 
 Git runs hooks and config outside the sandbox, so both are read-only to
@@ -210,7 +209,7 @@ denied within `.config` and the other grants.
 
 Other home reads fail in the sandbox and prompt when retried outside it.
 Claude keeps `commands.allowed` rules only for the programs it runs outside
-the sandbox (`gh`, `terraform`): sandboxed commands, including `python3` or
+the sandbox (`gh`): sandboxed commands, including `python3` or
 `sed` scripts, run without prompts anyway, and a broad rule such as
 `Bash(cat:*)` would let that retry run unprompted. `paths.homeSecrets` stay
 denied for the Read tool in either case; a command approved outside the
@@ -415,24 +414,28 @@ Apply the configuration and restart Claude Code for the setting to take effect.
 
 ## Go CLIs and TLS
 
-Go CLIs such as `gh` and `terraform` can't verify TLS under Claude's Seatbelt
-sandbox: macOS certificate checks need `trustd`, which the sandbox blocks
-(`x509: OSStatus -26276`).
+Go programs verify TLS on macOS through `trustd`, which Claude's Seatbelt
+sandbox blocks (`x509: OSStatus -26276`).
 
-- Claude runs `gh` and `terraform` outside the sandbox (`excludedCommands`).
-  Allow rules (`gh pr view`, `terraform fmt`) run without prompting, deny
-  rules (`gh auth`, `gh api`) still apply, `terraform validate` keeps its ask
-  rule, and everything else asks. The exclusion matches the command text, so
-  `just` recipes, scripts, or absolute paths that call them stay sandboxed.
+- Nixpkgs patches Go to read `SSL_CERT_FILE` on macOS, and `claude-code.nix`
+  sets it to `/etc/ssl/certs/ca-certificates.crt`. Nixpkgs' `go` and the
+  binaries it builds therefore work in the sandbox: module and toolchain
+  downloads from the allowlisted Go proxy succeed without a prompt.
+- Upstream Go binaries (mise's Terraform, Homebrew's `gh`) ignore
+  `SSL_CERT_FILE` on macOS. Terraform still runs sandboxed: `fmt`,
+  `validate` and `init` without providers need no TLS. Provider downloads
+  fail TLS and need an approved retry, as do `plan` and `apply`, which need
+  cloud credentials. `CHECKPOINT_DISABLE=1` stops Terraform's version check
+  prompting for an unlisted host. A warning that `~/.terraform.d` is
+  unreadable is the credential deny and harmless.
+- Claude runs only `gh` outside the sandbox (`excludedCommands`): it needs the
+  user's token and `api.github.com`. Read-only allow rules (`gh pr view`, …)
+  run without prompting, deny rules (`gh auth`, `gh api`) still apply, and
+  everything else asks. The exclusion matches the command text, so `just`
+  recipes, scripts, or absolute paths that call it stay sandboxed.
 - `enableWeakerNetworkIsolation = true` would open `trustd` to the sandbox
   instead, at the cost of a possible exfiltration channel. It is explicitly
   off in `claude-code.nix`.
-- Go module downloads (`go get`, `go mod download`, `go mod tidy`) hit the
-  same failure, so Claude excludes them too. They aren't allowlisted, so they
-  prompt, and the agent cache env still puts modules in `~/.cache/go-agent`.
-  `go build` and `go test` stay sandboxed because they run project code;
-  they work with modules already in the cache, but a toolchain download
-  (`GOTOOLCHAIN=auto`) or a missing module still needs an unsandboxed retry.
 - Codex and Cursor have no exclusion list; a failing command goes through
   their escalation prompt. Copilot authenticates sandboxed `gh` through its
   masking proxy. Neither path is verified for the TLS failure.
@@ -533,11 +536,12 @@ and network approval rules still apply; never activate the fixture system.
 | Action | What happens |
 |---|---|
 | Other hosts (npm registry, GitHub, docs sites) | Codex and Claude prompt; Copilot offers a sandbox bypass; in Claude's auto mode the command must declare the host |
-| `gh`, `terraform`, `go get`, `go mod download`, `go mod tidy` | Claude runs them outside the sandbox after a prompt unless an allow rule matches; other CLIs need an escalation |
+| `gh` | Claude runs it outside the sandbox after a prompt unless a read-only allow rule matches; other CLIs need an escalation |
+| Terraform provider downloads, `plan`, `apply` | Escalation: upstream Go TLS and cloud credentials are outside the sandbox |
 | `go build` or `go test` that downloads a toolchain or missing module | Escalation, because Go TLS fails in the sandbox |
 | Codex, Claude: `nix build`, `nix fmt` | Prompt: they build through the daemon, outside the agent sandbox |
 | `just`, `npm run`, `npx`, `npm test`, `cargo test` | Codex and Claude run sandboxed without prompts; Copilot requires normal approval; OpenCode retains ask rules |
-| `terraform validate` | Codex runs it sandboxed; Copilot requires normal approval; Claude prompts because Terraform runs outside its sandbox; OpenCode retains its ask rule |
+| `terraform validate` | Codex and Claude run it sandboxed; Copilot requires normal approval; OpenCode retains its ask rule |
 | `mise install`, `mise trust` | Run outside the sandbox; `mise trust` is denied for agents, so ask the user |
 | Claude commands with `$VAR`, `$(...)` or backticks | Prompt ("A variable in this command can't be checked"), since the expansion could match an ask or excluded command; the global `CLAUDE.md` tells Claude to use literal paths instead |
 
@@ -563,7 +567,7 @@ and network approval rules still apply; never activate the fixture system.
 | Error | Cause | Do instead |
 |---|---|---|
 | `Operation not permitted` on a write | Path outside the writable set | Write to the workspace or `$TMPDIR`; don't retarget caches |
-| `x509: OSStatus -26276` | Go TLS can't reach `trustd` in Seatbelt | Run the command outside the sandbox, or `go mod download` first |
+| `x509: OSStatus -26276` | Go TLS can't reach `trustd` in Seatbelt; in Claude, an upstream Go binary that ignores `SSL_CERT_FILE` | Run the command outside the sandbox |
 | `Forbidden`, `CONNECT tunnel failed, response 403` | Host not on the sandbox list | Request approval for that host |
 | `failed to copy trust settings of system certificate` | Same `trustd` block, printed by Node tools | Harmless when the command otherwise succeeds |
 | `device not configured` on `/dev/tty` | No terminal in the sandbox | Use a non-interactive flag (`--no-pager`, `-y`, `GIT_EDITOR=true`) |

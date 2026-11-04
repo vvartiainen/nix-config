@@ -54,9 +54,8 @@ the sandboxes").
 - `nix build` and `nix fmt` require approval in Codex and Claude Code: builds
   run through the daemon outside the agent sandbox.
 - Codex, Claude Code, and Copilot run sandboxed commands (`just`, `npm run`,
-  `npx`, `npm test`, `cargo test`) without prompts. Claude still prompts for
-  `terraform validate` because Terraform is excluded from its sandbox for
-  macOS TLS compatibility.
+  `npx`, `npm test`, `cargo test`, `terraform validate`) without prompts.
+  Claude runs only `gh` outside its sandbox.
 - `Operation not permitted`, `403`/`Forbidden`, or `x509: OSStatus -26276`
   mean the sandbox blocked it: retry once with escalation or ask, don't try
   variants or work around it.

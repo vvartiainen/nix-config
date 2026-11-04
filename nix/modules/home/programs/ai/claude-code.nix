@@ -18,13 +18,9 @@ let
 
   commandString = lib.concatStringsSep " ";
 
-  # Commands listed in sandbox.excludedCommands always run outside the
-  # sandbox; every other command runs inside it without a prompt.
-  unsandboxedPrograms = [
-    "gh"
-    "terraform"
-    "go"
-  ];
+  # Programs in sandbox.excludedCommands always run outside the sandbox;
+  # every other command runs inside it without a prompt.
+  unsandboxedPrograms = [ "gh" ];
 
   permissionSettings = {
     # Allow rules only matter outside the sandbox, so keep them for the
@@ -39,18 +35,8 @@ let
       ++ map (domain: "WebFetch(domain:${domain})") network.sandbox
       # Projects list these in .mcp.json (`ct agents sync`).
       ++ map (name: "mcp__${name}__*") permissions.mcpServers;
-    # Terraform is deliberately excluded from Claude's sandbox for macOS TLS
-    # compatibility, so validation still needs explicit review there.
     ask =
-      map (cmd: "Bash(${commandString cmd}:*)") (
-        commands.sandboxAsk
-        ++ [
-          [
-            "terraform"
-            "validate"
-          ]
-        ]
-      )
+      map (cmd: "Bash(${commandString cmd}:*)") commands.sandboxAsk
       # Cover other absolute Rex locations too, including app/store versions
       # outside the explicitly declared list. Include invocation with no args.
       ++ [
@@ -161,6 +147,12 @@ let
       # keychain certificates, not Apple's roots. Add the Nix bundle, which
       # follows cacert and nix-darwin distrust updates.
       NODE_EXTRA_CA_CERTS = "/etc/ssl/certs/ca-certificates.crt";
+      # The sandbox blocks trustd, which Go uses to verify TLS on macOS.
+      # Nixpkgs' Go reads this bundle instead, so Go module and toolchain
+      # downloads work inside the sandbox.
+      SSL_CERT_FILE = "/etc/ssl/certs/ca-certificates.crt";
+      # Skip Terraform's version check, an unlisted host that would prompt.
+      CHECKPOINT_DISABLE = "1";
       # Compact at 80% of the auto-compact window, like the other CLIs.
       CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = "80";
     };
@@ -190,19 +182,13 @@ let
     sandbox = {
       enabled = true;
       autoAllowBashIfSandboxed = true;
-      # Go CLIs can't verify TLS under Seatbelt, so these run outside the
-      # sandbox through the normal permission flow: allow rules run without
-      # prompting, deny rules still apply, everything else asks. Only Go's
-      # module downloads leave; builds and tests run project code.
-      excludedCommands = [
-        "gh *"
-        "terraform *"
-        "go get *"
-        "go mod download"
-        "go mod download *"
-        "go mod tidy"
-        "go mod tidy *"
-      ];
+      # gh needs the user's token and api.github.com, both outside the
+      # sandbox, so it runs through the normal permission flow: read-only
+      # allow rules run without prompting, deny rules still apply, everything
+      # else asks. Terraform and Go run sandboxed; upstream Go binaries such
+      # as Terraform's provider downloads still fail TLS there and need an
+      # approved retry.
+      excludedCommands = [ "gh *" ];
       # Would let Go tools reach trustd inside the sandbox, at the cost of a
       # possible exfiltration channel through it.
       enableWeakerNetworkIsolation = false;
