@@ -54,10 +54,21 @@ expects a configured `nvim` on `PATH`.
 
 - [Setup and host data](docs/setup.md)
 - [Maintenance and validation](docs/maintenance.md)
-- [Parallel Neovim nightly](docs/neovim.md)
-- [Agent keybindings](docs/agent-keybindings.md)
+- [Desktop, browser and terminal keybindings](docs/keybindings.md)
+- [Neovim and language tools](docs/neovim.md)
+- [Agent CLI keybindings](docs/agent-keybindings.md)
 - [Agent permissions and sandboxes](docs/agent-permissions.md)
 - [Per-project MCP servers and skills](docs/agent-project-tools.md)
 
-Plans, review notes, and unfinished work live in the `backlog-nix-config` MCP,
-also available through `bl`, `bl review`, and `bl handoffs` from this repo.
+Repository guides cover current usage and essential rationale. Implementation
+details, plans, and review notes live in `backlog-nix-config`, also available
+through `bl`, `bl review`, and `bl handoffs` from this repo. Read Backlog documents
+with the MCP `document_view` tool using these IDs:
+
+| Backlog document | Detailed reference |
+| --- | --- |
+| doc-3 | AI CLI permissions and sandbox behavior |
+| doc-5 | Desktop and terminal integration details |
+| doc-6 | Maintenance and builder implementation notes |
+| doc-7 | Neovim and language-tool implementation notes |
+| doc-8 | Agent project tooling and configuration implementation |

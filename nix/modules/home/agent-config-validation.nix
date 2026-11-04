@@ -1,7 +1,7 @@
 { pkgs }:
 let
   schemas = {
-    # Match the Homebrew Codex CLI used here (see docs/agent-keybindings.md).
+    # Match the Homebrew Codex CLI; schema provenance is in Backlog doc-8.
     codex = pkgs.fetchurl {
       url = "https://raw.githubusercontent.com/openai/codex/rust-v0.166.0/codex-rs/core/config.schema.json";
       hash = "sha256-IRvsIoJFn81w5JBa+UhyEXe27HoD4N+EzYt8ExAGpso=";

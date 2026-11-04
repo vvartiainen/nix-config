@@ -1,118 +1,54 @@
 # Per-project MCP servers and skills
 
-MCP servers and skills live in each project's own agent files, committed with
-it. Nix installs the server commands on `PATH` and builds a catalog of
-everything available; `ct agents` (cli-toolbox) picks the project's agents,
-servers and skills from it and writes each agent's project files. Nothing is
-configured globally by the catalog and no server runs unless a project's files
-list it. The Rex module separately declares its global integration skill. See
-cli-toolbox's
-[agent tools guide](https://github.com/vvartiainen/cli-toolbox/blob/main/docs/agent-tools.md).
+## Select project tools
 
-| Layer | Defined in | Reaches |
-|---|---|---|
-| Catalog | `agents.mcpServers`, `agents.skillSources`, `agents.localSkills` and `ai/skills/` (`ai/agents-catalog.nix`) | `~/.config/cli-toolbox/agents/catalog.json` |
-| Project | `ct agents` or `ct tui` › Git › Agent tools | The project's committed agent files |
-
-The catalog holds `nixos` (`mcp-nixos`) and one `backlog-<name>` server per
-backlog (`bl <name> mcp start`); both commands are on `PATH`, so the committed
-files contain no machine paths. Backlog servers only work where `bl` knows the
-backlog, so commit them only in your own projects.
+Nix supplies a catalog; `ct agents` selects agents, MCP servers and skills and
+writes their project files. Review and commit those files with the project.
+No catalog MCP server is enabled globally or started without a project entry.
 
 ```sh
-ct agents set targets claude enable    # every agent is off until chosen
+ct agents set targets claude enable
 ct agents set mcp nixos enable
-ct agents sync --dry-run && ct agents sync
+ct agents sync --dry-run
+ct agents sync
 ```
 
-Tools of catalog servers are allowed without prompting: `permissions.nix`
-exposes the catalog server names, and each CLI module renders its tool rules.
-Codex and Pi read project servers once you trust the project.
+The catalog includes `nixos` and a `backlog-<name>` server for each configured
+backlog. Backlog servers only work on machines where `bl` knows that backlog;
+keep those registrations in your own projects. Codex and Pi load project
+servers after project trust. Catalog server tools have configured permission
+allowances. See the cli-toolbox
+[agent tools guide](https://github.com/vvartiainen/cli-toolbox/blob/main/docs/agent-tools.md).
 
 ## Backlog shortcuts
 
-`bl` selects an external backlog from `backlog.projects`; it does not create
-task files in the current repository. Inside a configured project's repository,
-including subdirectories and linked worktrees, omit the project name:
+Tasks and implementation documents live outside the repo. In a configured
+project, including subdirectories and worktrees:
 
 ```sh
-bl                         # task list
-bl review                  # all tickets tagged needs-review
-bl handoffs                # tickets tagged both handoff and needs-review
-bl review --plain          # list options pass through
-bl board                   # terminal board
-bl browser                 # browser interface
-bl task TASK-73             # open a ticket
+bl                        # tasks
+bl review                 # needs-review queue
+bl handoffs               # handoff + needs-review queue
+bl board
+bl browser
+bl task TASK-73
 ```
 
-Selection order is an explicit configured project name, the detected project,
-then `BACKLOG_PROJECT`. Detection matches the main checkout's directory name
-against `backlog.projects`, including when run from a linked worktree, then
-tries the current Git root's name. Outside Git, it uses the nearest ancestor
-directory whose name is a configured project. An unrelated Git repository does
-not inherit a matching parent directory's backlog. Unknown environment defaults
-are rejected.
-
-From elsewhere, use `bl nix-config review` or `bl cli-toolbox browser` if those
-projects are configured. Repositories whose names differ from their backlogs
-also need an explicit name or `BACKLOG_PROJECT`. `bl --help` shows wrapper help;
-`bl <project> --help` shows Backlog.md help. Other arguments pass through to
-Backlog.md, including the explicit `bl <project> mcp start` used by agents.
-
-The handoff queue is for user review. Agents leave these tasks open; the user
-checks the review criteria, removes `needs-review`, and marks accepted work Done.
+Elsewhere, use an explicit project, such as `bl nix-config review`.
+Selection prefers an explicit project, then detected repository/directory, then
+`BACKLOG_PROJECT`. Repositories with different backlog names need an explicit
+selection. `bl --help` shows wrapper help; `bl <project> --help` shows Backlog help.
+The user accepts and completes review tickets; agents leave them open.
 
 ## Skill library
 
-- Generic skills: add `nix/modules/home/programs/ai/skills/<name>/SKILL.md`.
-- Private skills: set `agents.localSkills.<name> = <dir>;` in host data.
-- Remote skills: add Rulesync sources to `agents.skillSources`, rebuild, then
-  run `ct agents library install`.
+- Reusable skills: `nix/modules/home/programs/ai/skills/<name>/SKILL.md`.
+- Private host guides: `agents.localSkills.<name> = <dir>;` in a private
+  Home Manager module. Keep workstation-specific inventories there.
+- Remote skills: `agents.skillSources`, then `ct agents library install` after
+  rebuilding the catalog.
 
-Then turn them on per project with `ct agents set skills <name> enable` and
-sync; their files are copied into the project.
-
-Host- and user-specific guides, such as a workstation tool inventory and
-sandbox workflow, belong in the private host catalog. Keep their skill
-directories alongside private host data, and register them in a Home Manager
-module under the host's `homeModules`:
-
-```nix
-homeModules = [
-  {
-    agents.localSkills.system-tools = ./skills/system-tools;
-  }
-];
-```
-
-This example goes in the private host's `default.nix`; add the module to the
-existing list. The directory must contain `SKILL.md`. After manually rebuilding
-and applying the catalog, select it with
-`ct agents set skills system-tools enable`, review `ct agents sync --dry-run`,
-then run `ct agents sync` and start a new agent session. The public fixture
-does not include private host skills. See [host data](setup.md#host-data).
-Skill directories are copied into the Nix store and enabled skills into project
-files; keep credentials out and review generated files before committing them.
-
-The reusable workflow skills in this repo are:
-
-| Skill | Use |
-| --- | --- |
-| `review-before-push` | Review outgoing commits and working changes for secrets and internal material; request a full-history audit explicitly. Reports redacted findings and coverage gaps. |
-| `rebase-main` | Rebase a feature branch onto main with a recovery ref, conflict review and verification of linear history. |
-| `handoff` | Summarize changes, commits, permission issues, spec deviations, backlog activity, verification, manual checks and remaining risks. |
-| `backlog-task` | Capture a task with a short title, why and observable acceptance criteria; search for duplicates and follow the project's workflow. |
-| `work-on-task` | Give an agent work by task ID or title; resolve scope, dependencies and ownership, execute and hand off, or prepare a brief for another agent. |
-| `mac-disk-cleanup` | Survey macOS disk use and System Data, plan cleanup for approval, then clear caches, simulators, VM disks, Apple Intelligence models, local snapshots and Nix store roots. |
-
-Publication reviews honor an explicit local comparison base without fetching.
-For remote refs, `review-before-push` prefers anonymous HTTPS for public repos
-and existing `gh` authentication for private GitHub repos, using one-off fetches
-that preserve remote settings. It explains verified SSH requirements and
-distinguishes them from authentication or sandbox access failures.
-
-For example, after the user rebuilds/applies the catalog, select a skill in the
-target project and review the generated files:
+Enable a skill per project and review the generated files:
 
 ```sh
 ct agents set skills review-before-push enable
@@ -120,125 +56,50 @@ ct agents sync --dry-run
 ct agents sync
 ```
 
-Select the other skills by name in the same way, then invoke them in a new agent
-session. Creating the library does not enable skills in projects automatically.
-The skills follow each project's instructions and backlog policy. Reviewing
-does not publish or rewrite commits; rebasing does not push. A useful finishing
-sequence is rebase, required checks, review the resulting outgoing history,
-then handoff. Run task creation whenever new work needs capturing.
-
-To give an already running agent a task, enable `work-on-task` in that project
-and invoke it with `work-on-task TASK-123` or `work-on-task "Exact task title"`.
-The agent resolves the current task, records its plan, implements and verifies
-it, then leaves the required review handoff. `work-on-task prepare TASK-123`
-produces a copyable brief without starting work or claiming the task.
-
-The skill includes an agent-sandbox integration section with the shared MCP
-entry shapes verified from `ai/mcp.nix`. Its provisioning/launch contract is a
-fill-in template: the sibling sandbox source was inaccessible during authoring,
-so no VM launch command, mount layout or skill delivery is assumed. Fill this
-section from your sandbox's documentation before using it for automatic launch.
+Start a new agent session to use it. Available workflow skills include
+`backlog-task`, `work-on-task`, `rebase-main`, `review-before-push`, `handoff`
+and `mac-disk-cleanup`; read their SKILL.md for scope. For an existing ticket,
+invoke `work-on-task TASK-123`; `work-on-task prepare TASK-123` produces a brief
+without starting implementation. Skills do not grant permissions. Skill files
+enter the Nix store and project files, so keep credentials out.
 
 ## Global cleanup
 
-Every switch runs `cleanup-agent-config` before Home Manager links files and
-merges the CLI settings. Home Manager then restores Nix-declared global skills,
-currently Rex in `~/.agents/skills/rex` and `~/.claude/skills/rex`. Other global
-skills are archived; project skills stay in place.
-It can also be run manually after the first switch that installs it:
+Close agent CLIs before switching so they cannot write stale settings back.
+Every switch removes global MCP registrations and undeclared global skills/
+plugins, then restores declared Rex and Herdr integrations. Project tools,
+authentication, session history and catalog/library remain in place.
+Prefer project selection for other tools; manually enabled global tools are
+removed again on the next switch.
 
 ```sh
 just cleanup-agent-config --dry-run
 just cleanup-agent-config
 ```
 
-A manual cleanup also archives declared skills; switch again to restore them.
-
-Close the agent CLIs before switching or cleaning, then restart them so they
-load the updated settings. An open CLI can write its old settings back.
-
-The script removes user-level MCP registrations from Codex (including profiles),
-Claude Code, Copilot, Cursor, Pi, and OpenCode. It disables global Codex and
-Claude plugins, clears Copilot's installed-plugin registry and disables its
-declarative plugin choices, and removes OpenCode's global plugin and extra
-skill-path settings. It archives
-loose skills from `~/.agents/skills`, `~/.codex/skills` (except `.system`),
-`~/.claude/skills`, `~/.copilot/skills`, `~/.cursor/skills`, `~/.pi/agent/skills`,
-and `~/.config/opencode/skills`, plus Claude's global commands, Pi's loose
-extensions, and OpenCode's global plugins. Herdr's `herdr-agent-state`
-extension and plugin stay, since they only report agent state. XDG config and state directories
-are respected. This covers the default CLI locations managed by this repo;
-custom CLI home directories and administrator-managed tools need separate handling.
-
-Changed files and archived directories are backed up under
-`~/.local/state/nix-config/agent-config-backup/`, with the original absolute
-path mirrored inside. Only the latest run that changed something is kept. Config backups are private. Symlinked skill
-directories are archived as links, leaving their targets intact. A repeat run
-with no new global tools makes no changes. Invalid config files stop cleanup
-before any config is changed.
-
-Project files, authentication, session history, plugin caches and the `ct agents`
-catalog/library remain in place. Pi's Nix-declared packages remain enabled.
-Codex's cached `.system` skills stay on disk but are disabled in Nix; disabled
-skills can remain visible in `/skills` as disabled entries. Cursor recreates
-its `skills-cursor` built-ins and has no supported setting to disable them.
+Review the dry run first. Manual cleanup also archives declared skills; switch
+again to restore them. Changed files/directories are backed up under
+`~/.local/state/nix-config/agent-config-backup/`; only the latest run that
+changed something is retained. Inspect that private backup before recovery.
+Custom CLI homes and administrator-managed tools are outside cleanup coverage.
 
 ## Configuration validation
-
-Check global agent configuration without modifying it:
 
 ```sh
 just validate-agent-config
 ```
 
-The recipe builds and runs the validator from this checkout, so it works before
-the first switch. It uses the synthetic host input only to build the helper;
-the helper reads your actual global config files. Activation also installs a
-`validate-agent-config` command for direct use.
+This builds the validator from the checkout and reads actual global config
+files. `just check` and `just build` also invoke it; activation checks merged
+settings. It reports schema coverage, parsing-only checks and missing files.
+Validation is offline and checks structure and supported values, not whether
+commands, models or servers work.
 
-`just check` and `just build` also check the installed files. Nix builds check
-the generated Home Manager files and schema-backed merge settings. During
-activation, cleanup validates every transformed candidate before its first
-write, each merge validates its complete candidate before replacing the config
-or merge state, and a final validation runs after all agent merges. Manual
-`just cleanup-agent-config` runs the final check too. Validation failure exits
-nonzero; the failing merge leaves its destination and state unchanged. This is
-not a transaction across all activation steps: earlier successful merges can
-already have been written when a later merge fails.
+A failing merge preserves its destination and merge state, but activation is
+not transactional: earlier successful steps may already have written files.
+Project settings, custom CLI homes, private modules and runtime environment/
+flag overrides are outside this check. Agents use only the public fixture;
+the user validates private host settings manually before applying.
 
-| Configuration | Validation |
-| --- | --- |
-| Codex `config.toml` | Upstream schema from `rust-v0.166.0`, matching the Homebrew CLI used here |
-| Claude Code `settings.json` | Pinned SchemaStore Claude Code settings schema |
-| OpenCode runtime and v2 CLI settings | Hash-pinned downloads from the published OpenCode schema URLs |
-| Pi settings, keybindings, models and the declared theme | Schemas shipped with the pinned Pi package |
-| Cursor, Copilot, MCP registries, Claude runtime state and desktop config | Parsing and object-root checks only; no schema bundled |
-
-The command reports the schema used for each existing file, labels limited
-coverage as `parse only; no schema`, and reports missing files explicitly.
-OpenCode's mutable global files and Home Manager layers are checked separately
-and together. JSONC is accepted for Copilot `settings.json`, its auto-managed
-`config.json` (including the generated comment header), and OpenCode files.
-TOML is parsed before Codex schema validation. Unknown keys are rejected only
-where the upstream schema rejects them; permissive schemas cannot catch every typo.
-
-Schemas are bundled through
-[`agent-config-validation.nix`](../nix/modules/home/agent-config-validation.nix).
-Validation itself requires no network and does not follow a config's `$schema`
-URL. Update schema versions/hashes deliberately when upgrading CLIs. The
-regression tests run as part of building the validator package.
-
-OpenCode schemas are fetched directly from
-[`config.json`](https://opencode.ai/config.json) and
-[`v2/cli.json`](https://opencode.ai/v2/cli.json), without building the OpenCode
-package or its Node dependencies. These URLs are mutable; the pinned hashes
-select reviewed snapshots. Review JSON changes before updating their hashes
-when upstream publishes a new schema. Validation uses the bundled copies offline.
-
-Coverage follows this repo's default global CLI paths and XDG config directory.
-Project settings, custom CLI home overrides, private modules, environment/flag
-overrides, runtime permissions and credentials are outside this check. A
-successful schema check verifies structure and supported values, not whether a
-command, model, path or server works. Close running CLIs before switching or
-cleaning to keep them from writing stale settings back. Agents validate only
-the synthetic public fixture; validate the private host manually before apply.
+Catalog, cleanup, schema sources and merge details:
+Backlog **doc-8 — Agent project tooling and configuration implementation**.

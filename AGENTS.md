@@ -44,8 +44,8 @@ need a diff review and `git diff --check`, not a system build.
 
 ## Agent sandbox
 
-Commands run in an OS sandbox (see `docs/agent-permissions.md`, "Working in
-the sandboxes").
+Commands run in an OS sandbox (see
+[sandbox usage](docs/agent-permissions.md#working-in-the-sandboxes)).
 
 - Writable: the workspace, `$TMPDIR`, `/tmp`, and `~/.cache/<tool>-agent`;
   package caches already point there. Use `/tmp` for scratch files.
@@ -53,8 +53,8 @@ the sandboxes").
   flake inputs from GitHub may need `github.com` approved.
 - `nix build` and `nix fmt` require approval in Codex and Claude Code: builds
   run through the daemon outside the agent sandbox.
-- Codex, Claude Code, and Copilot run sandboxed commands (`just`, `npm run`,
-  `npx`, `npm test`, `cargo test`, `terraform validate`) without prompts.
+- Codex and Claude Code run routine project commands inside their sandboxes
+  without prompts; Copilot requires normal approval for unlisted commands.
   Claude runs only `gh` outside its sandbox.
 - `Operation not permitted`, `403`/`Forbidden`, or `x509: OSStatus -26276`
   mean the sandbox blocked it: retry once with escalation or ask, don't try
@@ -94,7 +94,27 @@ the sandboxes").
 - Only update `flake.lock` when dependency updates are intentional
 - `git commit` the changes you have made, but let user manually handle the push of the changes
   - use existing project commit style (conventional commits, short message, no long descriptions, no trailers such as Co-Authored-By or Claude-Session)
-- Update existing documentation, also using MCP if such exists
+
+## Documentation
+
+- Keep repository documentation small: setup, everyday usage, required
+  maintenance, agent instructions, and concise rationale needed to use or change
+  the configuration correctly. Use clear categories by purpose.
+- Put implementation details, design/research notes, version comparisons,
+  migration history, investigation logs, and detailed verification procedures
+  in Backlog documents through `backlog-nix-config`. Keep task-specific plans
+  and check results in the task. Backlog may contain more implementation detail
+  than repository guides; it must still be relevant and current.
+- Search existing repository and Backlog documentation before writing. Update
+  the relevant guide or Backlog document instead of creating excessive docs,
+  per-change writeups, duplicated configuration inventories, or session reports
+  in the repo. Link the Backlog document ID/title when deeper context is useful.
+- Keep agent-only guides focused on agents; put desktop, browser and terminal
+  shortcuts in the general keybindings guide. Remove obsolete instructions and
+  deprecated comparisons rather than preserving them as current guidance.
+- Preserve essential reasons and operational caveats, not a transcript of how
+  the change was implemented. When moving detail, save the Backlog document
+  first, update links, and review the documentation diff.
 
 ## Backlog
 
