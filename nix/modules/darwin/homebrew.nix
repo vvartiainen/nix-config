@@ -12,6 +12,7 @@
       "ansible"
       "awscli"
       "bat"
+      "betterleaks"
       "composer"
       "coreutils"
       "duckdb"
