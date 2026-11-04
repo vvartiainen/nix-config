@@ -113,6 +113,28 @@ and tools. Font controls:
 Cmd+Shift+/ also increases all-window font size for keyboard layouts where
 Shift+Plus is intercepted. Restart Kitty after changing macOS menu shortcuts.
 
+Kitty 0.50+ restores all running instances after logout or a computer restart,
+including window geometry and scrollback, with fresh shells. Start Kitty normally
+to restore; an explicit `--session` bypasses logout restore.
+
+To restart Kitty without logging out:
+
+1. Press **F7 → R** to save all OS windows, tabs, layouts and working directories
+   in the current Kitty process, including window geometry. Review the snapshot
+   in the editor and close the editor when finished.
+2. Fully quit Kitty, then run this from another terminal:
+
+   ```sh
+   kitty --detach --session "$HOME/.local/state/kitty/restart.kitty-session"
+   ```
+
+Manual snapshots omit scrollback and live process state. Commands launched
+directly by a session can run again; review the file before reopening it.
+Programs started inside shells need to be resumed manually. Separate Kitty
+processes need separate snapshots; **F7 → S** prompts for a filename and also
+records foreground commands. Window placement remains subject to yabai.
+Reload the configuration with **Ctrl+Shift+F5** to load these settings.
+
 ### Rex
 
 | Key in Rex mode | Action |
