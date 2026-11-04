@@ -75,6 +75,9 @@ let
       // lib.genAttrs paths.denied (_: "deny")
       // {
         "${config.home.homeDirectory}/.codex/skills" = "read";
+        # Allow inspecting installed lifecycle hooks without permitting edits
+        # to commands that execute outside the agent sandbox.
+        "${config.home.homeDirectory}/.codex/hooks.json" = "read";
 
         # Nix probes the socket before selecting the daemon store. The
         # network allowlist above permits connecting, not filesystem probes.

@@ -166,7 +166,7 @@ account or VM when a hard account boundary is required.
 | Claude | `sandbox.network.allowUnixSockets` | Nix daemon socket |
 | Claude | `sandbox.enableWeakerNetworkIsolation` | `false`; see [Go CLIs and TLS](#go-clis-and-tls) |
 | Claude | `sandbox.network.strictAllowlist` | `false`: unlisted hosts prompt |
-| Codex | `filesystem` | Workspace `.git` writable, hooks and config read-only, `~/.codex/skills` |
+| Codex | `filesystem` | Workspace `.git` writable, hooks and config read-only, `~/.codex/skills` and `~/.codex/hooks.json` readable |
 | Copilot | `readonlyPaths` / `readwritePaths` | Copilot hooks; herdr socket and backlog vault |
 | Copilot | `--allow-tool` | Shared safe prefixes/exact commands and catalog MCP servers; no blanket shell grant |
 | Copilot | `sandbox.userPolicy.network.allowLocalNetwork` | `false`; localhost/private-network access is not implicitly granted |
@@ -315,6 +315,13 @@ Filesystem access, network access, and approval routing are independent.
 `approvals_reviewer = "user"` sends those requests to the user. `never`
 disables approval requests rather than granting more access. Prompt and
 forbidden command rules add review requirements to the sandbox policy.
+
+Codex's installed lifecycle hooks at `~/.codex/hooks.json` have an explicit
+read-only grant so agents can inspect the terminal-status integration without
+escalating. This does not grant writes to hook commands or access to
+`~/.codex/auth.json`. Profile changes take effect after the user applies the
+configuration and starts a new Codex session; they do not update an already
+running session's sandbox.
 
 `network.enabled = true` enables networking subject to the proxy.
 `features.network_proxy = true` makes the domain rules enforceable; `domains`
