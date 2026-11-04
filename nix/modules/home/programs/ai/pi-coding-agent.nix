@@ -11,13 +11,13 @@
     settings = {
       theme = "catppuccin-mocha";
       defaultProvider = "deepseek";
-      defaultModel = "deepseek-v4-pro";
+      defaultModel = "deepseek-flash";
       defaultThinkingLevel = "medium";
       # Compact at 80% of the default model's 1M-token window, like the
       # other CLIs: Pi compacts when fewer than reserveTokens remain.
       compaction = {
         enabled = true;
-        modelOverrides."deepseek/deepseek-v4-pro".reserveTokens = 200000;
+        modelOverrides."deepseek/deepseek-flash".reserveTokens = 200000;
         modelOverrides."openai-codex/gpt-6.1-sol".reserveTokens = 100000;
       };
 
