@@ -290,6 +290,22 @@ Escape or Return first, or use the address/search shortcuts above.
 
 ## Kitty
 
+Font size shortcuts use Kitty's [`change_font_size` action](https://sw.kovidgoyal.net/kitty/conf/#font-sizes).
+Add Shift to target all OS windows in the Kitty instance.
+
+| Key | Action |
+|---|---|
+| Cmd+Plus / Cmd+Equal | Increase font size in the current OS window by 2 points |
+| Cmd+Minus | Decrease font size in the current OS window by 2 points |
+| Cmd+0 | Reset font size in the current OS window |
+| Cmd+Shift+Plus / Cmd+Shift+Equal | Increase font size in all OS windows by 2 points |
+| Cmd+Shift+Minus | Decrease font size in all OS windows by 2 points |
+| Cmd+Shift+0 | Reset font size in all OS windows |
+
+Cmd+Shift+/ also increases font size in all OS windows, overriding Kitty's
+default website shortcut that can intercept Shift+Plus on other keyboard layouts.
+Fully quit and reopen Kitty after this change to refresh the macOS menu shortcuts.
+
 Automatic tab labels show the repository name, or `repository:worktree` in a
 linked Git worktree, including when an agent runs from a subdirectory of it.
 The worktree part is its directory name, so detached worktrees also have a
