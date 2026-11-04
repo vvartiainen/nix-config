@@ -1,5 +1,7 @@
 { pkgs, ... }:
 {
+  imports = [ ./pi-sandbox.nix ];
+
   programs.pi-coding-agent = {
     enable = true;
 
@@ -22,6 +24,7 @@
       };
 
       packages = [
+        "npm:@gotgenes/pi-permission-system@42.0.0"
         "npm:pi-web-access@0.40.0"
         # Subscription 5h/weekly limits in the footer and /usage, like the
         # Claude Code status line and Codex limit items.

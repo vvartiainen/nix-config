@@ -13,11 +13,42 @@ grant filesystem or command access.
 | Cursor | Run in sandbox | Escapes; Rex has no per-command ask rule here |
 | Copilot | Shared safe-command allowlist | Unlisted commands, file edits and sandbox bypasses |
 | OpenCode | No OS sandbox | Commands outside its allowlist ask |
-| Pi | No configured permission boundary | Runs with the user's normal access |
+| Pi | Whole process runs in Safehouse | Permission extension asks for unlisted commands and external tools; OS denials require manual work outside Pi |
 
 Keep sandboxing enabled. Persistent broad command approvals can weaken these
 defaults. In Copilot, use `/reset-allowed-tools` to clear old broad grants before
 testing changed rules. Start fresh sessions after permission changes.
+
+## Pi
+
+Start `pi` inside the project directory. Its Nix wrapper runs Pi, extensions and
+child commands in [Safehouse](https://agent-safehouse.dev/). Writes are limited
+to the invocation directory, scratch space, Pi state and shared agent caches;
+unrelated home files and the shared secret paths remain restricted. Project
+`.pi` files, Git hooks/config and the global permission settings are protected
+from writes. Launching from home or `/` is refused. Launch from a repository
+root when the task needs the whole repository.
+
+The pinned `@gotgenes/pi-permission-system` package installs on first launch,
+like the other Pi packages. Confirm it loads without extension errors; use
+`/permission-system show` to inspect its rules. Routine file tools and the shared
+safe-command list run without prompts. Unlisted commands, pushes, publishing,
+MCP and other extension tools ask; the shared deny list remains denied.
+Permissions are an approval layer, not a security boundary: trusted project
+configuration and extensions can affect their behavior. Do not load untrusted
+extensions or disable the permission package.
+
+Safehouse leaves IP networking open, including local TCP services; it does not
+provide the domain allowlist used by Codex and Claude or prevent exfiltration
+of readable data. UNIX-socket connections to host daemons are blocked. An
+approval does not escape Safehouse: run blocked Nix builds and host-service
+operations manually outside Pi. Pi must read its own stored credentials;
+tool-level rules deny `auth.json`, but extensions share Pi's process access.
+The wrapper also passes `DEEPSEEK_API_KEY` when set and otherwise sanitizes the
+environment. Existing stored provider logins remain usable.
+MCP servers started by Pi inherit these limits too; servers using data outside
+the granted paths, including an external Backlog vault, need a separately
+reviewed grant before they can work.
 
 ## Working in the sandboxes
 
@@ -49,7 +80,8 @@ permissions. An approved call can therefore leave the calling agent's sandbox.
 Codex and Claude prompt for Rex calls, including help and guide commands;
 Copilot leaves them unlisted. Keep Rex endpoints out of sandbox socket/network
 allowlists and avoid persistent broad approvals. Cursor and Pi do not have the
-same Rex prompt coverage. The GUI Remote Control toggle alone does not constrain
+same native Rex prompt coverage; Pi's permission extension gates unlisted tools
+and Rex commands. The GUI Remote Control toggle alone does not constrain
 all server commands.
 
 ## Diagnose blocked commands
