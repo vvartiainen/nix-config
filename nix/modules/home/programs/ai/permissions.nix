@@ -296,7 +296,8 @@ let
       ".snowsql/**"
       ".terraform.d/**"
       ".netrc"
-      ".npmrc"
+      # ~/.npmrc is not listed: it links to the tracked dotfiles/.npmrc, and
+      # Claude denies a link's target, which would block flake evaluation.
       ".yarnrc"
       ".pgpass"
       ".zsh_local"

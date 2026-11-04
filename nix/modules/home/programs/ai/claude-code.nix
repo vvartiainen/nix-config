@@ -206,11 +206,10 @@ let
             # The Bash tool sources its shell snapshot from here.
             "${config.programs.claude-code.configDir}/shell-snapshots"
             "${config.programs.claude-code.configDir}/session-env"
+            # Go's `go env -w` settings and telemetry mode (os.UserConfigDir).
+            "${config.home.homeDirectory}/Library/Application Support/go"
           ]
-          ++ paths.readable
-          # ~/.npmrc links to this tracked file; flake evaluation copies every
-          # tracked file, so nix must be able to read it.
-          ++ [ "/${repoRoot}/dotfiles/.npmrc" ];
+          ++ paths.readable;
       };
       network = {
         allowedDomains = network.sandbox;

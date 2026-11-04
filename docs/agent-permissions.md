@@ -162,7 +162,7 @@ account or VM when a hard account boundary is required.
 |---|---|---|
 | Claude | `sandbox.excludedCommands` | `gh *`: runs outside the sandbox through the normal permission flow |
 | Claude | `sandbox.filesystem.denyWrite` | `**/.git/hooks`, `**/.git/config` |
-| Claude | `sandbox.filesystem.allowRead` | The repo's `dotfiles/.npmrc`, which `~/.npmrc` links to |
+| Claude | `sandbox.filesystem.allowRead` | Inside the home `denyRead`: the projects directory, `paths.readable`, shell snapshots, Go's config directory (`~/Library/Application Support/go`) |
 | Claude | `sandbox.network.allowUnixSockets` | Nix daemon socket |
 | Claude | `sandbox.enableWeakerNetworkIsolation` | `false`; see [Go CLIs and TLS](#go-clis-and-tls) |
 | Claude | `sandbox.network.strictAllowlist` | `false`: unlisted hosts prompt |
@@ -188,8 +188,9 @@ account or VM when a hard account boundary is required.
 Git runs hooks and config outside the sandbox, so both are read-only to
 prevent an escape. Nix builds run unprivileged through the daemon, outside
 the agent sandbox, and any sandboxed `nix` command can start them. The daemon
-sandboxes them (`sandbox = "relaxed"` in `nix/modules/shared/nix.nix`), but
-fixed-output fetches keep network access. Data a sandboxed command can read
+build sandbox is off (`nix/modules/shared/nix.nix`): on macOS the system
+derivation's Seatbelt profile exceeds the 64 KiB limit, and fixed-output
+fetches would keep network access anyway. Data a sandboxed command can read
 could leave that way, which is why the home directory reads are narrowed.
 
 Codex and Copilot deny reads under `~` except the workspace and
@@ -556,8 +557,10 @@ and network approval rules still apply; never activate the fixture system.
   shell history). Claude likewise, except that it reads the whole projects
   directory.
 - Reading credentials: `~/.ssh`, `~/.aws`, `~/.gnupg`,
-  `~/.config/gh`, `~/.config/op`, `~/.netrc`, `~/.npmrc`, agent auth files,
-  `.env` files, `*.pem`, `*.key`. Ask the user if a task really needs one.
+  `~/.config/gh`, `~/.config/op`, `~/.netrc`, agent auth files, shell
+  history, `.env` files, `*.pem`, `*.key`. Ask the user if a task really
+  needs one. `~/.npmrc` is not denied: it links to the tracked, token-free
+  `dotfiles/.npmrc`, and Claude would deny the link's target in the repo.
 - Writing the normal caches and tool installs: `~/Library/Caches`,
   `~/.cache/<tool>`, `~/golang`, `~/.cargo`, `~/.npm`, `~/.local/share/mise`,
   `~/.local/state/mise`.
