@@ -117,23 +117,18 @@ Kitty 0.50+ restores all running instances after logout or a computer restart,
 including window geometry and scrollback, with fresh shells. Start Kitty normally
 to restore; an explicit `--session` bypasses logout restore.
 
-To restart Kitty without logging out:
+Press **F7 → R** and confirm to save, quit and automatically reopen the current
+Kitty process with all its OS windows, tabs, layouts, working directories and
+window geometry. Other Kitty processes remain running. Apply the configuration
+manually once to link the restart helpers, then reload with **Ctrl+Shift+F5**.
 
-1. Press **F7 → R** to save all OS windows, tabs, layouts and working directories
-   in the current Kitty process, including window geometry. Review the snapshot
-   in the editor and close the editor when finished.
-2. Fully quit Kitty, then run this from another terminal:
-
-   ```sh
-   kitty --detach --session "$HOME/.local/state/kitty/restart.kitty-session"
-   ```
-
-Manual snapshots omit scrollback and live process state. Commands launched
-directly by a session can run again; review the file before reopening it.
-Programs started inside shells need to be resumed manually. Separate Kitty
-processes need separate snapshots; **F7 → S** prompts for a filename and also
-records foreground commands. Window placement remains subject to yabai.
-Reload the configuration with **Ctrl+Shift+F5** to load these settings.
+This restart omits scrollback and live process state. Programs started inside
+shells need to be resumed manually; commands launched directly by a session
+can run again. Window placement remains subject to yabai. A failed save leaves
+Kitty running. If reopening fails, inspect `~/.local/state/kitty/restart.log`;
+the recovery snapshot is `~/.local/state/kitty/restart-<old-pid>.kitty-session`.
+Reopen it from another terminal with `kitty --detach --session <snapshot>`.
+**F7 → S** still saves a reviewed session file, including foreground commands.
 
 ### Rex
 
