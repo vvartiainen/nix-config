@@ -322,6 +322,30 @@ let
       ".local/state/gh/**"
       ".local/state/opencode/**"
       ".local/state/.copilot/**"
+      ".config/github-copilot/**"
+      ".claude/.credentials.json"
+      ".gemini/oauth_creds.json"
+      ".kube/**"
+      ".config/gcloud/**"
+      ".git-credentials"
+      ".config/git/credentials"
+      ".config/sops/**"
+      ".config/age/**"
+      ".password-store/**"
+      ".vault-token"
+      ".pypirc"
+      ".gem/credentials"
+      ".terraformrc"
+      ".config/rclone/**"
+      # Shell history often holds pasted tokens.
+      ".zsh_history"
+      ".bash_history"
+      # Keychains and browser sessions.
+      "Library/Keychains/**"
+      "Library/Cookies/**"
+      "Library/Application Support/Google/Chrome/**"
+      "Library/Application Support/Firefox/**"
+      "Library/Application Support/BraveSoftware/**"
     ];
 
     secretFiles = [
