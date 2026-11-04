@@ -15,6 +15,7 @@ _: {
       # Claude Code local state
       "**/.claude/.cc-writes/"
       "**/.claude/settings.local.json"
+      "**/.claude/worktrees"
     ];
 
     settings = {
