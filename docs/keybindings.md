@@ -19,6 +19,7 @@ characters. Agent prompt controls are in [agent CLI keybindings](agent-keybindin
 | Cmd+Tab | Cycle yabai windows |
 | Cmd+Left Option+H/J/K/L | Resize the focused window |
 | Cmd+Q twice within 500 ms | Quit Zen or Kitty; other apps keep single-press quit |
+| Ctrl+N/P in Vicinae | Next / previous result |
 | Ctrl+N/P in Slack | Down / up in menus, search and message editing |
 | Ctrl+Shift+J/K in Slack | Next / previous channel or DM |
 

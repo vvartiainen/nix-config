@@ -95,7 +95,8 @@
     onActivation = {
       autoUpdate = false;
       upgrade = false;
-      cleanup = "zap";
+      # Remove undeclared apps, preserving their settings and data for manual cleanup.
+      cleanup = "uninstall";
     };
   };
 

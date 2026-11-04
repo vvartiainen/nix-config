@@ -1,3 +1,14 @@
+# Arrow navigation in Slack menus, search and the message editor.
+ctrl - n [
+  "Slack" | down
+  * ~
+]
+
+ctrl - p [
+  "Slack" | up
+  * ~
+]
+
 # One key enters the focused app's navigation mode.
 # Loaded last so every mode it targets is already declared.
 default, winmode, resize < $mode - space [

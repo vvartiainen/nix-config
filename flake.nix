@@ -10,6 +10,9 @@
     # Use the upstream package and dependency pins for the experimental editor.
     neovim-nightly.url = "github:nix-community/neovim-nightly-overlay";
 
+    # Keep upstream dependency pins so its binary cache can be used.
+    vicinae.url = "github:vicinaehq/vicinae";
+
     home-manager = {
       url = "github:nix-community/home-manager/master";
       inputs.nixpkgs.follows = "nixpkgs";

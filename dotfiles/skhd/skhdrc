@@ -10,6 +10,5 @@
 .load "herdr"
 .load "kitty"
 .load "zen"
-.load "slack"
 .load "rex"
 .load "navigation"
