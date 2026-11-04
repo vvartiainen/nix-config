@@ -13,7 +13,9 @@ let
   command = lib.getExe reporter;
   hook = app: state: kind: {
     type = "command";
-    command = "${command} report ${app} ${state} ${kind}";
+    # Replacing the hook shell makes Codex the reporter's parent. Its PID is
+    # valid for daemon cleanup without relying on the launching zsh's env.
+    command = "${lib.optionalString (app == "codex") "exec "}${command} report ${app} ${state} ${kind}";
     timeout = 2;
   };
   group = app: state: kind: { hooks = [ (hook app state kind) ]; };

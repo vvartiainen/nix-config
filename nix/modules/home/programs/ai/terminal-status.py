@@ -51,7 +51,17 @@ def clear(launch):
 
 
 def publish(app, state, kind, payload, terminal):
-    launch = os.environ.get("NIX_CONFIG_AGENT_LAUNCH", "")
+    if app == "codex":
+        session = payload.get("session_id")
+        if not isinstance(session, str) or not session:
+            return
+        launch = f"codex:{session}"
+        # The hook shell execs this reporter, so its parent is Codex itself
+        # (the shared daemon or the embedded CLI), not a short-lived shell.
+        pid = os.getppid()
+    else:
+        launch = os.environ.get("NIX_CONFIG_AGENT_LAUNCH", "")
+        pid = os.environ.get("NIX_CONFIG_AGENT_PID", "")
     if not launch:
         return
     if state != "blocked":
@@ -62,7 +72,7 @@ def publish(app, state, kind, payload, terminal):
         record = {
             "app": app, "kind": kind,
             "cwd": str(payload.get("cwd") or os.getcwd()),
-            "pid": int(os.environ["NIX_CONFIG_AGENT_PID"]),
+            "pid": int(pid),
             "socket": os.environ.get("KITTY_LISTEN_ON", "") if terminal else "",
             "window": os.environ.get("KITTY_WINDOW_ID", "") if terminal else "",
         }
@@ -152,7 +162,9 @@ def install(source, destination):
 
 
 def report(app, state, kind):
-    terminal = os.environ.get("NIX_CONFIG_AGENT_TTY", "")
+    # Codex's TUI emits OSC 7501 itself, including with a shared daemon.
+    # A daemon's inherited terminal/socket/window can belong to another client.
+    terminal = "" if app == "codex" else os.environ.get("NIX_CONFIG_AGENT_TTY", "")
     # Ignore subagent hook events; they must not replace the main pane status.
     try:
         payload = json.load(sys.stdin)

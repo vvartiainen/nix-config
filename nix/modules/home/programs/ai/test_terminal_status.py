@@ -36,17 +36,81 @@ class TerminalStatusTests(unittest.TestCase):
         environment.start()
 
     def send(self, launch, state="blocked", terminal="", kind="permission",
-             app="claude", payload=None):
+             app="claude", payload=None, pid=None):
         with patch.dict(os.environ, {
             "NIX_CONFIG_AGENT_LAUNCH": launch,
-            "NIX_CONFIG_AGENT_PID": str(os.getpid()),
+            "NIX_CONFIG_AGENT_PID": str(os.getpid() if pid is None else pid),
             "NIX_CONFIG_AGENT_TTY": terminal,
             "KITTY_LISTEN_ON": "unix:/tmp/kitty-fixture",
             "KITTY_WINDOW_ID": "7",
-        }), patch.object(status.sys, "stdin", io.StringIO(json.dumps(
-            {"cwd": "/fixture/project", **(payload or {})}
+        }), patch.object(status.os, "getppid", return_value=os.getpid()), \
+                patch.object(status.sys, "stdin", io.StringIO(json.dumps(
+            {"cwd": "/fixture/project", "session_id": launch, **(payload or {})}
         ))):
             status.report(app, state, kind)
+
+    def test_codex_sessions_share_a_daemon_without_sharing_status(self):
+        # Every daemon hook sees the same stale environment from its first
+        # launcher. Neither that launch ID, PID nor terminal identifies a thread.
+        with patch.object(status.os, "open", wraps=os.open) as open_file:
+            self.send("stale-launch", app="codex", terminal="/dev/tty-stale", pid=999999999, payload={
+                "session_id": "first",
+            })
+            self.send("stale-launch", app="codex", terminal="/dev/tty-stale", kind="question", pid=999999999,
+                      payload={"session_id": "second"})
+            self.assertFalse(any(call.args[0] == "/dev/tty-stale" for call in open_file.call_args_list))
+        records = status.waiting_records(self.directory)
+        self.assertEqual(len(records), 2)
+        self.assertEqual({record["kind"] for record in records}, {"permission", "question"})
+        self.assertTrue(all(record["pid"] == os.getpid() for record in records))
+        self.assertTrue(all(record["socket"] == record["window"] == "" for record in records))
+        status.clear("stale-launch")  # A launcher exiting cannot erase daemon state.
+        self.assertEqual(len(status.waiting_records(self.directory)), 2)
+        self.send("stale-launch", app="codex", state="working", payload={"session_id": "first"})
+        self.assertEqual([record["kind"] for record in status.waiting_records(self.directory)],
+                         ["question"])
+        self.send("stale-launch", app="codex", state="clear", payload={"session_id": "second"})
+        self.assertEqual(status.waiting_records(self.directory), [])
+
+    def test_codex_does_not_require_a_zsh_wrapper(self):
+        with patch.dict(os.environ, {"NIX_CONFIG_AGENT_LAUNCH": "", "NIX_CONFIG_AGENT_PID": ""}), \
+                patch.object(status.os, "getppid", return_value=os.getpid()), \
+                patch.object(status.sys, "stdin", io.StringIO(json.dumps({"session_id": "thread"}))):
+            status.report("codex", "blocked", "permission")
+        self.assertEqual(len(status.waiting_records(self.directory)), 1)
+        self.bar.assert_called_with("--trigger", "agent_status_update")
+        with patch.object(status.os, "kill", side_effect=ProcessLookupError):
+            self.assertEqual(status.waiting_records(self.directory), [])
+
+    def test_codex_ignores_missing_session_ids_and_subagents(self):
+        for payload in ({}, {"session_id": ""}, {"session_id": 7},
+                        {"session_id": "parent", "agent_id": "child"}):
+            with patch.object(status.sys, "stdin", io.StringIO(json.dumps(payload))):
+                status.report("codex", "blocked", "permission")
+        self.assertEqual(list(self.directory.glob("*.json")), [])
+        self.bar.assert_not_called()
+
+    def test_exec_hook_records_its_persistent_parent(self):
+        # Exercise both shell replacements used by installed Codex hooks:
+        # hook shell -> reporter shell -> Python. The owner must outlive them.
+        code = '''import importlib.util, pathlib, sys
+spec = importlib.util.spec_from_file_location("reporter", sys.argv[1])
+reporter = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(reporter)
+reporter.state_directory = lambda: pathlib.Path(sys.argv[2])
+reporter.report("codex", "blocked", "permission")
+'''
+        result = subprocess.run(
+            ["/bin/sh", "-c", 'exec /bin/sh -c \'exec "$@"\' reporter "$@"', "hook",
+             sys.executable, "-B", "-c", code, str(SCRIPT), str(self.directory)],
+            input=json.dumps({"session_id": "thread", "cwd": "/fixture/project"}),
+            text=True, capture_output=True, start_new_session=True,
+            env={**os.environ, "NIX_CONFIG_AGENT_LAUNCH": "", "NIX_CONFIG_SKETCHYBAR": ""},
+        )
+        self.assertEqual((result.returncode, result.stdout, result.stderr), (0, "", ""))
+        records = status.waiting_records(self.directory)
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0]["pid"], os.getpid())
 
     def test_async_question_completion_preserves_waiting_until_work_resumes(self):
         self.send("first", app="codex", kind="question")

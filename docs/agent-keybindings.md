@@ -298,14 +298,17 @@ labels show the directory name (`~` for home).
 
 Kitty 0.50+ also shows the most urgent program status beside the label using
 [OSC 7501](https://sw.kovidgoyal.net/kitty/misc-protocol/#reporting-the-status-of-a-program):
-working, waiting for the user, finished or failed. Home Manager registers
-global lifecycle hooks for Codex, Claude Code and Copilot CLI, preserving
-other integrations. Hooks report approval requests and supported question
-events as blocked, and clear that state when tools finish or a new prompt
-starts. Individual tool failures do not mark the whole turn failed.
+working, waiting for the user, finished or failed.
+[Codex 0.166](https://github.com/openai/codex/blob/rust-v0.166.0/codex-rs/tui/src/terminal_program_status.rs) reports this
+directly from its terminal UI, including when using its shared background
+server. Home Manager registers lifecycle hooks for Claude Code and Copilot CLI
+to report Kitty status, and for all three agents to report SketchyBar status,
+preserving other integrations. Hooks report approval requests and supported
+question events as blocked, and clear that state when tools finish or a new
+prompt starts. Individual tool failures do not mark the whole turn failed.
 
-Launch these agents through the configured interactive zsh functions. They
-capture Kitty's terminal device because hooks have captured output and may
+Launch Claude Code and Copilot CLI through the configured interactive zsh
+functions. They capture Kitty's terminal device because hooks have captured output and may
 have no controlling terminal. Direct executable launches, other terminals,
 tmux sessions and subagent events do not report to the parent Kitty pane.
 If the agent's hook sandbox blocks the terminal device, status delivery is
@@ -320,24 +323,35 @@ they are not exported into the parent terminal shell. Their absence from a
 normal shell, or from an agent's filtered tool environment, does not establish
 whether lifecycle hooks received them.
 
-The hooks also report directly to SketchyBar, independently of Kitty. Each
-zsh-launched agent gets a unique launch ID; blocked hooks atomically write a
-private record under `/tmp/nix-config-agent-status-<uid>` and trigger the
+The hooks also report directly to SketchyBar, independently of Kitty. Codex
+records use the hook payload's `session_id`, so sessions sharing a background
+server have independent status without requiring a zsh launch wrapper or
+`--no-daemon`. Its hook commands use `exec` so the reporter's parent PID is
+Codex itself; cleanup follows that process rather than an inherited launch
+shell. Claude Code and Copilot CLI use a unique ID from their zsh launch wrapper.
+Blocked hooks atomically write a private record under
+`/tmp/nix-config-agent-status-<uid>` and trigger the
 `agent_status_update` event. The left-side item shows the agent, approval/answer
-action and directory, plus a count of other waiting sessions. Resuming work,
-ending the session or exiting the CLI removes its record. A thirty-second
-cleanup check also removes records whose launch shell has exited.
+action and directory, plus a count of other waiting sessions. Resuming work or
+ending the session removes its record. Exiting the launch wrapper also clears
+Claude Code and Copilot CLI records. A thirty-second cleanup check removes
+records whose owning Codex process or launch shell has exited. A Codex session
+that remains active in the daemon keeps its status after a client disconnects.
 
 SketchyBar never queries Kitty for status. The hooks work from other terminals
-too, even when Kitty terminal delivery is unavailable. For Kitty sessions,
-clicking the item sends a focus command to the pane address captured by the
-hook; no socket discovery or status queries are needed. Other terminals show
-the action but do not currently support click-to-focus. SketchyBar IPC must be
-accessible to the hook; delivery failures never block the agent.
+too, even when Kitty terminal delivery is unavailable. For Claude Code and
+Copilot CLI in Kitty, clicking the item sends a focus command to the pane
+address captured by the hook; no socket discovery or status queries are needed.
+Codex hooks ignore inherited terminal addresses because the daemon can retain
+another client's pane. Codex and other terminals show the action without
+click-to-focus. SketchyBar IPC must be accessible to the hook; delivery failures
+never block the agent.
 
 After applying manually, fully quit and restart Kitty to load 0.50+, start a
 fresh shell, and reload SketchyBar. Test an approval and a question in each
-agent, click the bar item, answer, and verify the status clears. The fixture
+agent and verify the status clears after answering. For Codex, test two sessions
+sharing the daemon and check that clearing one leaves the other visible. Check
+click-to-focus for Claude Code and Copilot CLI in Kitty. The fixture
 build validates public configuration only; live hook delivery, private
 modules, real machine identity and nested virtualization need manual checks.
 
