@@ -45,7 +45,7 @@ let
   };
 
   settings = {
-    model = "openai/gpt-6.1-sol";
+    model = "deepseek/deepseek-v4-pro";
     provider.openai.models."gpt-6.1-sol".options.reasoningEffort = "medium";
     lsp.typescript = {
       command = [

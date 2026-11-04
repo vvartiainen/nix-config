@@ -10,13 +10,14 @@
     # MCP is built in; projects list their servers in .pi/mcp.json (`ct agents`).
     settings = {
       theme = "catppuccin-mocha";
-      defaultProvider = "openai-codex";
-      defaultModel = "gpt-6.1-sol";
+      defaultProvider = "deepseek";
+      defaultModel = "deepseek-v4-pro";
       defaultThinkingLevel = "medium";
-      # Compact at 80% of the default model's 500k-token window, like the
+      # Compact at 80% of the default model's 1M-token window, like the
       # other CLIs: Pi compacts when fewer than reserveTokens remain.
       compaction = {
         enabled = true;
+        modelOverrides."deepseek/deepseek-v4-pro".reserveTokens = 200000;
         modelOverrides."openai-codex/gpt-6.1-sol".reserveTokens = 100000;
       };
 
