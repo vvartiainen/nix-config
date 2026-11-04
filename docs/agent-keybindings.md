@@ -15,7 +15,7 @@ Option**; Left Option remains available for keyboard-layout characters.
 | Ctrl+Alt+P/N | yabai previous / next window, including stack navigation |
 | Ctrl+N/P in Slack | Down / Up arrow in menus, search and the message editor |
 | Ctrl+Alt+Cmd | yabai swaps, window moves, layouts and space management |
-| Ctrl+Space | Toggle the quick-access terminal |
+| Ctrl+Space | Toggle the quick-access terminal filling the available screen |
 | Cmd+Left Option+H/J/K/L | yabai window resizing |
 | Right Cmd+Right Option+W (also Ctrl+Alt+W) | Window mode: H/J/K/L focus; Shift+H/J/K/L warp; Cmd+H/J/K/L resize |
 | Right Cmd+Right Option+Space | Navigation mode for the focused app: Herdr in a Herdr window, Kitty in other Kitty windows, Zen in Zen, Rex in Rex; press again to exit |
@@ -87,7 +87,12 @@ it registers the shortcut. To try the same binding immediately, record it in
 **Ctrl+Cmd+Shift+U** toggles a dedicated quick-access **Metrics** dashboard.
 **Esc**, **Q**, **Ctrl+C**, or **Cmd+W** hides it immediately; clicking another
 window also hides it. **R** requests a refresh, and **Ctrl+D** stops the dashboard.
-The Ctrl+Space quick-access shell is a separate instance. `system-settings.nix`
+The Ctrl+Space quick-access shell is a separate instance. Its `edge center`
+setting fills the display area available around the macOS menu bar and Dock.
+A 20-pixel top margin adds breathing room below the menu bar area Kitty
+already reserves, without adding SketchyBar's full height again.
+Restart the quick-access shell after changing its configuration.
+`system-settings.nix`
 disables macOS's “Select the previous input source” shortcut on activation to
 reserve Ctrl+Space for this shell. This global binding also takes precedence
 over app-specific Ctrl+Space actions such as editor completion.
