@@ -1,1 +1,12 @@
 result
+
+# Project-local agent configuration, MCP registrations and generated skills.
+/.agents/
+/.claude/
+/.codex/
+/.cursor/
+/.opencode/
+/.pi/
+/.mcp.json
+/opencode.json
+/opencode.jsonc

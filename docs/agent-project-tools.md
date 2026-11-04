@@ -3,7 +3,9 @@
 ## Select project tools
 
 Nix supplies a catalog; `ct agents` selects agents, MCP servers and skills and
-writes their project files. Review and commit those files with the project.
+writes their project files. In this repository, generated agent configuration,
+MCP registrations and skill copies are local and ignored by Git. Review generated
+files before use; other projects can choose whether to commit their setup.
 No catalog MCP server is enabled globally or started without a project entry.
 
 ```sh
