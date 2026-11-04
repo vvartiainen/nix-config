@@ -14,6 +14,7 @@ Option**; Left Option remains available for keyboard-layout characters.
 | Ctrl+Alt+H/J/K/L | yabai directional window focus |
 | Ctrl+Alt+P/N | yabai previous / next window, including stack navigation |
 | Ctrl+N/P in Slack | Down / Up arrow in menus, search and the message editor |
+| Ctrl+Shift+J/K in Slack | Next / previous channel or DM in sidebar order (Option+Down/Up) |
 | Ctrl+Alt+Cmd | yabai swaps, window moves, layouts and space management |
 | Ctrl+Space | Toggle the quick-access terminal filling the available screen |
 | Cmd+Left Option+H/J/K/L | yabai window resizing |

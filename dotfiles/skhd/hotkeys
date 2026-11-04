@@ -11,10 +11,12 @@ $app - e : /usr/bin/open -b com.apple.finder
 # Toggle a persistent quota dashboard, independent of the quick-access shell.
 ctrl + cmd + shift - u : /bin/sh "$HOME/.config/kitty/metrics.sh"
 
-# Zen has no remappable next/prev tab shortcut
+# Next/previous tabs in Zen and conversations in Slack.
 ctrl + shift - j [
   "zen" | ctrl - tab
+  "Slack" | alt - down
 ]
 ctrl + shift - k [
   "zen" | ctrl + shift - tab
+  "Slack" | alt - up
 ]
