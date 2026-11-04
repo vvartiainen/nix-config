@@ -56,6 +56,14 @@ def main():
     # Starting at / or $HOME would make the workspace grant unreasonably broad.
     if workdir in ("/", str(Path.home().resolve())):
         sys.exit("Start Pi in a project directory, not / or your home directory.")
+    # Safehouse requires every explicit grant to exist. Read grants include
+    # optional probes such as ~/.gitconfig and profile links; skip absent or
+    # broken links without widening access to their parent directories.
+    readable = [path for path in spec["readable"] if Path(path).exists()]
+    # These are the explicitly configured disposable caches and Pi state,
+    # rather than optional read paths. Ensure first launch can write to them.
+    for path in spec["writable"]:
+        Path(path).mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="pi-safehouse-") as scratch:
         overlay = Path(scratch) / "policy.sb"
         overlay.write_text(make_profile(spec, workdir, tmpdir))
@@ -74,7 +82,7 @@ def main():
             "--trust-workdir-config=false",
             f"--append-profile={overlay}",
             "--add-dirs=" + ":".join(spec["writable"]),
-            "--add-dirs-ro=" + ":".join(spec["readable"]),
+            *(["--add-dirs-ro=" + ":".join(readable)] if readable else []),
             "--env-pass=" + ",".join(passed),
             "--", pi, *args,
         ]
