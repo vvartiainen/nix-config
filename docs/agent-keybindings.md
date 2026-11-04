@@ -311,7 +311,14 @@ tmux sessions and subagent events do not report to the parent Kitty pane.
 If the agent's hook sandbox blocks the terminal device, status delivery is
 skipped; verify with fresh sessions after applying. Codex may require trusting
 new hooks in `/hooks`. Its question indicator depends on the CLI dispatching
-`PreToolUse` for `request_user_input`.
+`PreToolUse` for `request_user_input` or `request_user_input_async`.
+An async question's immediate tool completion leaves the waiting indicator
+in place; subsequent work or a new user prompt clears it.
+
+The `NIX_CONFIG_AGENT_*` variables are scoped to the launched agent process;
+they are not exported into the parent terminal shell. Their absence from a
+normal shell, or from an agent's filtered tool environment, does not establish
+whether lifecycle hooks received them.
 
 The hooks also report directly to SketchyBar, independently of Kitty. Each
 zsh-launched agent gets a unique launch ID; blocked hooks atomically write a

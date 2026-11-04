@@ -35,15 +35,31 @@ class TerminalStatusTests(unittest.TestCase):
         self.addCleanup(environment.stop)
         environment.start()
 
-    def send(self, launch, state="blocked", terminal="", kind="permission"):
+    def send(self, launch, state="blocked", terminal="", kind="permission",
+             app="claude", payload=None):
         with patch.dict(os.environ, {
             "NIX_CONFIG_AGENT_LAUNCH": launch,
             "NIX_CONFIG_AGENT_PID": str(os.getpid()),
             "NIX_CONFIG_AGENT_TTY": terminal,
             "KITTY_LISTEN_ON": "unix:/tmp/kitty-fixture",
             "KITTY_WINDOW_ID": "7",
-        }), patch.object(status.sys, "stdin", io.StringIO('{"cwd":"/fixture/project"}')):
-            status.report("claude", state, kind)
+        }), patch.object(status.sys, "stdin", io.StringIO(json.dumps(
+            {"cwd": "/fixture/project", **(payload or {})}
+        ))):
+            status.report(app, state, kind)
+
+    def test_async_question_completion_preserves_waiting_until_work_resumes(self):
+        self.send("first", app="codex", kind="question")
+        self.send("first", app="codex", state="working", payload={
+            "hook_event_name": "PostToolUse",
+            "tool_name": "request_user_input_async",
+        })
+        self.assertEqual([record["kind"] for record in status.waiting_records(self.directory)],
+                         ["question"])
+        self.send("first", app="codex", state="working", payload={
+            "hook_event_name": "PostToolUse", "tool_name": "Bash",
+        })
+        self.assertEqual(status.waiting_records(self.directory), [])
 
     def test_sketchybar_receives_hooks_without_kitty_or_a_terminal(self):
         self.send("first")

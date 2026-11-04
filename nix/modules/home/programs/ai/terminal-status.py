@@ -162,6 +162,12 @@ def report(app, state, kind):
         return
     if payload.get("agent_id") or payload.get("agentId"):
         return
+    # Async questions return before the user answers. That tool completion
+    # must not immediately erase the waiting state set by PreToolUse.
+    if (app == "codex" and state == "working"
+            and payload.get("hook_event_name") == "PostToolUse"
+            and payload.get("tool_name") == "request_user_input_async"):
+        return
     if app not in {"codex", "claude", "copilot"}:
         return
     if state not in {"idle", "working", "done", "blocked", "error", "clear"}:

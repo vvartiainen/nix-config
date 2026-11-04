@@ -30,7 +30,7 @@ let
       (
         (group "codex" "blocked" "question")
         // {
-          matcher = "request_user_input";
+          matcher = "^(request_user_input|request_user_input_async)$";
         }
       )
     ];
