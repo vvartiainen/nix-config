@@ -114,15 +114,19 @@ data. Its Nix preference module is inactive.
 1. Export Raycast's settings using its export command and store the backup
    privately. Disable Raycast's launch at login, then quit it to release
    Cmd+Space. Keep its local data and backup until the trial is accepted.
-2. From the checkout containing this change, run `just check <HOSTNAME>` and
-   `just build <HOSTNAME>`, then apply manually with `just switch <HOSTNAME>`.
+2. Quit Vicinae before activation so it cannot overwrite merged settings
+   from memory. From the checkout containing this change, run
+   `just check <HOSTNAME>` and `just build <HOSTNAME>`, then apply manually
+   with `just switch <HOSTNAME>`.
    Homebrew must run to install Vicinae; do not use the skip-Homebrew argument.
    A worktree still uses the private host's `repoRoot` for dotfile links.
 3. Open `/Applications/Vicinae.app`, finish onboarding, and grant the macOS
-   permissions it requests for the features you use. In General Settings,
-   assign Cmd+Space to toggle the launcher. Enable launch at login through
-   the app or System Settings → General → Login Items. Choose a dark theme
-   if desired; Raycast's appearance preferences do not transfer.
+   permissions it requests for the features you use. Enable launch at login
+   through the app or System Settings → General → Login Items.
+   The current declared launcher shortcut is Ctrl+Space, which conflicts
+   with the quick-access terminal. Change `global_shortcuts.toggle` in
+   `nix/modules/darwin/programs/vicinae.nix` if you want to reserve Ctrl+Space
+   for the terminal; Cmd+Space is available once Raycast is quit.
 4. Recreate aliases, quicklinks and command shortcuts in Vicinae. Reinstall
    needed extensions from its store integration and configure/sign in to each
    again. [Raycast extension compatibility](https://docs.vicinae.com/) varies
@@ -130,8 +134,8 @@ data. Its Nix preference module is inactive.
    snippets or clipboard history can be imported. The existing skhd app and
    window shortcuts work independently of either launcher.
 5. Test app launch, calculator, file search, clipboard history, your essential
-   extensions, Cmd+Space and startup after logging in again. Keep Spotlight
-   on Left Cmd+Option+Space as a fallback.
+   extensions, the chosen launcher shortcut and startup after logging in
+   again. Keep Spotlight on Left Cmd+Option+Space as a fallback.
 
 The main workflows to verify during this trial:
 
@@ -146,9 +150,16 @@ Run **Reload Script Directories** if the eject command is missing after
 activation. Useful extras to try are the built-in calculator and file search;
 keep window management on the existing yabai/skhd bindings during the trial.
 
-Vicinae owns the writable `~/.config/vicinae/settings.json`; do not commit
-it or replace it with a read-only Nix symlink. For declarative defaults later,
-use [configuration imports](https://docs.vicinae.com/config).
+Declare Vicinae preferences in `nix/modules/darwin/programs/vicinae.nix`.
+Home Manager's existing merge helper merges them into the writable
+`~/.config/vicinae/settings.json` on activation, preserving settings added
+by the app. Managed values override GUI changes on the next activation;
+removing a managed key from Nix removes it from the file on the next
+activation. JSONC comments and formatting are normalized to JSON.
+Keep app-specific data and extension credentials local; do not commit the
+live config or replace it with a read-only Nix symlink. This uses the shared
+merge helper directly rather than Vicinae imports, whose values can be
+overridden by the main settings file.
 
 To return to Raycast, disable Vicinae's launch at login and quit it, then
 launch Raycast and restore its Cmd+Space shortcut and login setting. For
