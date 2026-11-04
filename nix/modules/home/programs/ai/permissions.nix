@@ -42,6 +42,10 @@ let
         "git"
         "add"
       ]
+      [
+        "git"
+        "commit"
+      ]
 
       [ "grep" ]
       [ "printf" ]
@@ -380,10 +384,14 @@ let
       # under ~/.config/git. A denied probe prevents all git commands.
       "${config.home.homeDirectory}/.gitconfig"
 
-      # PATH entries reach Nix tools through these profile symlinks.
+      # PATH entries reach Nix tools through these profile symlinks. Current
+      # Home Manager releases link the profile under XDG state, and /run is a
+      # symlink to /private/var/run, so both spellings need a grant.
       "${config.home.homeDirectory}/.nix-profile"
+      "${config.xdg.stateHome}/nix/profiles"
       "/etc/profiles/per-user/${config.home.username}"
       "/run/current-system"
+      "/private/var/run/current-system"
       "/nix/var/nix/profiles"
       "/etc/nix"
     ];
