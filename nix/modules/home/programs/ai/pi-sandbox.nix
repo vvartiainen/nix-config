@@ -60,7 +60,11 @@ let
         "${agentDir}/keybindings.json"
         "${agentDir}/agents"
       ];
-      env = policy.caches.env;
+      # Nixpkgs' OpenSSL, which Node uses, has no roots when SSL_CERT_FILE is
+      # unreadable. Safehouse can't follow /etc/ssl/certs through /etc/static.
+      env = policy.caches.env // {
+        SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+      };
     }
   );
 in
