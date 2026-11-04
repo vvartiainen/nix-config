@@ -9,6 +9,8 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import Mock, patch
 
+from kittens.runner import import_kitten_main_module
+
 
 SCRIPT = Path(__file__).resolve().parents[4] / "dotfiles/kitty/restart.py"
 spec = importlib.util.spec_from_file_location("kitty_restart", SCRIPT)
@@ -25,6 +27,7 @@ class RestartTests(unittest.TestCase):
         self.boss.serialize_state_as_session.return_value = iter(["layout stack", "launch"])
         self.popen = Mock()
         for target, value in (
+            ("config_dir", str(SCRIPT.parent)),
             ("get_options", Mock(return_value=SimpleNamespace(
                 config_paths=("/tmp/custom kitty.conf",), config_overrides=("font_size=16",),
             ))),
@@ -84,6 +87,21 @@ class RestartTests(unittest.TestCase):
         restart.current_application_quit_request.return_value = 0
         restart.restart(True, self.boss)
         self.popen.return_value.terminate.assert_called_once()
+
+    def test_native_kitten_loader_can_prepare_restart_without_file_global(self):
+        kitten = import_kitten_main_module(str(SCRIPT.parent), SCRIPT.name)
+        namespace = kitten["start"].__globals__
+        self.assertNotIn("__file__", namespace)
+        with patch.dict(namespace, {
+            "config_dir": str(SCRIPT.parent),
+            "get_options": restart.get_options,
+            "kitty_exe": restart.kitty_exe,
+            "current_application_quit_request": restart.current_application_quit_request,
+        }):
+            namespace["restart"](True, self.boss)
+        self.boss.show_error.assert_not_called()
+        self.boss.handle_quit_confirmation.assert_called_once_with(True)
+        self.assertEqual(self.popen.call_args.args[0][1], str(SCRIPT.with_name("restart.sh")))
 
 
 class WaiterTests(unittest.TestCase):

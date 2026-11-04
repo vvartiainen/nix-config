@@ -5,7 +5,7 @@ from pathlib import Path
 import subprocess
 
 from kittens.tui.handler import result_handler
-from kitty.constants import kitty_exe
+from kitty.constants import config_dir, kitty_exe
 from kitty.fast_data_types import (
     IMPERATIVE_CLOSE_REQUESTED,
     current_application_quit_request,
@@ -23,7 +23,8 @@ def restart(confirmed, boss):
         return
     waiter = None
     try:
-        helper = Path(__file__).with_name("restart.sh")
+        # Kitty's custom-kitten loader does not define __file__.
+        helper = Path(config_dir) / "restart.sh"
         if not helper.is_file():
             raise FileNotFoundError(f"Restart helper is missing: {helper}")
         state = Path.home() / ".local/state/kitty"
