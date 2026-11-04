@@ -45,6 +45,28 @@ for _, notification in ipairs(Config.spec.notifs) do
 end
 assert(not Config.plugins["mason-lspconfig.nvim"], "Mason must not install or auto-enable LSPs")
 local lsp = Plugin.values(Config.plugins["nvim-lspconfig"], "opts", false)
+-- Markdownlint can prefix its rule with "error". Hide only MD013 inline,
+-- preserving the diagnostic for floats/lists and other rules' inline text.
+vim.diagnostic.config(lsp.diagnostics)
+local diagnostic_buf = vim.api.nvim_create_buf(false, true)
+vim.api.nvim_buf_set_lines(diagnostic_buf, 0, -1, false, { string.rep("x", 89) })
+local diagnostic_ns = vim.api.nvim_create_namespace("test-markdown-line-length")
+for _, message in ipairs({
+	"MD013/line-length Line length [Expected: 80; Actual: 89]",
+	"error MD013/line-length Line length [Expected: 80; Actual: 89]",
+	"MD010/no-hard-tabs Hard tabs",
+	"MD0130/other Other rule",
+}) do
+	local diagnostic = { lnum = 0, col = 80, source = "markdownlint", severity = 2, message = message }
+	vim.diagnostic.set(diagnostic_ns, diagnostic_buf, { diagnostic })
+	local inline = false
+	for _, mark in ipairs(vim.api.nvim_buf_get_extmarks(diagnostic_buf, -1, 0, -1, { details = true })) do
+		inline = inline or mark[4].virt_text ~= nil
+	end
+	assert(inline == (not message:find("MD013/", 1, true)), "Unexpected inline diagnostic: " .. message)
+	assert(vim.diagnostic.get(diagnostic_buf)[1].message == message, "Keep diagnostics available in floats/lists")
+end
+vim.api.nvim_buf_delete(diagnostic_buf, { force = true })
 local mason = Plugin.values(Config.plugins["mason.nvim"], "opts", false)
 for name, server in pairs(lsp.servers) do
 	assert(type(server) ~= "table" or server.mason == false, name .. " still uses Mason")

@@ -14,7 +14,7 @@ return {
             -- Keep Markdown line-length warnings in floats/lists without inline text.
             if
               diagnostic.source == "markdownlint"
-              and (diagnostic.code == "MD013" or diagnostic.message:match("^MD013[/%s]"))
+              and (diagnostic.code == "MD013" or diagnostic.message:match("%f[%w]MD013[/%s]"))
             then
               return nil
             end

@@ -185,7 +185,8 @@ Markdown line-length diagnostics (`markdownlint` rule `MD013`) are hidden from
 inline virtual text across projects. The rule remains enabled: use `<leader>cd`
 to open the diagnostic float or `<leader>xx` to open the diagnostics list.
 Other diagnostics still show inline. This is configured in
-[`lsp.lua`](../dotfiles/nvim/lua/plugins/lsp.lua).
+[`lsp.lua`](../dotfiles/nvim/lua/plugins/lsp.lua); the filter also handles
+markdownlint messages prefixed with `error`.
 
 For an optional vertical guide after 80 columns, run `:setlocal colorcolumn=81`.
 To enable it by default, add `vim.opt.colorcolumn = "81"` to
