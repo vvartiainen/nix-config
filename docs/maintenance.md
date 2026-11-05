@@ -70,8 +70,8 @@ brew uninstall --cask --zap --force raycast
 `--force` allows zapping an already uninstalled cask. Zap removes the files
 listed by the cask, which can include shared files; back up anything needed
 first. See [Homebrew's uninstall options](https://docs.brew.sh/Manpage#uninstall-remove-rm-options-installed_formulainstalled_cask-).
-Do not zap Vicinae after moving it to Nix: both installations use the same
-local settings and data. `brew cleanup` only removes old downloads and package
+Do not zap Vicinae while it is in use: the cask's zap removes its local
+settings and data. `brew cleanup` only removes old downloads and package
 versions; it does not replace a cask zap.
 
 ## Linux builders and containers

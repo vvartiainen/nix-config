@@ -106,17 +106,17 @@ private host data; see [maintenance and validation](maintenance.md).
 ## Vicinae launcher trial
 
 [Vicinae for macOS](https://docs.vicinae.com/install/macos) requires Apple
-Silicon and macOS 14.4 or newer; macOS support is currently beta. The upstream
-Vicinae flake manages the app, CLI, preferences and launchd startup.
-Homebrew removes Raycast and the old Vicinae cask during activation using
-`cleanup = "uninstall"`, preserving their settings and data. Raycast's Nix
-preference module is inactive.
+Silicon and macOS 14.4 or newer; macOS support is currently beta. Homebrew installs the app; Nix
+manages preferences and launchd startup. The Homebrew build is used because
+the Nix build's Qt launcher breaks macOS permission checks. Homebrew removes
+Raycast during activation using `cleanup = "uninstall"`, preserving its
+settings and data. Raycast's Nix preference module is inactive.
 
 1. Export Raycast's settings using its export command and store the backup
    privately. Disable Raycast's launch at login, then quit it to release
    Cmd+Space. Keep its local data and backup until the trial is accepted.
-2. Quit Vicinae and disable its old login item if it was installed through
-   Homebrew. Keep a private backup of launcher settings and data.
+2. Quit Vicinae and disable its login item. Keep a private backup of
+   launcher settings and data.
    From the checkout containing this change, run
    `just check <HOSTNAME>` and `just build <HOSTNAME>`, then apply manually
    with `just switch <HOSTNAME>`.
@@ -124,8 +124,11 @@ preference module is inactive.
 3. Home Manager starts Vicinae through launchd. Finish onboarding and grant
    the macOS permissions it requests for the features you use. Leave the
    app's separate login item disabled to avoid duplicate startup. Restart
-   with `vicinae server` if you have quit it; use the CLI so declared settings
-   are loaded through its wrapper.
+   with `launchctl kickstart -k gui/$(id -u)/org.nix-community.home.vicinae`
+   if you have quit it. The agent starts the app bundle's CLI directly with
+   the declared settings, so permissions are requested for Vicinae rather than
+   a shell. If Homebrew installs the app after the agent's first start,
+   restart it the same way.
    The declared launcher shortcut `control+SPACE` in
    `nix/modules/darwin/programs/vicinae.nix` is Cmd+Space, because Qt maps
    `control` to Cmd on macOS.
@@ -154,18 +157,18 @@ activation. Useful extras to try are the built-in calculator and file search;
 keep window management on the existing yabai/skhd bindings during the trial.
 
 Declare Vicinae preferences in `nix/modules/darwin/programs/vicinae.nix`.
-The upstream Home Manager module supplies `programs.vicinae.settings` via
-`VICINAE_OVERRIDES` in its CLI wrapper. These values take precedence over
+They are written to a Nix store JSON file passed as `VICINAE_OVERRIDES` to
+the launchd agent and login shells. These values take precedence over
 writable `~/.config/vicinae/settings.json`; GUI changes to unmanaged values
 remain local. Removing a declared value exposes the app's saved value again,
 including values saved by the previous merge helper. Keep app-specific data
-and extension credentials local; do not commit the live config. Nix updates
-use the upstream binary cache when available. Emacs navigation enables
+and extension credentials local; do not commit the live config. Emacs
+navigation enables
 Ctrl+N/P inside the launcher without depending on macOS's frontmost app.
 
 To return to Raycast, re-add `programs/raycast.nix` alongside
 `programs/vicinae.nix` in the host's imports and disable
-`programs.vicinae.launchd.enable`. Quit Vicinae, then validate and apply
+`launchd.agents.vicinae.enable`. Quit Vicinae, then validate and apply
 manually with Homebrew enabled to reinstall Raycast. Launch Raycast and
 restore its Cmd+Space shortcut and login setting. Its saved data remains
 available unless you explicitly zap it. See [manual Homebrew data cleanup](maintenance.md#homebrew-app-data)

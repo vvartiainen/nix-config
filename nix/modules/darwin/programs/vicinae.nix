@@ -1,20 +1,14 @@
-{ userName, inputs, ... }:
+{ userName, ... }:
 {
-  nix.settings = {
-    extra-substituters = [ "https://vicinae.cachix.org" ];
-    extra-trusted-public-keys = [ "vicinae.cachix.org-1:1kDrfienkGHPYbkpNj1mWTr7Fm1+zcenzgTizIcI3oc=" ];
-  };
+  # The Homebrew build is properly signed, so macOS privacy permissions match
+  # the running server and survive updates. The Nix build's Qt launcher breaks
+  # permission checks.
+  homebrew.casks = [ "vicinae" ];
 
-  home-manager.users.${userName} = {
-    imports = [ inputs.vicinae.homeManagerModules.default ];
-
-    xdg.dataFile."vicinae/scripts/eject-all-disks.sh".source =
-      ../../../../dotfiles/vicinae/scripts/eject-all-disks.sh;
-
-    programs.vicinae = {
-      enable = true;
-      launchd.enable = true;
-      settings = {
+  home-manager.users.${userName} =
+    { pkgs, ... }:
+    let
+      settings = (pkgs.formats.json { }).generate "vicinae-settings.json" {
         "$schema" = "https://vicinae.com/schemas/config.json";
         close_on_focus_loss = true;
         keybinding = "emacs";
@@ -33,6 +27,31 @@
           material = "auto";
         };
       };
+      overrides = toString settings;
+    in
+    {
+      xdg.dataFile."vicinae/scripts/eject-all-disks.sh".source =
+        ../../../../dotfiles/vicinae/scripts/eject-all-disks.sh;
+
+      # Declared settings take precedence over the writable settings.json.
+      home.sessionVariables.VICINAE_OVERRIDES = overrides;
+
+      # Start the app bundle's CLI directly so permissions belong to Vicinae.
+      launchd.agents.vicinae = {
+        enable = true;
+        config = {
+          ProgramArguments = [
+            "/Applications/Vicinae.app/Contents/MacOS/vicinae-cli"
+            "server"
+          ];
+          EnvironmentVariables.VICINAE_OVERRIDES = overrides;
+          RunAtLoad = true;
+          KeepAlive = {
+            Crashed = true;
+            SuccessfulExit = false;
+          };
+          ProcessType = "Interactive";
+        };
+      };
     };
-  };
 }
