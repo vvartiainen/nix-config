@@ -1,6 +1,7 @@
 "$schema" = 'https://starship.rs/config-schema.json'
 
-add_newline = true
+# zsh adds the blank line between prompts; see starship.nix.
+add_newline = false
 
 palette = "catppuccin_mocha"
 
