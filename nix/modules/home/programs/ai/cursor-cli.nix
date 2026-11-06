@@ -80,7 +80,15 @@ let
     additionalReadonlyPaths = paths.readonly;
     # Cursor grants temp writes by default (`disableTmpWrite`); list /tmp
     # explicitly like the other CLIs.
-    additionalReadwritePaths = caches.writePaths ++ paths.tmp;
+    additionalReadwritePaths =
+      caches.writePaths
+      ++ paths.tmp
+      ++ [
+        # The desktop app uses ~/.cursor; this CLI relocates its config via
+        # CURSOR_CONFIG_DIR. Grant only their managed checkout directories.
+        "${config.home.homeDirectory}/.cursor/worktrees"
+        "${cursorConfigDir}/worktrees"
+      ];
   };
 
   # Cursor has no env setting, so its binary sets the agent caches.

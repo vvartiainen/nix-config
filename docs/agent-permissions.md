@@ -24,6 +24,16 @@ including worktrees created during a session. Secret-file denies and read-only
 Git hooks/config still apply there. Other Codex state retains its existing
 permissions. Apply permission changes manually and start a fresh session.
 
+Claude CLI worktrees live under the repository's `.claude/worktrees`; Claude
+also grants their shared Git metadata. Copilot starts worktree sessions inside
+`<repo>.worktrees/`. OpenCode treats its active worktree as part of the project.
+These use the selected workspace rather than a global worktree-directory grant.
+Cursor explicitly allows `~/.cursor/worktrees` and the relocated CLI config's
+`worktrees` directory. Pi has no configured managed worktree root: launch it
+inside a worktree; its wrapper grants the linked Git metadata for that launch
+while keeping Git hooks/config protected and the main checkout's sources outside
+the write grant.
+
 ## Pi
 
 Start `pi` inside the project directory. Its Nix wrapper runs Pi, extensions and

@@ -17,6 +17,20 @@ def subpath(path):
     return f"(subpath {sb_string(path)})"
 
 
+def worktree_git_dirs(workdir):
+    try:
+        common, current = [
+            str(Path(subprocess.check_output(
+                ["git", "rev-parse", "--path-format=absolute", flag],
+                cwd=workdir, text=True, stderr=subprocess.DEVNULL, timeout=5,
+            ).removesuffix("\n")).resolve())
+            for flag in ("--git-common-dir", "--git-dir")
+        ]
+    except (OSError, subprocess.SubprocessError):
+        return []
+    return [common, current] if common != current else []
+
+
 def make_profile(spec, workdir, tmpdir):
     writable = [workdir, tmpdir, "/tmp", "/private/tmp", "/dev", *spec["writable"]]
     extensions = f'{spec["agentDir"]}/extensions'
@@ -62,6 +76,14 @@ def main():
     # Starting at / or $HOME would make the workspace grant unreasonably broad.
     if workdir in ("/", str(Path.home().resolve())):
         sys.exit("Start Pi in a project directory, not / or your home directory.")
+    # Linked worktrees share objects and refs with the original checkout.
+    # Grant only their Git metadata, not the main checkout's source files.
+    git_dirs = worktree_git_dirs(workdir)
+    spec["writable"].extend(git_dirs)
+    for directory in git_dirs:
+        spec["protected"].extend(
+            str(Path(directory) / name) for name in ("config", "config.worktree", "hooks")
+        )
     # Safehouse requires every explicit grant to exist. Read grants include
     # optional probes such as ~/.gitconfig and profile links; skip absent or
     # broken links without widening access to their parent directories.

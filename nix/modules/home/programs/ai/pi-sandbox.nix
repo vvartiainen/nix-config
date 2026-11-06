@@ -90,6 +90,7 @@ in
 {
   programs.pi-coding-agent.package = pkgs.writeShellApplication {
     name = "pi";
+    runtimeInputs = [ pkgs.git ];
     text = ''
       exec ${lib.getExe pkgs.python3} ${./pi-safehouse.py} \
         ${sandboxSpec} ${lib.getExe pkgs.agent-safehouse} ${lib.getExe pkgs.pi-coding-agent} "$@"

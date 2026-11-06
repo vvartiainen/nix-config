@@ -52,12 +52,42 @@ class SafehouseTests(unittest.TestCase):
     def tearDownClass(cls):
         cls.scratch.cleanup()
 
-    def run_probe(self, source):
+    def run_probe(self, source, workdir=None):
         env = dict(os.environ, HOME=str(self.home), SYNTHETIC_HOST_SECRET="must-not-pass")
         return subprocess.run([
             sys.executable, str(Path(__file__).with_name("pi-safehouse.py")),
             str(self.spec), os.environ["SAFEHOUSE"], sys.executable, "-c", source,
-        ], cwd=self.work, env=env, text=True, capture_output=True)
+        ], cwd=workdir or self.work, env=env, text=True, capture_output=True)
+
+    def test_linked_worktree_can_commit_without_writing_main_sources_or_hooks(self):
+        repo = self.root / "main-repo"
+        worktree = self.root / "linked-worktree"
+        repo.mkdir()
+        def git(*args):
+            return subprocess.check_output(
+                ["/usr/bin/git", "-c", "core.hooksPath=/dev/null", "-C", str(repo), *args],
+                stderr=subprocess.PIPE, text=True,
+            ).removesuffix("\n")
+        git("init", "-q")
+        git("-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
+            "commit", "--allow-empty", "-qm", "fixture")
+        git("worktree", "add", "--detach", str(worktree))
+        metadata = subprocess.check_output([
+            "/usr/bin/git", "-C", str(worktree), "rev-parse", "--path-format=absolute", "--git-dir",
+        ], text=True).removesuffix("\n")
+        source = (
+            "from pathlib import Path; import subprocess\n"
+            "Path('change').write_text('fixture')\n"
+            "subprocess.run(['/usr/bin/git', 'add', 'change'], check=True)\n"
+            "subprocess.run(['/usr/bin/git', '-c', 'user.name=Fixture', '-c', "
+            "'user.email=fixture@example.invalid', 'commit', '-qm', 'fixture'], check=True)\n"
+            f"for name in {[str(repo / 'source'), str(repo / '.git/config'), str(repo / '.git/hooks/pre-commit'), str(Path(metadata) / 'config.worktree')]!r}:\n"
+            " try: Path(name).write_text('must fail')\n"
+            " except PermissionError: pass\n"
+            " else: raise AssertionError(name)\n"
+        )
+        result = self.run_probe(source, workdir=worktree)
+        self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_project_state_cache_and_environment(self):
         result = self.run_probe(
