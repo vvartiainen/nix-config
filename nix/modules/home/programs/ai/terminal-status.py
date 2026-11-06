@@ -140,7 +140,7 @@ def render_bar(name, sender):
         pass
 
 
-def install(source, destination):
+def install(source, destination, marker=MARKER):
     path = Path(destination)
     current = json.loads(path.read_text()) if path.exists() else {}
     hooks = current.setdefault("hooks", {})
@@ -150,7 +150,7 @@ def install(source, destination):
         for group in groups:
             if "hooks" in group:
                 group["hooks"] = [h for h in group["hooks"]
-                                  if MARKER not in h.get("command", "")]
+                                  if marker not in h.get("command", "")]
                 if group["hooks"]:
                     kept.append(group)
             else:

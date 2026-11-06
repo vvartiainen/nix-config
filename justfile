@@ -47,6 +47,10 @@ init-host host=host:
 bootstrap host=host: (init-host host)
     sudo nix run nix-darwin -- switch --flake '.#{{ host }}' {{ host_flags }}
 
+# Fast read-only checks; --all includes unchanged files, --format checks style.
+lint *args:
+    python3 scripts/check-repository.py {{ args }}
+
 # Lint nix files and evaluate the darwin system derivation.
 check host=host: require-host
     statix check .

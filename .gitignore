@@ -1,4 +1,6 @@
 result
+__pycache__/
+.ruff_cache/
 
 # Project-local agent configuration, MCP registrations and generated skills.
 /.agents/

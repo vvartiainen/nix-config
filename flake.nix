@@ -70,7 +70,6 @@
       nix-darwin,
       nixpkgs,
       home-manager,
-      cli-toolbox,
       ...
     }:
     let

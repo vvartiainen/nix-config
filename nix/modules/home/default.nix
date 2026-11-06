@@ -33,13 +33,17 @@ in
     };
 
     packages = with pkgs; [
+      (import ../../packages/repository-checks.nix { inherit pkgs; })
       cmake
+      deadnix
       gdu
       lnav
       nh
       nixfmt
       shellcheck
+      shfmt
       statix
+      stylua
       yq-go
     ];
   };

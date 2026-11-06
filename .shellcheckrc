@@ -1,0 +1,2 @@
+# SketchyBar and skhd supply source paths at runtime; lint those files separately.
+disable=SC1091

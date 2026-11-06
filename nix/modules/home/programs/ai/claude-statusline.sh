@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 input=$(cat)
 
 IFS=$'\x1f' read -r model effort dir ctx five five_reset week week_reset cost added removed <<<"$(

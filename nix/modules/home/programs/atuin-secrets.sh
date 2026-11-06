@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # Scan Atuin and zsh history for secrets with gitleaks, and optionally delete
 # the entries that contain them. Secrets are never printed.
 

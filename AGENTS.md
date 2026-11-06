@@ -8,12 +8,24 @@ This repository contains my macOS configs using nix, nix-darwin and home-manager
 
 Choose validation according to the change:
 
+- Run `just lint` for fast read-only checks on staged, unstaged and untracked
+  files. Use `just lint --base <revision>` to include committed changes, or
+  `just lint --all` to audit all owned files. Add `--format` for formatting
+  checks; formatting is opt-in until the existing files have a consistent baseline.
 - Documentation: review the diff and run `git diff --check`.
 - Directly linked dotfiles and helper scripts: run relevant syntax or behavior
   checks and `git diff --check`; no system build is needed.
 - Nix modules: run `statix check .`, fixture evaluation and `git diff --check`.
 - Package, dependency, activation or build changes: also run a fixture system
   build. Build whenever evaluation leaves a concrete concern unresolved.
+
+Codex, Claude and Copilot stop hooks run the same fast checks in this repository
+and its worktrees after the user applies the hook configuration. They include
+commits made since the current prompt, skip vendored code and never fix files,
+evaluate Nix, build or apply. A failure asks the agent to address its changes
+once; pre-existing issues and missing tools must be reported without changing
+unrelated files. Hooks do not replace the scoped validation below or relevant
+behavior tests. See [maintenance](docs/maintenance.md#repository-checks).
 
 Use the tracked `nix/fixtures/host` input for Nix verification. Run commands
 from the repository root. For module evaluation without building:
@@ -48,9 +60,9 @@ evaluation or builds see them.
 validate `darwinConfigurations`; this flake currently exposes no `checks`.
 Neither replaces an explicit system evaluation or build.
 
-The `just` recipes use private host data and are for the user's manual
-validation. Agents use the direct commands above. Direct `nix build --no-link`
-leaves no result symlink.
+Host-specific `just` recipes use private host data and are for the user's manual
+validation. Agents use `just lint` and the direct Nix commands above. Direct
+`nix build --no-link` leaves no result symlink.
 
 Do not run apply commands (for example `just switch <hostName>` or
 `darwin-rebuild switch`); user applies manually.

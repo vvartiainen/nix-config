@@ -220,6 +220,24 @@ reporter.report("codex", "blocked", "permission")
             self.assertEqual(data["hooks"]["Stop"], [{"hooks": [vendor]}, {"hooks": [new]}])
             self.assertEqual(data["hooks"]["SessionStart"], [{"hooks": [vendor]}])
 
+    def test_validation_hooks_install_without_duplicating_or_replacing_status(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "source.json"
+            target = Path(directory) / "settings.json"
+            marker = "/bin/nix-config-check --hook "
+            old = {"type": "command", "command": "/old" + marker + "stop"}
+            new = {"type": "command", "command": "/new" + marker + "stop"}
+            reporter = {"type": "command", "command": "/store" + status.MARKER + "claude done none"}
+            target.write_text(json.dumps({"hooks": {"Stop": [{"hooks": [old, reporter]}]}}))
+            source.write_text(json.dumps({"hooks": {"Stop": [{"hooks": [new]}]}}))
+            status.install(source, target, marker)
+            first = target.read_text()
+            status.install(source, target, marker)
+            self.assertEqual(target.read_text(), first)
+            self.assertEqual(json.loads(first)["hooks"]["Stop"], [
+                {"hooks": [reporter]}, {"hooks": [new]},
+            ])
+
     def run_report(self, payload, terminal, state="blocked", kind="permission"):
         result = subprocess.run(
             [sys.executable, str(SCRIPT), "report", "claude", state, kind],

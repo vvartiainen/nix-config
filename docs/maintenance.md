@@ -16,17 +16,43 @@ See [setup](setup.md#host-data) for host selection and
 for coverage. The package diff includes all pending Nix changes; it excludes
 Homebrew and mise updates.
 
-Agents follow [AGENTS.md](../AGENTS.md) and use the public fixture:
+Agents choose targeted checks, fixture evaluation or a build according to
+[AGENTS.md](../AGENTS.md). For Nix module evaluation, use the public fixture:
 
 ```sh
 statix check .
-nix build --no-link '.#darwinConfigurations.agent-fixture.system' \
+nix eval --raw '.#darwinConfigurations.agent-fixture.system.drvPath' \
   --override-input host "path:$PWD/nix/fixtures/host"
 ```
 
 The fixture covers public configuration only. It excludes private modules,
 real identity and nested virtualization. Never activate it. Documentation-only
 changes need diff review and `git diff --check`, without a system build.
+
+## Repository checks
+
+```sh
+just lint                      # staged, unstaged and untracked files
+just lint --base HEAD~1         # also include changes in the last commit
+just lint --all                 # audit all owned files
+just lint --format              # also check formatting without writing files
+```
+
+Checks use ShellCheck and shell syntax checks, Statix, Deadnix, Ruff and
+`git diff --check`. Zsh uses `zsh -n` instead of ShellCheck. ShellCheck skips
+runtime-resolved sources; their files are checked separately. Formatting checks
+use Ruff, nixfmt, shfmt and StyLua, respecting Neovim's existing StyLua config.
+Formatting is opt-in while existing files have mixed styles. Vendored Yazi
+plugins/flavors and symlinks are excluded. Missing tools fail the check;
+apply the configuration manually to install the tool set and `nix-config-check`,
+which runs the same checker with its Nix-provided tools.
+
+After applying, start fresh Codex, Claude and Copilot sessions to load the
+repository validation hooks; approve them in the agent UI if requested. The
+hooks only run here and in this checkout's worktrees, include files committed
+since the current prompt, and ask the agent to address failures once before
+finishing. They do not run Nix evaluation, builds or automatic fixes. Relevant
+behavior tests and private-host validation remain separate.
 
 ## Updates and rollback
 
