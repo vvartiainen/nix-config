@@ -193,6 +193,8 @@ an application bundle as its default handler, rather than a terminal command.
 Check an association with `duti -x md` or `duti -d public.folder`. Change the
 `editor` bundle ID in the defaults module to select another editor app.
 Removing a managed association does not automatically restore the previous app.
+Activation checks current defaults before setting them; macOS may ask for
+confirmation when a default actually changes.
 macOS may reject an extension that has no declared file type, such as `.conf`.
 Activation warns with the skipped extension and continues applying the other
 defaults. For a skipped extension, use Finder's Get Info → Open with → Change
