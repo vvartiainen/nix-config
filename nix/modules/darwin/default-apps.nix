@@ -84,6 +84,9 @@ let
     # Explicitly restore Finder if an earlier configuration selected Kitty.
     "public.folder" = "com.apple.finder";
   };
+  setDefaultApplication = pkgs.writeShellScript "set-default-application" (
+    builtins.readFile ./set-default-application.sh
+  );
 in
 {
   # Launch Services defaults are per user, even when managed by nix-darwin.
@@ -91,17 +94,16 @@ in
     home = {
       packages = [ pkgs.duti ];
       # Use Launch Services rather than replacing its preference array. Individual
-      # commands propagate failures; duti's settings-file mode discards them.
+      # commands propagate failures, except rejected dynamic extension types.
       # Homebrew installs the apps before Home Manager; dry runs do not apply.
       activation.defaultApplications = lib.hm.dag.entryAfter [ "writeBoundary" ] (
         lib.concatStringsSep "\n" (
           lib.mapAttrsToList (
             type: app:
-            "run ${lib.getExe pkgs.duti} -s ${
+            "run ${setDefaultApplication} ${lib.getExe pkgs.duti} ${
               lib.escapeShellArgs [
                 app
                 type
-                "all"
               ]
             }"
           ) defaultApplications
