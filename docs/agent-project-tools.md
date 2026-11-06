@@ -68,6 +68,12 @@ enter the Nix store and project files, so keep credentials out.
 ## Global cleanup
 
 Close agent CLIs before switching so they cannot write stale settings back.
+
+Claude Code keeps its global state in `~/.claude/.claude.json` through
+`CLAUDE_CONFIG_DIR`. The first switch moves `~/.claude.json` and its backups
+there; if a destination already exists, resolve the conflicting files before
+switching again. Restart Claude from a new terminal after switching.
+
 Every switch removes global MCP registrations and undeclared global skills/
 plugins, then restores declared Rex and Herdr integrations. Project tools,
 authentication, session history and catalog/library remain in place.

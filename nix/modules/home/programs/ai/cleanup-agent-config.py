@@ -139,6 +139,8 @@ class Cleanup:
         edits = [
             (home / ".codex/config.toml", codex_tools),
             (home / ".claude.json", lambda d: clear_keys(d, ["mcpServers"])),
+            (home / ".claude/.claude.json",
+             lambda d: clear_keys(d, ["mcpServers"])),
             (home / ".claude/settings.json", claude_tools),
             (home / ".copilot/settings.json", claude_tools),
             (home / ".copilot/config.json", copilot_tools),

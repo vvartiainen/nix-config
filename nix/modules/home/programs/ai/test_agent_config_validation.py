@@ -137,6 +137,12 @@ class ValidationTest(unittest.TestCase):
         self.assertEqual(target.read_text(), '{"model":"keep"}')
         self.assertFalse(self.state.exists())
 
+    def test_relocated_claude_state_is_validated(self):
+        path = self.write(self.home / ".claude/.claude.json", "broken {")
+        with contextlib.redirect_stdout(io.StringIO()):
+            failures = validation.check_files(self.home, self.xdg)
+        self.assertEqual(failures, [f"{path}: invalid json syntax"])
+
     def test_cleanup_preflights_schema_failures_before_any_writes(self):
         first = self.write(self.home / ".codex/config.toml", "mcp_servers={}")
         self.write(self.xdg / "opencode/opencode.jsonc", '{"model":12}')

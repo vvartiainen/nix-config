@@ -236,6 +236,7 @@ in
         sha256 = "f49b990254804131f0be0f60260da9b4a55ec9fa73af0252816e423cb0e178dc";
       };
     };
+    configDir = "${config.home.homeDirectory}/.claude";
     # Global ~/.claude/CLAUDE.md; repo instructions add to or narrow these.
     context = ''
       # Global instructions
@@ -251,6 +252,31 @@ in
   };
 
   home = {
+    # Explicitly setting even the default directory also moves .claude.json
+    # inside it; Home Manager only exports this for non-default directories.
+    sessionVariables.CLAUDE_CONFIG_DIR = config.programs.claude-code.configDir;
+
+    activation.claudeCodeState =
+      lib.hm.dag.entryBetween [ "agentToolsCleanup" ] [ "writeBoundary" ] ''
+        claude_home=${lib.escapeShellArg config.home.homeDirectory}
+        claude_dir=${lib.escapeShellArg config.programs.claude-code.configDir}
+        # Preflight every destination before moving anything. Close Claude
+        # before switching so an old process cannot recreate the legacy file.
+        for source in "$claude_home"/.claude.json "$claude_home"/.claude.json.backup*; do
+          [[ -e "$source" || -L "$source" ]] || continue
+          target="$claude_dir/''${source##*/}"
+          if [[ -e "$target" || -L "$target" ]]; then
+            echo "Claude state migration: resolve $source and $target before switching." >&2
+            exit 1
+          fi
+        done
+        for source in "$claude_home"/.claude.json "$claude_home"/.claude.json.backup*; do
+          [[ -e "$source" || -L "$source" ]] || continue
+          run mkdir -p "$claude_dir"
+          run mv -n "$source" "$claude_dir/''${source##*/}"
+        done
+      '';
+
     # claude ships no zsh completion; this one is derived from `--help` output.
     packages = [
       (pkgs.writeTextDir "share/zsh/site-functions/_claude" (builtins.readFile ./claude-completion.zsh))

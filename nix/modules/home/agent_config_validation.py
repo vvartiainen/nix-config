@@ -104,6 +104,7 @@ def config_files(home, xdg):
         (home / ".codex/config.toml", "toml", "codex"),
         (home / ".claude/settings.json", "json", "claude"),
         (home / ".claude.json", "json", None),
+        (home / ".claude/.claude.json", "json", None),
         (home / ".copilot/settings.json", "jsonc", None),
         (home / ".copilot/config.json", "jsonc", None),
         (home / ".copilot/lsp-config.json", "json", None),

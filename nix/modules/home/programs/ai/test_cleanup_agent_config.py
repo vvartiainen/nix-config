@@ -73,6 +73,7 @@ command = "other"
 }''')
         mcp_files = [
             self.home / ".claude.json", self.home / ".pi/agent/mcp.json",
+            self.home / ".claude/.claude.json",
             self.home / ".copilot/mcp-config.json",
             self.xdg / "cursor/mcp.json", self.home / ".cursor/mcp.json",
         ]
