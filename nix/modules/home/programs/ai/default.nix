@@ -4,6 +4,7 @@ let
 in
 {
   imports = [
+    ./agent-hooks.nix
     ./agents-catalog.nix
     ./backlog.nix
     ./claude.nix
@@ -16,6 +17,7 @@ in
     ./mcp.nix
     ./opencode.nix
     ./pi-coding-agent.nix
+    ./repository-check-hooks.nix
     ./terminal-status.nix
   ];
 

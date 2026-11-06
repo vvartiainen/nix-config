@@ -1,8 +1,6 @@
 {
-  config,
   lib,
   pkgs,
-  repoRoot,
   ...
 }:
 let
@@ -12,17 +10,6 @@ let
     exec ${pkgs.python3}/bin/python3 ${./terminal-status.py} "$@"
   '';
   command = lib.getExe reporter;
-  checker = import ../../../../packages/repository-checks.nix { inherit pkgs; };
-  checkHook = event: {
-    type = "command";
-    command = "${lib.getExe checker} --hook ${event} --repository ${lib.escapeShellArg repoRoot}";
-    timeout = 60;
-  };
-  checkHooks = {
-    UserPromptSubmit = [ { hooks = [ (checkHook "prompt") ]; } ];
-    Stop = [ { hooks = [ (checkHook "stop") ]; } ];
-    SessionEnd = [ { hooks = [ (checkHook "end") ]; } ];
-  };
   hook = app: state: kind: {
     type = "command";
     # Replacing the hook shell makes Codex the reporter's parent. Its PID is
@@ -70,19 +57,10 @@ let
     };
   copilotHooks = {
     sessionStart = [ (copilotHook "idle" "none") ];
-    userPromptSubmitted = [
-      (copilotHook "working" "none")
-      ((builtins.removeAttrs (checkHook "prompt") [ "timeout" ]) // { timeoutSec = 60; })
-    ];
+    userPromptSubmitted = [ (copilotHook "working" "none") ];
     postToolUse = [ (copilotHook "working" "none") ];
-    agentStop = [
-      (copilotHook "done" "none")
-      ((builtins.removeAttrs (checkHook "stop") [ "timeout" ]) // { timeoutSec = 60; })
-    ];
-    sessionEnd = [
-      (copilotHook "clear" "none")
-      ((builtins.removeAttrs (checkHook "end") [ "timeout" ]) // { timeoutSec = 60; })
-    ];
+    agentStop = [ (copilotHook "done" "none") ];
+    sessionEnd = [ (copilotHook "clear" "none") ];
     errorOccurred = [ (copilotHook "error" "none") ];
     notification = [
       ((copilotHook "blocked" "permission") // { matcher = "permission_prompt"; })
@@ -90,10 +68,7 @@ let
     ];
     preToolUse = [ ((copilotHook "blocked" "question") // { matcher = "ask_user"; }) ];
   };
-  json = pkgs.formats.json { };
-  codexConfig = json.generate "codex-terminal-status.json" { hooks = codexHooks; };
-  claudeConfig = json.generate "claude-terminal-status.json" { hooks = claudeHooks; };
-  checkConfig = json.generate "repository-check-hooks.json" { hooks = checkHooks; };
+
 in
 {
   # Hooks have captured stdout and may lack a controlling terminal. Capture
@@ -116,27 +91,10 @@ in
 
   programs.sketchybar.extraPackages = lib.optionals pkgs.stdenv.hostPlatform.isDarwin [ reporter ];
 
-  home = {
-    file."${config.programs.github-copilot-cli.configDir}/hooks/nix-config-terminal-status.json".source =
-      json.generate "copilot-terminal-status.json" {
-        version = 1;
-        hooks = copilotHooks;
-      };
-
-    # Preserve vendor and user hooks, including other handlers for the same event.
-    activation.agentTerminalStatus =
-      lib.hm.dag.entryAfter
-        [
-          "claudeCodeConfig"
-          "codexMutableConfig"
-          "rexAgentHooks"
-          "herdrAgentIntegrations"
-        ]
-        ''
-          run ${command} install ${claudeConfig} ${lib.escapeShellArg "${config.programs.claude-code.configDir}/settings.json"}
-          run ${command} install ${codexConfig} ${lib.escapeShellArg "${config.home.homeDirectory}/.codex/hooks.json"}
-          run ${command} install ${checkConfig} ${lib.escapeShellArg "${config.programs.claude-code.configDir}/settings.json"} '/bin/nix-config-check --hook '
-          run ${command} install ${checkConfig} ${lib.escapeShellArg "${config.home.homeDirectory}/.codex/hooks.json"} '/bin/nix-config-check --hook '
-        '';
+  agentHooks = {
+    commandMarkers = [ "/bin/nix-config-terminal-status report " ];
+    codex = codexHooks;
+    claude = claudeHooks;
+    copilot = copilotHooks;
   };
 }

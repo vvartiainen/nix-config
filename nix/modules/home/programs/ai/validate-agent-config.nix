@@ -23,7 +23,7 @@ in
           "githubCopilotCliSettings"
           "rexAgentHooks"
           "herdrAgentIntegrations"
-          "agentTerminalStatus"
+          "agentHooks"
         ]
         ''
           run ${lib.getExe validator}

@@ -11,9 +11,6 @@ import sys
 import tempfile
 
 
-MARKER = "/bin/nix-config-terminal-status report "
-
-
 def state_directory():
     # Shared by sandboxed hooks and SketchyBar, with no home-directory grants.
     directory = Path(f"/tmp/nix-config-agent-status-{os.getuid()}")
@@ -140,36 +137,6 @@ def render_bar(name, sender):
         pass
 
 
-def install(source, destination, marker=MARKER):
-    path = Path(destination)
-    current = json.loads(path.read_text()) if path.exists() else {}
-    hooks = current.setdefault("hooks", {})
-    # Store paths change on upgrades; recognize our executable's stable name.
-    for event, groups in hooks.items():
-        kept = []
-        for group in groups:
-            if "hooks" in group:
-                group["hooks"] = [h for h in group["hooks"]
-                                  if marker not in h.get("command", "")]
-                if group["hooks"]:
-                    kept.append(group)
-            else:
-                kept.append(group)
-        hooks[event] = kept
-    for event, groups in json.loads(Path(source).read_text())["hooks"].items():
-        hooks.setdefault(event, []).extend(groups)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    fd, temporary = tempfile.mkstemp(dir=path.parent, prefix=".terminal-status-")
-    try:
-        with os.fdopen(fd, "w") as out:
-            json.dump(current, out, indent=2)
-            out.write("\n")
-        os.replace(temporary, path)
-    finally:
-        if os.path.exists(temporary):
-            os.unlink(temporary)
-
-
 def report(app, state, kind):
     # Codex's TUI emits OSC 7501 itself, including with a shared daemon.
     # A daemon's inherited terminal/socket/window can belong to another client.
@@ -213,9 +180,7 @@ def report(app, state, kind):
 
 
 if __name__ == "__main__":
-    if sys.argv[1] == "install":
-        install(*sys.argv[2:])
-    elif sys.argv[1] == "report":
+    if sys.argv[1] == "report":
         report(*sys.argv[2:])
     elif sys.argv[1] == "clear":
         clear(*sys.argv[2:])

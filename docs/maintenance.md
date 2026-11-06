@@ -54,6 +54,11 @@ since the current prompt, and ask the agent to address failures once before
 finishing. They do not run Nix evaluation, builds or automatic fixes. Relevant
 behavior tests and private-host validation remain separate.
 
+Agent hook registration and installation live in
+`nix/modules/home/programs/ai/agent-hooks.nix`. Terminal status and repository
+validation register their handlers separately through `agentHooks`; the shared
+installer combines them and preserves unrelated user and integration hooks.
+
 ## Updates and rollback
 
 ```sh

@@ -1,4 +1,4 @@
-"""Verify hook coexistence and status delivery without a controlling terminal."""
+"""Verify status delivery without a controlling terminal."""
 
 import importlib.util
 import io
@@ -198,45 +198,6 @@ reporter.report("codex", "blocked", "permission")
         path.write_text(json.dumps(record))
         status.render_bar("agent_status", "agent_status_update")
         self.assertEqual(self.bar.call_args.args[3], "label=1")
-
-    def test_install_preserves_other_handlers_and_is_idempotent(self):
-        with tempfile.TemporaryDirectory() as directory:
-            source = Path(directory) / "source.json"
-            target = Path(directory) / "settings.json"
-            vendor = {"type": "command", "command": "vendor-hook"}
-            old = {"type": "command", "command": "/old" + status.MARKER + "claude done none"}
-            new = {"type": "command", "command": "/new" + status.MARKER + "claude done none"}
-            target.write_text(json.dumps({"model": "fixture", "hooks": {
-                "Stop": [{"hooks": [vendor, old]}],
-                "SessionStart": [{"hooks": [vendor]}],
-            }}))
-            source.write_text(json.dumps({"hooks": {"Stop": [{"hooks": [new]}]}}))
-            status.install(source, target)
-            first = target.read_text()
-            status.install(source, target)
-            self.assertEqual(target.read_text(), first)
-            data = json.loads(first)
-            self.assertEqual(data["model"], "fixture")
-            self.assertEqual(data["hooks"]["Stop"], [{"hooks": [vendor]}, {"hooks": [new]}])
-            self.assertEqual(data["hooks"]["SessionStart"], [{"hooks": [vendor]}])
-
-    def test_validation_hooks_install_without_duplicating_or_replacing_status(self):
-        with tempfile.TemporaryDirectory() as directory:
-            source = Path(directory) / "source.json"
-            target = Path(directory) / "settings.json"
-            marker = "/bin/nix-config-check --hook "
-            old = {"type": "command", "command": "/old" + marker + "stop"}
-            new = {"type": "command", "command": "/new" + marker + "stop"}
-            reporter = {"type": "command", "command": "/store" + status.MARKER + "claude done none"}
-            target.write_text(json.dumps({"hooks": {"Stop": [{"hooks": [old, reporter]}]}}))
-            source.write_text(json.dumps({"hooks": {"Stop": [{"hooks": [new]}]}}))
-            status.install(source, target, marker)
-            first = target.read_text()
-            status.install(source, target, marker)
-            self.assertEqual(target.read_text(), first)
-            self.assertEqual(json.loads(first)["hooks"]["Stop"], [
-                {"hooks": [reporter]}, {"hooks": [new]},
-            ])
 
     def run_report(self, payload, terminal, state="blocked", kind="permission"):
         result = subprocess.run(
