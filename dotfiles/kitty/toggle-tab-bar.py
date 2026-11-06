@@ -16,5 +16,9 @@ def handle_result(args, answer, target_window_id, boss):
     if manager is None:
         return
     manager.tab_bar_hidden = not manager.tab_bar_hidden
+    if manager.tab_bar_hidden:
+        # Kitty keeps drawing the tab bar's blank rects unless they are cleared;
+        # resize() rebuilds them when the bar is shown again.
+        manager.tab_bar.blank_rects = ()
     manager.mark_tab_bar_dirty()
     manager.resize()

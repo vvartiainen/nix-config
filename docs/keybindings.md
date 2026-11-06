@@ -104,8 +104,10 @@ order; H/L changes workspaces.
 
 Resize behavior depends on the layout; stack has no visible split to resize.
 Outside mode, Ctrl+Shift is Kitty's main modifier and **F7 → key** opens sessions
-and tools. **Ctrl+Shift+J/K** selects the next/previous tab, as does
-**Ctrl+Shift+L/H**. **Cmd+S** toggles the tab bar in the current OS window. Reloading the
+and tools. **Ctrl+Shift+J/K** selects the next/previous tab and
+**Ctrl+Shift+L/H** moves the tab down/up. The tab bar lists only the current
+session's tabs and tabs outside sessions, and tab navigation follows it; F7 → F
+reaches every tab. **Cmd+S** toggles the tab bar in the current OS window. Reloading the
 configuration restores its configured visibility. Font controls:
 
 | Key | Action |
