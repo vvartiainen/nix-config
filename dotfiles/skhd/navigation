@@ -13,6 +13,7 @@ ctrl - p [
 # Loaded last so every mode it targets is already declared.
 default, winmode, resize < $mode - space [
   "kitty" : /bin/bash "$HOME/.config/skhd/kitty.sh" enter
+  "kitty-quick-access" : /bin/bash "$HOME/.config/skhd/kitty.sh" enter
   "zen" ; zen_mode
   "Rex Beta" ; rex_mode
   "Rex" ; rex_mode

@@ -4,6 +4,7 @@
 # Finnish ´ key (ANSI Equal position), without Shift; keep native Cmd+S too.
 kitty_mode < cmd - 0x18 [
   "kitty" | cmd - s
+  "kitty-quick-access" | cmd - s
   * ~
 ]
 

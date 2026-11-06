@@ -28,7 +28,7 @@ aliases also work in the app's navigation mode; other apps keep their own shortc
 | Ctrl+N/P in Vicinae | Next / previous result |
 | Ctrl+N/P in Slack | Down / up in menus, search and message editing |
 | Ctrl+Shift+J/K in Slack | Next / previous channel or DM |
-| Right Option+1–9 in Kitty or Rex | Jump to tab; other apps and Left Option keep typing characters |
+| Right Option+1–9 in Kitty (including the quick-access window) or Rex | Jump to tab; other apps and Left Option keep typing characters |
 
 Global shortcuts take precedence over app actions: Ctrl+Shift+Space blocks
 JetBrains smart completion. The macOS input-source shortcuts are disabled so
@@ -63,8 +63,10 @@ Direct Ctrl+Alt+Cmd window/Space controls remain available; see
 ## App navigation modes
 
 With **Zen, Kitty or Rex** focused, press **Right Cmd+Right Option+Space**, then
-release the modifiers. In Kitty, a Herdr window enters Herdr mode. SketchyBar
-shows the app's mode and hints; keep it running for automatic exit on app switch.
+release the modifiers. In Kitty, a Herdr window enters Herdr mode. The Kitty
+quick-access window runs as its own `kitty-quick-access` app and supports the
+same bindings while it is focused. SketchyBar shows the app's mode and key
+hints; keep it running for automatic exit on app switch.
 
 **Escape, Return, or the entry chord exits**. Right Cmd+Right Option+W/R
 switches to window/resize mode. Navigation, creation and layout actions generally

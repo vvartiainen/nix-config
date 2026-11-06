@@ -52,7 +52,7 @@ if [ "$mode" = herdr ] || [ "$mode" = kitty ] || [ "$mode" = zen ] || [ "$mode" 
   fi
   in_app=
   case "$mode:$front_app" in
-    *:|herdr:kitty|herdr:Kitty|kitty:kitty|kitty:Kitty|zen:zen|zen:Zen|zen:'Zen Browser'|zen:'Zen Browser (Beta)'|rex:Rex|rex:'Rex Beta') in_app=1 ;;
+    *:|herdr:kitty|herdr:Kitty|kitty:kitty|kitty:Kitty|kitty:kitty-quick-access|zen:zen|zen:Zen|zen:'Zen Browser'|zen:'Zen Browser (Beta)'|rex:Rex|rex:'Rex Beta') in_app=1 ;;
   esac
   # Herdr prefixes the Kitty title with "herdr · " (window_title in
   # herdr.nix), including remote sessions. An unknown title keeps the mode.
