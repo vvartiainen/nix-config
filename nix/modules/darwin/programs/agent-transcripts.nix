@@ -7,7 +7,7 @@
 let
   home = config.home.homeDirectory;
   # Append-only copy of agent session transcripts for later analysis. The
-  # agents prune or rewrite their own stores; this copy never deletes.
+  # agents prune or rewrite their own stores; the JSONL copies never delete.
   archiveDir = "${config.xdg.dataHome}/agent-transcripts";
 
   archive = pkgs.writeShellApplication {
@@ -30,7 +30,18 @@ let
 
       copy claude "${home}/.claude/projects"
       copy codex "${home}/.codex/sessions"
+      copy copilot "${home}/.copilot/session-state"
       copy pi "${home}/.pi/agent/sessions"
+
+      # OpenCode keeps sessions in SQLite; take a consistent online backup.
+      # This snapshot is replaced each run, so sessions deleted in OpenCode
+      # drop out of it.
+      db="${config.xdg.dataHome}/opencode/opencode.db"
+      if [ -f "$db" ]; then
+        mkdir -p "$dest/opencode"
+        /usr/bin/sqlite3 "$db" ".backup '$dest/opencode/opencode.db.tmp'"
+        mv -f "$dest/opencode/opencode.db.tmp" "$dest/opencode/opencode.db"
+      fi
     '';
   };
 in
