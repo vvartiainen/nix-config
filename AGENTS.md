@@ -6,11 +6,32 @@ This repository contains my macOS configs using nix, nix-darwin and home-manager
 
 ## Validation commands (no apply)
 
-Use the tracked `nix/fixtures/host` input for agent verification after config
-changes. Run linting and one system build from the repository root:
+Choose validation according to the change:
+
+- Documentation: review the diff and run `git diff --check`.
+- Directly linked dotfiles and helper scripts: run relevant syntax or behavior
+  checks and `git diff --check`; no system build is needed.
+- Nix modules: run `statix check .`, fixture evaluation and `git diff --check`.
+- Package, dependency, activation or build changes: also run a fixture system
+  build. Build whenever evaluation leaves a concrete concern unresolved.
+
+Use the tracked `nix/fixtures/host` input for Nix verification. Run commands
+from the repository root. For module evaluation without building:
 
 ```sh
 statix check .
+nix eval --raw '.#darwinConfigurations.agent-fixture.system.drvPath' \
+  --override-input host "path:$PWD/nix/fixtures/host"
+```
+
+Evaluation checks module evaluation and derivation generation. It does not
+build generated files or verify application behavior. Inspect relevant evaluated
+options when checking generated configuration; use targeted application checks
+for runtime behavior.
+
+When a system build is required:
+
+```sh
 nix build --no-link '.#darwinConfigurations.agent-fixture.system' \
   --override-input host "path:$PWD/nix/fixtures/host"
 ```
@@ -20,15 +41,8 @@ virtualization disabled and no private modules. Do not read
 `~/.config/nix-config-host` or request access to it for routine validation.
 Pass the fixture override on every Nix invocation; it implies
 `--no-write-lock-file`. Never commit real host names, usernames or
-work-specific config to this repo. New files must be `git add`ed before a
-build sees them.
-
-For a quick evaluation without building, use:
-
-```sh
-nix eval --raw '.#darwinConfigurations.agent-fixture.system.drvPath' \
-  --override-input host "path:$PWD/nix/fixtures/host"
-```
+work-specific config to this repo. New files must be `git add`ed before Nix
+evaluation or builds see them.
 
 `nix flake show` is optional output inspection. `nix flake check` does not
 validate `darwinConfigurations`; this flake currently exposes no `checks`.
@@ -39,8 +53,7 @@ validation. Agents use the direct commands above. Direct `nix build --no-link`
 leaves no result symlink.
 
 Do not run apply commands (for example `just switch <hostName>` or
-`darwin-rebuild switch`); user applies manually. Documentation-only changes
-need a diff review and `git diff --check`, not a system build.
+`darwin-rebuild switch`); user applies manually.
 
 ## Agent sandbox
 
