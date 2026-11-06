@@ -10,7 +10,7 @@ grant filesystem or command access.
 | --- | --- | --- |
 | Codex | Run inside the configured sandbox | Ask rules and sandbox escapes |
 | Claude Code | Run inside the configured sandbox | Ask rules, escapes and unlisted hosts; `gh` runs outside it |
-| Cursor | Run in sandbox | Escapes; Rex has no per-command ask rule here |
+| Cursor | Run in sandbox | Escapes and reads outside the workspace and tool paths; Rex has no per-command ask rule here |
 | Copilot | Shared safe-command allowlist | Unlisted commands, file edits and sandbox bypasses |
 | OpenCode | No OS sandbox | Commands outside its allowlist ask |
 | Pi | Whole process runs in Safehouse | Permission extension asks for sandbox escapes and external tools; OS denials require manual work outside Pi |

@@ -35,7 +35,6 @@ let
     allow =
       (lib.concatMap toCursorShell commands.allowed)
       ++ map (cmd: "Shell(${builtins.head cmd}:${commandString (builtins.tail cmd)})") commands.exact
-      ++ [ "Read(**)" ]
       ++ map (domain: "WebFetch(${domain})") network.fetch
       ++ map (name: "Mcp(${name}:*)") permissions.mcpServers;
     deny =
@@ -76,19 +75,28 @@ let
     };
   };
 
+  # Cursor grants temp writes by default (`disableTmpWrite`); list /tmp
+  # explicitly like the other CLIs.
+  readwritePaths =
+    caches.writePaths
+    ++ paths.tmp
+    ++ [
+      # The desktop app uses ~/.cursor; this CLI relocates its config via
+      # CURSOR_CONFIG_DIR. Grant only their managed checkout directories.
+      "${config.home.homeDirectory}/.cursor/worktrees"
+      "${cursorConfigDir}/worktrees"
+    ];
+
   sandboxSettings = {
     additionalReadonlyPaths = paths.readonly;
-    # Cursor grants temp writes by default (`disableTmpWrite`); list /tmp
-    # explicitly like the other CLIs.
-    additionalReadwritePaths =
-      caches.writePaths
-      ++ paths.tmp
-      ++ [
-        # The desktop app uses ~/.cursor; this CLI relocates its config via
-        # CURSOR_CONFIG_DIR. Grant only their managed checkout directories.
-        "${config.home.homeDirectory}/.cursor/worktrees"
-        "${cursorConfigDir}/worktrees"
-      ];
+    additionalReadwritePaths = readwritePaths;
+    # The default `system` boundary lets file tools and sandboxed commands
+    # read anywhere without asking. Outside the workspace and these paths,
+    # reads ask. This list replaces Read(...) allow rules as the allowlist.
+    readBoundary = "workspace";
+    additionalReadPaths = lib.unique (
+      paths.readonly ++ paths.runtime ++ paths.readable ++ readwritePaths
+    );
   };
 
   # Cursor has no env setting, so its binary sets the agent caches.
