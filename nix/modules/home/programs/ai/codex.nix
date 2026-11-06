@@ -84,9 +84,9 @@ let
       // {
         # Managed worktrees can be created after the session starts, outside
         # its original workspace roots. Keep the grant within their directory.
+        # Codex allows mid-path globs only for deny rules; linked worktrees
+        # keep hooks and config in the main checkout's protected Git dir.
         "${worktrees}" = "write";
-        "${worktrees}/**/.git/hooks" = "read";
-        "${worktrees}/**/.git/config" = "read";
         "${config.home.homeDirectory}/.codex/skills" = "read";
         # Allow inspecting installed lifecycle hooks without permitting edits
         # to commands that execute outside the agent sandbox.

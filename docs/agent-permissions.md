@@ -20,9 +20,9 @@ defaults. In Copilot, use `/reset-allowed-tools` to clear old broad grants befor
 testing changed rules. Start fresh sessions after permission changes.
 
 Codex can read and write its managed checkouts under `~/.codex/worktrees`,
-including worktrees created during a session. Secret-file denies and read-only
-Git hooks/config still apply there. Other Codex state retains its existing
-permissions. Apply permission changes manually and start a fresh session.
+including worktrees created during a session. Secret-file denies still apply
+there; their Git hooks/config stay in the main checkout's read-only Git dir.
+Other Codex state retains its existing permissions. Apply permission changes manually and start a fresh session.
 
 Claude CLI worktrees live under the repository's `.claude/worktrees`; Claude
 also grants their shared Git metadata. Copilot starts worktree sessions inside
