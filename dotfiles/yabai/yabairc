@@ -54,9 +54,6 @@ assign_app() {
 assign_app "Slack" "Start"
 assign_app "Safari" "Start"
 
-# Browser, disabled to allow little arc on same space
-# yabai -m rule --add app="Arc" space="Browser"
-
 # Programming
 # assign_app "kitty" "Code"
 
