@@ -44,6 +44,37 @@ def schema_validator(name):
     return cls(schema, registry=Registry())
 
 
+def location(path):
+    return "$" + "".join(f"[{part!r}]" for part in path)
+
+
+def codex_filesystem_errors(data):
+    """Codex rejects globs outside deny rules, which its schema can't express.
+
+    Only a trailing `/**` subtree is accepted for other access levels.
+    """
+    details = []
+    profiles = data.get("permissions")
+    if not isinstance(profiles, dict):
+        return details
+    for name, profile in profiles.items():
+        filesystem = profile.get("filesystem") if isinstance(profile, dict) else None
+        if not isinstance(filesystem, dict):
+            continue
+        for path, access in filesystem.items():
+            prefix = ["permissions", name, "filesystem", path]
+            entries = (access.items() if isinstance(access, dict)
+                       else [(None, access)])
+            for subpath, value in entries:
+                pattern = path if subpath is None else subpath
+                where = prefix if subpath is None else [*prefix, subpath]
+                if value != "deny" and any(
+                    char in pattern.removesuffix("/**") for char in "*?["
+                ):
+                    details.append(f"{location(where)}: glob needs deny access")
+    return details
+
+
 def validate(data, schema=None, label="config"):
     if not isinstance(data, dict):
         raise ValueError(f"{label}: expected an object")
@@ -54,16 +85,17 @@ def validate(data, schema=None, label="config"):
     except (OSError, KeyError, ValueError, SchemaError, Unresolvable) as error:
         raise ValueError(f"{label}: cannot use bundled schema {schema}: "
                          f"{type(error).__name__}") from None
-    if errors:
-        details = []
-        for error in errors[:10]:
-            location = "$" + "".join(f"[{part!r}]" for part in error.path)
-            # Error.message can expose config values (tokens, env vars).
-            constraint = f"fails {error.validator}"
-            if error.validator == "type":
-                constraint = f"expected type {error.validator_value}"
-            details.append(f"{location}: {constraint}")
-        raise ValueError(f"{label} ({schema}): " + "; ".join(details))
+    details = []
+    for error in errors[:10]:
+        # Error.message can expose config values (tokens, env vars).
+        constraint = f"fails {error.validator}"
+        if error.validator == "type":
+            constraint = f"expected type {error.validator_value}"
+        details.append(f"{location(error.path)}: {constraint}")
+    if schema == "codex":
+        details += codex_filesystem_errors(data)
+    if details:
+        raise ValueError(f"{label} ({schema}): " + "; ".join(details[:10]))
 
 
 def config_files(home, xdg):

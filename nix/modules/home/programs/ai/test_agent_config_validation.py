@@ -60,6 +60,26 @@ class ValidationTest(unittest.TestCase):
             with self.subTest(schema=schema), self.assertRaises(ValueError):
                 validation.validate(data, schema)
 
+    def test_codex_globs_need_deny_access(self):
+        def config(filesystem):
+            return {"permissions": {"p": {"filesystem": filesystem}}}
+
+        validation.validate(config({
+            "/w/**/.env": "deny",
+            "/w/**": "read",
+            "/w": "write",
+            ":workspace_roots": {"**/.env": "deny", ".git/hooks": "read"},
+        }), "codex")
+        for filesystem in [
+            {"/w/**/.git/config": "read"},
+            {"/w/*": "write"},
+            {":workspace_roots": {"**/.git/hooks": "read"}},
+        ]:
+            with self.subTest(filesystem=filesystem):
+                with self.assertRaises(ValueError) as error:
+                    validation.validate(config(filesystem), "codex")
+                self.assertIn("glob needs deny access", str(error.exception))
+
     def test_invalid_merged_runtime_value_preserves_config_and_state(self):
         path = self.write(self.home / "settings.json", '{"model": 12}')
         self.write(self.state, '{"effortLevel": "low"}')
