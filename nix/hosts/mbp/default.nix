@@ -10,6 +10,7 @@
     ../../modules/shared/nix.nix
     ../../modules/shared/networking.nix
     ../../modules/darwin/system-settings.nix
+    ../../modules/darwin/default-apps.nix
     ../../modules/darwin/apple-intelligence.nix
     ../../modules/darwin/homebrew.nix
     ../../modules/darwin/linux-builder.nix
