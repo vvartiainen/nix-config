@@ -1,7 +1,11 @@
 import os
+import re
 from functools import lru_cache
+from urllib.parse import urlparse
 
+from kittens.ssh.utils import get_connection_data
 from kitty.fast_data_types import get_boss, wcswidth
+from kitty.utils import get_hostname, path_from_osc7_url
 
 HOME = os.path.expanduser("~")
 
@@ -61,6 +65,8 @@ ACCENT = "#CBA6F7"
 DIM = "#6C7086"
 ACTIVITY = "#F9E2AF"
 BELL = "#F38BA8"
+SSH = "#94E2D5"
+SSH_ICON = "󰒋"  # Nerd Font server icon
 # Visible cells per line; matches tab_title_max_length in kitty.conf.
 LINE_WIDTH = 20
 
@@ -76,6 +82,39 @@ def _name(tab, data):
     if root:
         return _repo_title(root)
     return "~" if wd == HOME else os.path.basename(wd) or "/"
+
+
+def _ssh(tab):
+    """Return (host, remote directory) when the active window runs ssh or kitten ssh."""
+    w = tab.active_window if tab else None
+    if w is None:
+        return None
+    cmd = w.ssh_kitten_cmdline()
+    if not cmd:
+        for p in w.child.foreground_processes:
+            q = list(p["cmdline"] or ())
+            if q and os.path.basename(q[0]).lower() == "ssh":
+                cmd = q
+                break
+    conn = get_connection_data(cmd) if cmd else None
+    if conn is None:
+        return None
+    # The alias as typed, which names hosts from ~/.ssh/config better than FQDNs.
+    host = conn.hostname.rpartition("@")[2]
+    cwd = ""
+    # Shell integration on the remote reports its directory with its hostname;
+    # a local URL is the directory from before ssh started.
+    reported = w.screen.last_reported_cwd or ""
+    if isinstance(reported, bytes):
+        reported = reported.decode("utf-8", "replace")
+    netloc = urlparse(reported).netloc.partition(":")[0]
+    if netloc and netloc not in (get_hostname(), "localhost"):
+        path = path_from_osc7_url(reported)
+        if re.fullmatch(r"/(home/[^/]+|Users/[^/]+|root)/?", path):
+            cwd = "~"
+        else:
+            cwd = os.path.basename(path.rstrip("/")) or "/"
+    return host, cwd
 
 
 def _fit(text, width):
@@ -95,6 +134,8 @@ def _is_active(tab):
 
 def draw_title(data):
     """Two-line vertical tab: index, name and markers, then the foreground program.
+
+    SSH tabs show the host instead, then the remote directory.
 
     Every line starts with the same gutter, which holds the accent bar of the
     active tab, so both lines stay aligned.
@@ -118,18 +159,29 @@ def draw_title(data):
             if symbol
         ]
 
-        # Gutter, space, index, space; the program on line 2 aligns with the name.
+        # Gutter, space, index, space; line 2 aligns with the name.
         index = str(data["index"])
         name_col = len(index) + 3
         width = LINE_WIDTH - name_col - wcswidth(suffix) - 2 * len(markers)
-        name = _fit(_name(tab, data), width)
-        line1 = f"{gutter} {dim}{index}{fg.tab} {name}{suffix}{''.join(markers)}"
 
-        exe = data["tab"].active_exe.lstrip("-")
-        if not exe or exe in SHELLS:
+        try:
+            ssh = None if tab is None or tab.name else _ssh(tab)
+        except Exception:
+            ssh = None
+        if ssh:
+            # SSH tabs: host on line 1, the remote directory (if reported) on line 2.
+            host, detail = ssh
+            name = f"{getattr(fg, '_' + SSH[1:])}{SSH_ICON} {_fit(host, width - 2)}{fg.tab}"
+        else:
+            name = _fit(_name(tab, data), width)
+            detail = data["tab"].active_exe.lstrip("-")
+            if detail in SHELLS:
+                detail = ""
+        line1 = f"{gutter} {dim}{index}{fg.tab} {name}{suffix}{''.join(markers)}"
+        if not detail:
             return line1
-        exe = _fit(exe, LINE_WIDTH - name_col)
-        line2 = f"{gutter}{' ' * (name_col - 1)}{fmt.nobold}{dim}{exe}{fg.tab}"
+        detail = _fit(detail, LINE_WIDTH - name_col)
+        line2 = f"{gutter}{' ' * (name_col - 1)}{fmt.nobold}{dim}{detail}{fg.tab}"
         return f"{line1}\n{line2}"
     except Exception:
         return data["title"]
