@@ -186,6 +186,10 @@ class RepositoryChecksTest(unittest.TestCase):
         failure = checks.check(self.root)
         self.assertIn("trailing whitespace", failure)
 
+    def test_clean_untracked_file_passes_whitespace_check(self):
+        self.write("new.md", "clean\n")
+        self.assertEqual(checks.check(self.root), "")
+
     def test_check_is_read_only_and_reports_real_shell_syntax_error(self):
         path = self.write("broken.zsh", "if then\n")
         before = path.read_bytes()

@@ -113,7 +113,14 @@ def check(root, *, base=None, all_files=False, formatting=False):
                 timeout=max(0.01, min(10, deadline - time.monotonic())),
                 check=False,
             )
-            if result.returncode:
+            # Git's no-index mode can return 1 for a clean added file simply
+            # because /dev/null differs. Whitespace errors include diagnostics.
+            clean_addition = (
+                command[:4] == ["git", "diff", "--no-index", "--check"]
+                and result.returncode == 1
+                and not result.stdout
+            )
+            if result.returncode and not clean_addition:
                 failures.append(" ".join(command) + "\n" + result.stdout)
         except (OSError, subprocess.TimeoutExpired) as error:
             failures.append(" ".join(command) + "\n" + str(error))
