@@ -23,3 +23,61 @@ ctrl + shift - k [
   "zen" | ctrl + shift - tab
   "Slack" | alt - up
 ]
+
+# Right Option+1–9 jumps to a Kitty or Rex tab; Left Option keeps layout
+# characters, which Kitty mappings cannot tell apart. This takes Herdr's direct
+# Alt+1–9 in Kitty; Herdr mode still jumps to agents.
+ralt - 1 [
+  "kitty" | ctrl + shift - 1
+  "Rex" | ctrl + shift - 1
+  "Rex Beta" | ctrl + shift - 1
+  * ~
+]
+ralt - 2 [
+  "kitty" | ctrl + shift - 2
+  "Rex" | ctrl + shift - 2
+  "Rex Beta" | ctrl + shift - 2
+  * ~
+]
+ralt - 3 [
+  "kitty" | ctrl + shift - 3
+  "Rex" | ctrl + shift - 3
+  "Rex Beta" | ctrl + shift - 3
+  * ~
+]
+ralt - 4 [
+  "kitty" | ctrl + shift - 4
+  "Rex" | ctrl + shift - 4
+  "Rex Beta" | ctrl + shift - 4
+  * ~
+]
+ralt - 5 [
+  "kitty" | ctrl + shift - 5
+  "Rex" | ctrl + shift - 5
+  "Rex Beta" | ctrl + shift - 5
+  * ~
+]
+ralt - 6 [
+  "kitty" | ctrl + shift - 6
+  "Rex" | ctrl + shift - 6
+  "Rex Beta" | ctrl + shift - 6
+  * ~
+]
+ralt - 7 [
+  "kitty" | ctrl + shift - 7
+  "Rex" | ctrl + shift - 7
+  "Rex Beta" | ctrl + shift - 7
+  * ~
+]
+ralt - 8 [
+  "kitty" | ctrl + shift - 8
+  "Rex" | ctrl + shift - 8
+  "Rex Beta" | ctrl + shift - 8
+  * ~
+]
+ralt - 9 [
+  "kitty" | ctrl + shift - 9
+  "Rex" | ctrl + shift - 9
+  "Rex Beta" | ctrl + shift - 9
+  * ~
+]

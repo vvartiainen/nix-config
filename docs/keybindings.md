@@ -23,6 +23,7 @@ characters. Agent prompt controls are in [agent CLI keybindings](agent-keybindin
 | Ctrl+N/P in Vicinae | Next / previous result |
 | Ctrl+N/P in Slack | Down / up in menus, search and message editing |
 | Ctrl+Shift+J/K in Slack | Next / previous channel or DM |
+| Right Option+1–9 in Kitty or Rex | Jump to tab; other apps and Left Option keep typing characters |
 
 Global shortcuts take precedence over app actions: Ctrl+Shift+Space blocks
 JetBrains smart completion. The macOS input-source shortcuts are disabled so
@@ -199,7 +200,7 @@ order. Direct controls remain available outside mode:
 | Action | Binding |
 |---|---|
 | Previous / next agent | Alt+K / Alt+J |
-| Jump to agent 1–9 | Alt+1–9 |
+| Jump to agent 1–9 | Herdr mode 1–9; in Kitty, skhd turns Alt+1–9 into tab jumps |
 | Go To picker | Alt+G |
 | Workspace picker | Alt+W |
 | Previous / next workspace | Alt+Shift+K / Alt+Shift+J |
