@@ -50,6 +50,16 @@ class OpenActionsTests(unittest.TestCase):
                     self.actions("open-actions.conf", Path(f"/tmp/document.{extension}")), []
                 )
 
+    def test_html_links_use_the_system_browser(self):
+        for extension in ("html", "htm", "xhtml", "xht"):
+            path = Path(f"/tmp/web page.{extension}")
+            with self.subTest(extension=extension):
+                (action,) = self.actions("open-actions.conf", path)
+                self.assertEqual(action.func, "launch")
+                self.assertEqual(
+                    action.args, ("--type=background", "/usr/bin/open", "--", str(path))
+                )
+
 
 if __name__ == "__main__":
     unittest.main()

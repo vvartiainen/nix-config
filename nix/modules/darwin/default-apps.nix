@@ -37,7 +37,6 @@ let
     "tsx"
     "css"
     "scss"
-    "html"
     "xml"
     "sql"
     "c"

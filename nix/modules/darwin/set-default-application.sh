@@ -5,6 +5,15 @@ duti=$1
 app=$2
 file_type=$3
 
+# HTML associations can trigger macOS's default-browser change workflow.
+# Keep browser types and URL schemes out of this editor/folder policy.
+case "$file_type" in
+.htm | .html | .xht | .xhtml | public.html | public.xhtml | public.url | text/html | application/xhtml+xml | http | https)
+  printf 'Refusing to change browser association %s in the file editor defaults.\n' "$file_type" >&2
+  exit 2
+  ;;
+esac
+
 # Launch Services may ask for consent on each change. Do not submit a setter
 # when the effective default already matches, including inherited defaults.
 if [[ $file_type == .* ]]; then

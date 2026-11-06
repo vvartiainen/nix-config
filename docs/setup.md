@@ -181,11 +181,15 @@ in Kitty with the stable Homebrew Neovim. These macOS defaults are managed in
 `nix/modules/darwin/default-apps.nix` and apply to Finder and links from other
 apps. Directories open in Finder. Source and script types claimed by Xcode
 explicitly select the editor; Xcode projects, PDFs, images and office documents
-keep their existing associations.
+keep their existing associations. HTML documents and web URLs keep using the
+browser; editor activation rejects browser types and schemes.
+If an earlier switch selected Kitty as your browser, reselect your preferred
+browser in [System Settings → Desktop & Dock → Default web browser](https://support.apple.com/en-gb/102362).
 
 Inside Kitty, directory links open Yazi in a pane, text links open Neovim,
-images use `icat`, and `.log` links follow the log. Other files use their macOS
-default app. Files sent to Kitty through macOS open in a new OS window;
+HTML links use the browser, images use `icat`, and `.log` links follow the log.
+Other files use their macOS default app. Files sent to Kitty through macOS open
+in a new OS window;
 scripts open for editing. These rules are in `dotfiles/kitty/open-actions.conf`
 and `launch-actions.conf`. Kitty needs these launch rules because macOS selects
 an application bundle as its default handler, rather than a terminal command.

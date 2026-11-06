@@ -54,6 +54,26 @@ class DefaultApplicationTests(unittest.TestCase):
         self.assertEqual(result.stderr, "")
         self.assertEqual(self.set_log.read_text(), "set\n")
 
+    def test_browser_types_are_rejected_without_setting(self):
+        for file_type in (
+            ".html",
+            ".htm",
+            ".xhtml",
+            ".xht",
+            "public.html",
+            "public.xhtml",
+            "public.url",
+            "text/html",
+            "application/xhtml+xml",
+            "http",
+            "https",
+        ):
+            with self.subTest(file_type=file_type):
+                result = self.apply(file_type)
+                self.assertEqual(result.returncode, 2)
+                self.assertIn("Refusing to change browser association", result.stderr)
+                self.assertFalse(self.set_log.exists())
+
     def test_matching_extension_does_not_set_again(self):
         result = self.apply(
             ".md", query_output=f"kitty\n/Applications/kitty.app\n{APP}\n", query_status=0
