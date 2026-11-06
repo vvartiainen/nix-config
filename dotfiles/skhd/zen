@@ -1,6 +1,12 @@
 # H/L follows horizontal workspaces; J/K follows vertical tabs.
 :: zen_mode @ : /bin/bash "$HOME/.config/skhd/mode-indicator.sh" zen
 
+# Finnish ´ key (ANSI Equal position), without Shift; keep native Cmd+S too.
+zen_mode < cmd - 0x18 [
+  "zen" | cmd - s
+  * ~
+]
+
 zen_mode < h | ctrl + shift - h
 zen_mode < l | ctrl + shift - l
 zen_mode < j | ctrl - tab

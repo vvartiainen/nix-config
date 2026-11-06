@@ -3,6 +3,11 @@
 In Kitty and Rex, **Alt means Right Option**; Left Option keeps keyboard-layout
 characters. Agent prompt controls are in [agent CLI keybindings](agent-keybindings.md).
 
+**Cmd+´** toggles Zen's sidebar and Kitty's tab bar; **Cmd+S** remains available
+in both apps. Use the Finnish **´** key without Shift (the ANSI Equal position,
+macOS keycode `0x18`), rather than typing a backtick with Shift. These skhd
+aliases also work in the app's navigation mode; other apps keep their own shortcuts.
+
 ## Global shortcuts
 
 | Key | Action |

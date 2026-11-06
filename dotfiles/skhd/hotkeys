@@ -1,5 +1,12 @@
 ctrl + shift - space : kitten quick-access-terminal
 
+# Finnish ´ key (ANSI Equal position): sidebar/tab bar, retaining Cmd+S.
+cmd - 0x18 [
+  "zen" | cmd - s
+  "kitty" | cmd - s
+  * ~
+]
+
 # Open or focus apps by bundle ID; leave Ctrl+Cmd+F for fullscreen.
 $app - z : /usr/bin/open -b app.zen-browser.zen
 $app - k : /usr/bin/open -b net.kovidgoyal.kitty

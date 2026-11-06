@@ -1,6 +1,12 @@
 # H/L follows tabs; J/K follows windows inside the tab.
 :: kitty_mode @ : /bin/bash "$HOME/.config/skhd/mode-indicator.sh" kitty
 
+# Finnish ´ key (ANSI Equal position), without Shift; keep native Cmd+S too.
+kitty_mode < cmd - 0x18 [
+  "kitty" | cmd - s
+  * ~
+]
+
 # kitty.sh posts F17 for Herdr windows and F18 otherwise. The modifiers of the
 # entry chord may still be held when the key arrives.
 default, winmode, resize < f17 ; herdr_mode
