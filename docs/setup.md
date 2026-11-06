@@ -174,6 +174,26 @@ restore its Cmd+Space shortcut and login setting. Its saved data remains
 available unless you explicitly zap it. See [manual Homebrew data cleanup](maintenance.md#homebrew-app-data)
 when accepting the migration; Nix rollback cannot restore deleted app data.
 
+## Opening files and directories
+
+After applying, macOS opens Markdown, plain text, code and configuration files
+in Kitty with the stable Homebrew Neovim. Directory links open Yazi in Kitty,
+including directories opened from Finder or other apps. Use
+`open -a Finder <directory>` when you want Finder explicitly. Xcode projects,
+PDFs, images and office documents keep their existing macOS associations.
+
+Inside Kitty, directory links open Yazi in a pane, text links open Neovim,
+images use `icat`, and `.log` links follow the log. Other files use their macOS
+default app. Files sent to Kitty through macOS open in a new OS window;
+scripts open for editing. These rules are in `dotfiles/kitty/open-actions.conf`
+and `launch-actions.conf`; the managed associations are in
+`nix/modules/home/programs/kitty.nix`.
+
+Check an association with `duti -x md` or `duti -d public.folder`. To restore
+Finder as the directory default, remove `public.folder` from the module and run
+`duti -s com.apple.finder public.folder all`. Removing a managed association
+does not automatically restore the previous app.
+
 ## Remote files
 
 In kitty, `ssh` runs `kitten ssh`, so nothing needs installing on the remote:
