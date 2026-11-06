@@ -1,7 +1,7 @@
 import os
 from functools import lru_cache
 
-from kitty.fast_data_types import get_boss
+from kitty.fast_data_types import get_boss, wcswidth
 
 HOME = os.path.expanduser("~")
 
@@ -56,18 +56,80 @@ def _repo_title(root):
     return name
 
 
+SHELLS = frozenset({"zsh", "bash", "sh", "fish"})
+ACCENT = "#CBA6F7"
+DIM = "#6C7086"
+ACTIVITY = "#F9E2AF"
+BELL = "#F38BA8"
+# Visible cells per line; matches tab_title_max_length in kitty.conf.
+LINE_WIDTH = 20
+
+
+def _name(tab, data):
+    if tab and tab.name:
+        return tab.name
+    # The oldest foreground process, rather than a short-lived child command.
+    wd = data["tab"].active_oldest_wd or ""
+    if not wd:
+        return data["title"]
+    root = _git_root(wd)
+    if root:
+        return _repo_title(root)
+    return "~" if wd == HOME else os.path.basename(wd) or "/"
+
+
+def _fit(text, width):
+    if width <= 0:
+        return ""
+    if wcswidth(text) <= width:
+        return text
+    while text and wcswidth(text) > width - 1:
+        text = text[:-1]
+    return text + "…"
+
+
+def _is_active(tab):
+    tm = tab.tab_manager_ref() if tab else None
+    return tm is not None and tm.active_tab is tab
+
+
 def draw_title(data):
+    """Two-line vertical tab: index, name and markers, then the foreground program.
+
+    Every line starts with the same gutter, which holds the accent bar of the
+    active tab, so both lines stay aligned.
+    """
     try:
         tab = get_boss().tab_for_id(data["tab_id"])
-        if tab and tab.name:
-            return tab.name
-        # The oldest foreground process, rather than a short-lived child command.
-        wd = data["tab"].active_oldest_wd or ""
-        if not wd:
-            return data["title"]
-        root = _git_root(wd)
-        if root:
-            return _repo_title(root)
-        return "~" if wd == HOME else os.path.basename(wd) or "/"
+        fmt = data["fmt"]
+        fg = fmt.fg
+        gutter = f"{getattr(fg, '_' + ACCENT[1:])}▎{fg.tab}" if _is_active(tab) else " "
+        dim = getattr(fg, "_" + DIM[1:])
+
+        suffix = ""
+        if data["num_windows"] > 1 and data["layout_name"] == "stack":
+            suffix += f":{data['num_windows']}"
+        status = data["tab"].program_status
+        if status:
+            suffix += f" {status}"
+        markers = [
+            f"{getattr(fg, '_' + color[1:])} ●{fg.tab}"
+            for color, symbol in ((ACTIVITY, data["activity_symbol"]), (BELL, data["bell_symbol"]))
+            if symbol
+        ]
+
+        # Gutter, space, index, space; the program on line 2 aligns with the name.
+        index = str(data["index"])
+        name_col = len(index) + 3
+        width = LINE_WIDTH - name_col - wcswidth(suffix) - 2 * len(markers)
+        name = _fit(_name(tab, data), width)
+        line1 = f"{gutter} {dim}{index}{fg.tab} {name}{suffix}{''.join(markers)}"
+
+        exe = data["tab"].active_exe.lstrip("-")
+        if not exe or exe in SHELLS:
+            return line1
+        exe = _fit(exe, LINE_WIDTH - name_col)
+        line2 = f"{gutter}{' ' * (name_col - 1)}{fmt.nobold}{dim}{exe}{fg.tab}"
+        return f"{line1}\n{line2}"
     except Exception:
         return data["title"]
