@@ -3,8 +3,8 @@ let
   schemas = {
     # Match the Homebrew Codex CLI; schema provenance is in Backlog doc-8.
     codex = pkgs.fetchurl {
-      url = "https://raw.githubusercontent.com/openai/codex/rust-v0.166.0/codex-rs/core/config.schema.json";
-      hash = "sha256-IRvsIoJFn81w5JBa+UhyEXe27HoD4N+EzYt8ExAGpso=";
+      url = "https://raw.githubusercontent.com/openai/codex/rust-v0.167.0/codex-rs/core/config.schema.json";
+      hash = "sha256-Zu15U1LTLyRkd4rNLjMrf6/mRCRtVAzc7sRmPFbPvBY=";
     };
     claude = pkgs.fetchurl {
       url = "https://raw.githubusercontent.com/SchemaStore/schemastore/bf7c6745505ccace5568dc0d7f4ae29647e9b41a/src/schemas/json/claude-code-settings.json";
@@ -14,11 +14,11 @@ let
     # These URLs are mutable; update hashes deliberately when upgrading schemas.
     opencode = pkgs.fetchurl {
       url = "https://opencode.ai/config.json";
-      hash = "sha256-pOHZBmCRzUSw12nIcYNd+ElIfSCViwo2IFhcHnMXo8o=";
+      hash = "sha256-n5ttYvgTA1s/n+DsRDBiiyefQm92qSui6bss7EMttPY=";
     };
     opencode-cli = pkgs.fetchurl {
       url = "https://opencode.ai/v2/cli.json";
-      hash = "sha256-oDQLHmQHCxUaA+oLGMjKZiQ4YyE6+qKghS0mxAkxgEM=";
+      hash = "sha256-GQvLq5tbAgtgCgxXR/kv6ALs0aRvK/JLLshr5yb7ges=";
     };
   }
   // builtins.listToAttrs (

@@ -174,6 +174,12 @@ in
     # macOS takes the process name from the exec'd path. The package also
     # ships no shell completions, so generate them from the CLI.
     package = pkgs.github-copilot-cli.overrideAttrs (old: {
+      # Temporary release pin until nixpkgs catches up (Apple Silicon host).
+      version = "1.0.106";
+      src = pkgs.fetchurl {
+        url = "https://github.com/github/copilot-cli/releases/download/v1.0.106/github-copilot-1.0.106-darwin-arm64.tgz";
+        hash = "sha256-SDm5Bu8nDFrXKKumDXBzZvwtv22Imk+I3FQraM1VFc8=";
+      };
       nativeBuildInputs = old.nativeBuildInputs ++ [ pkgs.installShellFiles ];
       postInstall = ''
         mkdir -p "$out"/libexec

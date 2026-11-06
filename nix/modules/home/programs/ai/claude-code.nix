@@ -228,6 +228,14 @@ in
 {
   programs.claude-code = {
     enable = true;
+    # Temporary release pin until nixpkgs catches up (Apple Silicon host).
+    package = pkgs.claude-code.overrideAttrs {
+      version = "2.1.318";
+      src = pkgs.fetchurl {
+        url = "https://downloads.claude.ai/claude-code-releases/2.1.318/darwin-arm64/claude.zst";
+        sha256 = "f49b990254804131f0be0f60260da9b4a55ec9fa73af0252816e423cb0e178dc";
+      };
+    };
     # Global ~/.claude/CLAUDE.md; repo instructions add to or narrow these.
     context = ''
       # Global instructions
