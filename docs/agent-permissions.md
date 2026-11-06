@@ -19,6 +19,11 @@ Keep sandboxing enabled. Persistent broad command approvals can weaken these
 defaults. In Copilot, use `/reset-allowed-tools` to clear old broad grants before
 testing changed rules. Start fresh sessions after permission changes.
 
+Codex can read and write its managed checkouts under `~/.codex/worktrees`,
+including worktrees created during a session. Secret-file denies and read-only
+Git hooks/config still apply there. Other Codex state retains its existing
+permissions. Apply permission changes manually and start a fresh session.
+
 ## Pi
 
 Start `pi` inside the project directory. Its Nix wrapper runs Pi, extensions and

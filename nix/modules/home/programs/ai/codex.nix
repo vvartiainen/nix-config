@@ -14,6 +14,7 @@ let
     caches
     ;
   quote = s: ''"${s}"'';
+  worktrees = "${config.home.homeDirectory}/.codex/worktrees";
   toCodexRule =
     decision: cmd:
     ''prefix_rule(pattern = [${lib.concatMapStringsSep ", " quote cmd}], decision = "${decision}")'';
@@ -73,7 +74,19 @@ let
       // lib.genAttrs (paths.readonly ++ paths.runtime ++ paths.readable) (_: "read")
       // lib.genAttrs caches.writePaths (_: "write")
       // lib.genAttrs paths.denied (_: "deny")
+      // lib.genAttrs (map (pattern: "${worktrees}/${pattern}") (
+        [
+          "**/.env"
+          "**/.env.*"
+        ]
+        ++ paths.secretFiles
+      )) (_: "deny")
       // {
+        # Managed worktrees can be created after the session starts, outside
+        # its original workspace roots. Keep the grant within their directory.
+        "${worktrees}" = "write";
+        "${worktrees}/**/.git/hooks" = "read";
+        "${worktrees}/**/.git/config" = "read";
         "${config.home.homeDirectory}/.codex/skills" = "read";
         # Allow inspecting installed lifecycle hooks without permitting edits
         # to commands that execute outside the agent sandbox.
