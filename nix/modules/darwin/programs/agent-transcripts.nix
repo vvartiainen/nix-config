@@ -33,6 +33,15 @@ let
       copy copilot "${home}/.copilot/session-state"
       copy pi "${home}/.pi/agent/sessions"
 
+      # Cursor keeps per-project transcripts (.txt or .jsonl) beside other
+      # project state; copy only the agent-transcripts directories.
+      if [ -d "${home}/.cursor/projects" ]; then
+        mkdir -p "$dest/cursor"
+        rsync -a --prune-empty-dirs \
+          --include='*/' --include='agent-transcripts/**' --exclude='*' \
+          "${home}/.cursor/projects/" "$dest/cursor/"
+      fi
+
       # OpenCode keeps sessions in SQLite; take a consistent online backup.
       # This snapshot is replaced each run, so sessions deleted in OpenCode
       # drop out of it.
