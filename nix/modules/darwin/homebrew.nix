@@ -51,6 +51,7 @@
     casks = [
       "1password-cli"
       "azure-cli"
+      "balenaetcher"
       "brave-browser"
       "chatgpt"
       "claude"
