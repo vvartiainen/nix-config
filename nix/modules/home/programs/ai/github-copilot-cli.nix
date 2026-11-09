@@ -34,7 +34,10 @@ let
     ];
     # Reads there need no path prompt, like Claude's Read(//nix/store/**).
     # Edits still prompt, and the sandbox keeps the paths read-only.
-    addDirs = paths.readonly;
+    # Added dirs also load repo settings, skills and agents; Homebrew's git
+    # checkout ships a .claude/settings.json Stop hook (`brew lgtm`), so it
+    # only gets the sandbox read grant.
+    addDirs = lib.remove "/opt/homebrew" paths.readonly;
   };
 
   # Copilot CLI stores user-editable settings in settings.json and rewrites
@@ -55,10 +58,13 @@ let
       # Hooks run inside the sandbox; herdr installs its hook script here and
       # the hook reports the session over herdr's socket (connect needs write).
       userPolicy.filesystem = {
+        # Copilot resolves symlinks and fails to start a sandbox on a dangling
+        # one. ~/.nix-profile dangles when packages live in the per-user
+        # profile; its target under XDG state is granted on its own.
         readonlyPaths =
-          paths.readonly
-          ++ paths.runtime
-          ++ paths.readable
+          lib.subtractLists [ "${config.home.homeDirectory}/.nix-profile" ] (
+            paths.readonly ++ paths.runtime ++ paths.readable
+          )
           ++ [
             "${config.programs.github-copilot-cli.configDir}/hooks"
           ];
@@ -107,19 +113,6 @@ let
     notifications = true;
     scrollbar = true;
     voice.enabled = false;
-    planModel = "claude-opus-5";
-    planEffortLevel = "medium";
-    subagents.agents = {
-      task = {
-        model = "inherit";
-        effortLevel = "medium";
-        contextTier = "default";
-      };
-      "general-purpose".model = "inherit";
-      "code-review".model = "inherit";
-      research.model = "inherit";
-      "security-review".model = "inherit";
-    };
   };
 
   lspSettings = {

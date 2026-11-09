@@ -235,6 +235,12 @@ in
         url = "https://downloads.claude.ai/claude-code-releases/2.1.318/darwin-arm64/claude.zst";
         sha256 = "f49b990254804131f0be0f60260da9b4a55ec9fa73af0252816e423cb0e178dc";
       };
+      # GUI apps such as CodexBar don't read shell variables; without a
+      # default, their `claude` runs recreate ~/.claude.json.
+      postInstall = ''
+        wrapProgram "$out"/bin/claude \
+          --set-default CLAUDE_CONFIG_DIR ${lib.escapeShellArg config.programs.claude-code.configDir}
+      '';
     };
     configDir = "${config.home.homeDirectory}/.claude";
     # Global ~/.claude/CLAUDE.md; repo instructions add to or narrow these.
