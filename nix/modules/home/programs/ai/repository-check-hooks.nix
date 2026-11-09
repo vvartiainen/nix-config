@@ -21,7 +21,10 @@ in
 {
   agentHooks = {
     commandMarkers = [ "/bin/nix-config-check --hook " ];
-    codex = common;
+    codex = common // {
+      # Codex caps SessionEnd at three seconds; this only removes tracking state.
+      SessionEnd = [ { hooks = [ ((hook "end") // { timeout = 3; }) ]; } ];
+    };
     claude = common;
     copilot = {
       userPromptSubmitted = [ (copilotHook "prompt") ];
