@@ -158,7 +158,7 @@ in
         "com.apple.springing.delay" = 0.5;
         "com.apple.springing.enabled" = true;
         "com.apple.trackpad.forceClick" = true;
-        "com.apple.trackpad.scaling" = 0.6875;
+        "com.apple.trackpad.scaling" = 0.8;
 
         "com.apple.keyboard.fnState" = true; # enable function keys
         AppleInterfaceStyle = "Dark";
@@ -193,27 +193,27 @@ in
         # Manage the complete saved dictionary, including disabled shortcuts.
         # Spotlight adds entries 64/65 through Nix's attribute-set merging.
         "com.apple.symbolichotkeys".AppleSymbolicHotKeys =
-          lib.genAttrs (map toString (lib.range 15 26)) (_: { enabled = false; })
-          // lib.genAttrs
-            [
-              "164"
-              "175"
-              "215"
-              "216"
-              "217"
-              "218"
-              "219"
-              "222"
-              "225"
-              "226"
-              "227"
-              "228"
-              "229"
-              "230"
-              "231"
-              "232"
-            ]
-            (_: hotkey false 65535 65535 0)
+          lib.genAttrs (map toString (lib.range 15 26)) (_: {
+            enabled = false;
+          })
+          // lib.genAttrs [
+            "164"
+            "175"
+            "215"
+            "216"
+            "217"
+            "218"
+            "219"
+            "222"
+            "225"
+            "226"
+            "227"
+            "228"
+            "229"
+            "230"
+            "231"
+            "232"
+          ] (_: hotkey false 65535 65535 0)
           // {
             "59" = hotkey false 65535 96 9437184;
             # Input-source switching stays off so Ctrl+Space stays free.
