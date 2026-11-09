@@ -60,9 +60,15 @@ in
       xdg.configFile = linkTree "skhd";
 
       # skhd's hotloader can reload mid-relink and silently drop bindings from `.load`ed files.
+      # macOS cleans old files from /tmp, so a long-running skhd can lose the
+      # PID file --reload needs; restarting the agent recreates it.
       home.activation.reloadSkhd = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
         if [ -x ${skhdBin} ] && /usr/bin/pgrep -x skhd >/dev/null; then
-          run ${skhdBin} --reload
+          if [ -f "/tmp/skhd_''${USER:-$(/usr/bin/id -un)}.pid" ]; then
+            run ${skhdBin} --reload
+          else
+            run /bin/launchctl kickstart -k "gui/$(/usr/bin/id -u)/${label}"
+          fi
         fi
       '';
 
