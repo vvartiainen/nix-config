@@ -6,8 +6,25 @@
   ...
 }:
 let
-  profilesIni = "${config.programs.zen-browser.configPath}/profiles.ini";
-  extensionSettings = "${config.programs.zen-browser.profilesPath}/${config.programs.zen-browser.profiles.default.path}/extension-settings.json";
+  zen = config.programs.zen-browser;
+  profilesIni = "${zen.configPath}/profiles.ini";
+  extensionSettings = "${zen.profilesPath}/${zen.profiles.default.path}/extension-settings.json";
+  customKeys = "${zen.profilesPath}/${zen.profiles.default.path}/customKeys.json";
+
+  # Since Zen 1.24, shortcuts are Firefox's custom keys (about:keyboard, stored in customKeys.json);
+  # Zen deletes the zen-keyboard-shortcuts.json that the flake's keyboardShortcuts option edits.
+  # "control" is the Ctrl key and "accel" is Cmd; an empty entry clears a key. No macOS default
+  # uses Ctrl+Shift+H/L, and compact mode's default is already Cmd+S.
+  keys = {
+    "zen-workspace-backward" = {
+      modifiers = "control,shift";
+      key = "H";
+    };
+    "zen-workspace-forward" = {
+      modifiers = "control,shift";
+      key = "L";
+    };
+  };
 
   # Policies cannot set extension shortcuts. "MacCtrl" is the Control key; "Ctrl" means Cmd on macOS.
   extensionShortcuts = {
@@ -68,6 +85,27 @@ in
           fi
         '';
       }
+      # Merged into customKeys.json, keeping keys changed in about:keyboard. Zen keeps the file in
+      # memory and saves over it, so this also waits until Zen is closed.
+      {
+        requiresLock = true;
+        skipSubject = "keyboard shortcuts";
+        text = ''
+          keys_file="${customKeys}"
+          if [ -d "$(dirname "$keys_file")" ]; then
+            keys_current='{}'
+            if [ -s "$keys_file" ]; then keys_current=$(cat "$keys_file"); fi
+            if ! echo "$keys_current" \
+              | ${lib.getExe pkgs.jq} --argjson keys ${lib.escapeShellArg (builtins.toJSON keys)} '. + $keys' \
+              > "$keys_file.tmp"; then
+              echo "zen-browser: could not update $keys_file" >&2
+              rm -f "$keys_file.tmp"
+            else
+              mv "$keys_file.tmp" "$keys_file"
+            fi
+          fi
+        '';
+      }
     ];
 
     policies = {
@@ -118,23 +156,6 @@ in
         # Ctrl+Tab cycles within essentials or within space tabs, depending on the current tab.
         "zen.tabs.ctrl-tab.ignore-essential-tabs" = true;
       };
-
-      keyboardShortcuts =
-        lib.mapAttrsToList
-          (id: key: {
-            inherit id key;
-            modifiers = {
-              control = true;
-              shift = true;
-              alt = false;
-              meta = false;
-              accel = false;
-            };
-          })
-          {
-            "zen-workspace-backward" = "h";
-            "zen-workspace-forward" = "l";
-          };
 
       containersForce = true;
       containers = {
