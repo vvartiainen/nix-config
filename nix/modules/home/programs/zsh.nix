@@ -87,13 +87,17 @@ in
           source "$HOME/.zsh_local"
         fi
 
-        # terraform from mise does not provide a native zsh completion function.
-        # Fall back to terraform's own completion protocol via bash compatibility.
-        if ! whence -w _terraform >/dev/null 2>&1 && command -v terraform >/dev/null 2>&1; then
-          autoload -Uz bashcompinit
-          bashcompinit
-          complete -o nospace -C "$(command -v terraform)" terraform
-        fi
+        # terraform and tofu from mise do not provide native zsh completion
+        # functions. Fall back to their own completion protocol via bash
+        # compatibility.
+        for tf_cmd in terraform tofu; do
+          if ! whence -w "_$tf_cmd" >/dev/null 2>&1 && command -v "$tf_cmd" >/dev/null 2>&1; then
+            autoload -Uz bashcompinit
+            bashcompinit
+            complete -o nospace -C "$(command -v "$tf_cmd")" "$tf_cmd"
+          fi
+        done
+        unset tf_cmd
 
         if [[ -n "$ZSH_PROFILE" ]]; then
           zprof

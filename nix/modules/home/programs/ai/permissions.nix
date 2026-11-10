@@ -54,6 +54,10 @@ let
         "fmt"
       ]
       [
+        "tofu"
+        "fmt"
+      ]
+      [
         "nix"
         "eval"
       ]
@@ -253,6 +257,10 @@ let
       ]
       [
         "terraform"
+        "validate"
+      ]
+      [
+        "tofu"
         "validate"
       ]
     ];
@@ -459,6 +467,8 @@ let
       "neovim.io"
       "developer.hashicorp.com"
       "registry.terraform.io"
+      "opentofu.org"
+      "search.opentofu.org"
       # Languages
       "developer.mozilla.org"
       "nodejs.org"

@@ -1,6 +1,14 @@
 return {
   "mfussenegger/nvim-lint",
   opts = {
+    linters = {
+      terraform_validate = {
+        -- OpenTofu-only syntax (e.g. `encryption` blocks) fails `terraform validate`.
+        cmd = function()
+          return vim.fn.executable("tofu") == 1 and "tofu" or "terraform"
+        end,
+      },
+    },
     linters_by_ft = {
       bash = { "shellcheck" },
       zsh = { "shellcheck" },

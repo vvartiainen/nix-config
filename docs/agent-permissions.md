@@ -93,10 +93,11 @@ vault, need a separately reviewed grant before they can work.
 - Credential files, shell history, browser profiles, private host data, keys
   and environment files are restricted. Do not work around a denied read.
 
-Codex and Claude run `just`, `npm run`, `npx`, `npm test`, `cargo test` and
-`terraform validate` sandboxed without prompts. Copilot requires normal approval
-for unlisted commands. `nix build` and `nix fmt` require approval in Codex and
-Claude because they delegate work to the Nix daemon outside the agent sandbox.
+Codex and Claude run `just`, `npm run`, `npx`, `npm test`, `cargo test`,
+`terraform validate` and `tofu validate` sandboxed without prompts. Copilot
+requires normal approval for unlisted commands. `nix build` and `nix fmt`
+require approval in Codex and Claude because they delegate work to the Nix
+daemon outside the agent sandbox.
 Prefix rules do not inspect commands inside wrappers or scripts.
 
 For nix-config, follow [AGENTS.md](../AGENTS.md): validate against the public

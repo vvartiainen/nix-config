@@ -7,3 +7,6 @@ vim.g.snacks_animate = false
 vim.g.lazyvim_prettier_needs_config = true
 
 vim.opt.colorcolumn = "81"
+
+-- OpenTofu files reuse the Terraform tooling (LSP, formatter, linter).
+vim.filetype.add({ extension = { tofu = "terraform", tofuvars = "terraform-vars" } })
