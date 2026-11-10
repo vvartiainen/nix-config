@@ -41,7 +41,6 @@
       "sevenzip"
       "sqlite"
       "tectonic"
-      "thefuck"
       "tlrc"
       "tmux"
       "wget"

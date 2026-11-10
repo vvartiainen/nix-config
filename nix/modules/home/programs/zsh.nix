@@ -78,9 +78,6 @@ in
         bindkey ' ' magic-space
 
         # Init tools when installed (Homebrew on the Mac).
-        if (( $+commands[thefuck] )); then
-          eval "$(thefuck --alias)"
-        fi
         if (( $+commands[mise] )); then
           eval "$(mise activate zsh)"
         fi
