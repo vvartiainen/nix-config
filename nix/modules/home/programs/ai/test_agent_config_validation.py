@@ -19,9 +19,12 @@ spec = importlib.util.spec_from_file_location(
 )
 cleanup = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(cleanup)
-MERGE = Path(os.environ.get(
-    "MERGE_CONFIG", Path(__file__).parents[2] / "merge-config.py"
-))
+# Resolve the repository fallback only when MERGE_CONFIG is unset: the Linux
+# build sandbox runs this file from /build, which has no parents[2].
+MERGE = Path(
+    os.environ.get("MERGE_CONFIG")
+    or Path(__file__).parents[2] / "merge-config.py"
+)
 
 
 class ValidationTest(unittest.TestCase):
