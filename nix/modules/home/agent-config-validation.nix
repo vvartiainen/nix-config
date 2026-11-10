@@ -10,16 +10,9 @@ let
       url = "https://raw.githubusercontent.com/SchemaStore/schemastore/bf7c6745505ccace5568dc0d7f4ae29647e9b41a/src/schemas/json/claude-code-settings.json";
       hash = "sha256-8m8CitlKHioo6drR+AgyqxlqjggL06fXoy5kKKFeBhE=";
     };
-    # Published schema snapshots, reviewed independently of the CLI package.
-    # These URLs are mutable; update hashes deliberately when upgrading schemas.
-    opencode = pkgs.fetchurl {
-      url = "https://opencode.ai/config.json";
-      hash = "sha256-n5ttYvgTA1s/n+DsRDBiiyefQm92qSui6bss7EMttPY=";
-    };
-    opencode-cli = pkgs.fetchurl {
-      url = "https://opencode.ai/v2/cli.json";
-      hash = "sha256-GQvLq5tbAgtgCgxXR/kv6ALs0aRvK/JLLshr5yb7ges=";
-    };
+    # Vendored snapshots of the published schemas, which have no immutable URL.
+    opencode = ./schemas/opencode-config.json;
+    opencode-cli = ./schemas/opencode-cli.json;
   }
   // builtins.listToAttrs (
     map

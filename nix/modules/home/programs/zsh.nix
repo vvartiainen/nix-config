@@ -1,16 +1,23 @@
 {
   lib,
   config,
+  options,
   ...
 }:
+let
+  # Home Manager releases up to 26.05 lack fastSyntaxHighlighting.
+  highlighting =
+    if options.programs.zsh ? fastSyntaxHighlighting then
+      "fastSyntaxHighlighting"
+    else
+      "syntaxHighlighting";
+in
 {
   programs.zsh = {
     enable = true;
     enableCompletion = true;
     dotDir = config.home.homeDirectory;
-    fastSyntaxHighlighting = {
-      enable = true;
-    };
+    ${highlighting}.enable = true;
     autosuggestion = {
       enable = true;
       # Atuin sets this at runtime; avoid conflicting static defaults.
@@ -56,8 +63,10 @@
 
         # Functions rather than aliases: kitty session restore evals the saved
         # command with no_aliases set.
-        vi() { nvim "$@" }
-        vim() { nvim "$@" }
+        if (( $+commands[nvim] )); then
+          vi() { nvim "$@" }
+          vim() { nvim "$@" }
+        fi
 
         # Edit current command line in $EDITOR with Ctrl+X Ctrl+E.
         autoload -Uz edit-command-line
@@ -68,9 +77,13 @@
         # Expands history expressions like !! or !$ when you press space
         bindkey ' ' magic-space
 
-        # Init tools
-        eval "$(thefuck --alias)"
-        eval "$(mise activate zsh)"
+        # Init tools when installed (Homebrew on the Mac).
+        if (( $+commands[thefuck] )); then
+          eval "$(thefuck --alias)"
+        fi
+        if (( $+commands[mise] )); then
+          eval "$(mise activate zsh)"
+        fi
 
         # Load host-specific env/settings when present.
         if [ -f "$HOME/.zsh_local" ]; then
