@@ -34,6 +34,10 @@ in
     }
   );
 
+  # Removes hooks left by the retired terminal status reporter; agents now
+  # report terminal status natively.
+  config.agentHooks.commandMarkers = [ "/bin/nix-config-terminal-status report " ];
+
   config.home = {
     file."${config.programs.github-copilot-cli.configDir}/hooks/nix-config.json".source =
       json.generate "copilot-hooks.json"

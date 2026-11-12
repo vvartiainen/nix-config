@@ -223,9 +223,9 @@ in
         base=''${common_dir:h}
         while [[ $base == *.* ]]; do base=''${base:h}; done
         local c=''${common_dir#$base/} g=''${git_dir#$base/}
-        _nix_config_agent_tty command codex -c "permissions.${profile}.filesystem.$base={\"$c\"=\"write\", \"$c/hooks\"=\"read\", \"$c/config\"=\"read\", \"$g\"=\"write\"}" "$@"
+        command codex -c "permissions.${profile}.filesystem.$base={\"$c\"=\"write\", \"$c/hooks\"=\"read\", \"$c/config\"=\"read\", \"$g\"=\"write\"}" "$@"
       else
-        _nix_config_agent_tty command codex "$@"
+        command codex "$@"
       fi
     }
   '';

@@ -39,7 +39,6 @@ sketchybar --default icon.font="SF Pro:Semibold:15.0" \
 source "$ITEM_DIR"/spaces.sh
 source "$ITEM_DIR"/front_app.sh
 source "$ITEM_DIR"/keyboard_mode.sh
-source "$ITEM_DIR"/agent_status.sh
 
 # -- Right Side Items, added right to left --
 source "$ITEM_DIR"/calendar.sh

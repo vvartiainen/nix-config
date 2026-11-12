@@ -18,7 +18,6 @@ in
     ./clients/opencode.nix
     ./clients/pi/pi-coding-agent.nix
     ../../../../validation/repository-check-hooks.nix
-    ./hooks/terminal-status.nix
   ];
 
   # Homebrew checks that its cache (or its parent) is writable before use.

@@ -160,14 +160,8 @@ For repeated Claude credential prompts in CodexBar, choose **Providers → Claud
 Usage source → CLI** to avoid repeated Keychain re-grants.
 
 Kitty tab labels show the repository or `repository:worktree`; manual names
-win. Agent lifecycle hooks also drive SketchyBar's green running count and
-amber attention count. Click either icon for read-only session details;
-clicks do not focus terminals. Empty groups hide. This works in Rex too.
-Codex reports Kitty status natively; Claude and Copilot need the configured
-interactive zsh launch functions for Kitty status. Use fresh sessions after
-changing hooks and approve new hooks in the agent UI if requested.
-Status delivery failures do not stop an agent; detailed integration checks
-are in Backlog doc-5.
+win. Codex, Claude Code and Copilot CLI report their own working and waiting
+status to the terminal; no hooks are needed.
 
 ## Backups and session history
 
