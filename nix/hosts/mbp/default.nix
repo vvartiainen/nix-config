@@ -1,14 +1,14 @@
 {
   pkgs,
   userName,
+  hostName,
   repoRoot,
   inputs,
   ...
 }:
 {
   imports = [
-    ../../modules/shared/nix.nix
-    ../../modules/shared/networking.nix
+    ../../modules/darwin/nix.nix
     ../../modules/darwin/system-settings.nix
     ../../modules/darwin/default-apps.nix
     ../../modules/darwin/apple-intelligence.nix
@@ -24,6 +24,13 @@
     ../../modules/darwin/programs/skhd.nix
     ../../modules/darwin/programs/yabai.nix
   ];
+
+  networking = {
+    inherit hostName;
+    computerName = hostName;
+  };
+
+  system.defaults.smb.NetBIOSName = hostName;
 
   users.users.${userName} = {
     name = userName;

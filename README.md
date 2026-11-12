@@ -39,11 +39,10 @@ Agents follow [AGENTS.md](AGENTS.md) and use the public fixture for validation.
 ## Repository layout
 
 - `flake.nix` / `flake.lock`: entrypoint and pinned inputs
-- `nix/hosts/`: host composition roots
-- `nix/modules/shared/`: shared system modules
+- `nix/hosts/`: host identity and composition roots
 - `nix/validation/`: repository checks, agent config validation, schemas, and validation hooks
 - `nix/modules/home/`: Home Manager and CLI program modules; AI tools group clients, hooks, and shared tooling
-- `nix/modules/darwin/`: macOS system and program modules
+- `nix/modules/darwin/`: macOS system and program modules, explicitly imported by hosts
 - `dotfiles/`: app configs, generally linked live with `mkOutOfStoreSymlink`
 - `tests/`: behavior checks grouped by program or subsystem
 
