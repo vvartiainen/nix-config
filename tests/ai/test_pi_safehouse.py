@@ -25,6 +25,14 @@ class SafehouseTests(unittest.TestCase):
         cls.work = cls.home / "project"
         cls.agent = cls.home / ".pi/agent"
         cls.cache = cls.home / ".cache/npm-agent"
+        cls.config_env = {
+            "XDG_CONFIG_HOME": str(cls.home / ".config"),
+            "GIT_CONFIG_GLOBAL": "/dev/null",
+            "GIT_CONFIG_NOSYSTEM": "1",
+        }
+        # Preparation and sandboxed Git must not load host config or overrides.
+        cls.env = {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
+        cls.env.update(cls.config_env, HOME=str(cls.home))
         for path in [cls.work, cls.agent, cls.cache, cls.home / ".aws", cls.home / ".npm"]:
             path.mkdir(parents=True)
         cls.policy = cls.agent / "extensions/pi-permission-system/config.json"
@@ -45,7 +53,7 @@ class SafehouseTests(unittest.TestCase):
             "writable": [str(cls.agent), str(cls.cache)],
             "denied": [str(cls.home / ".aws")],
             "protected": [str(cls.policy)],
-            "env": {"npm_config_cache": str(cls.cache)},
+            "env": {"npm_config_cache": str(cls.cache), **cls.config_env},
         }))
 
     @classmethod
@@ -53,7 +61,7 @@ class SafehouseTests(unittest.TestCase):
         cls.scratch.cleanup()
 
     def run_probe(self, source, workdir=None):
-        env = dict(os.environ, HOME=str(self.home), SYNTHETIC_HOST_SECRET="must-not-pass")
+        env = dict(self.env, SYNTHETIC_HOST_SECRET="must-not-pass")
         return subprocess.run([
             sys.executable, str(Path(__file__).resolve().parents[2] / "nix/modules/home/programs/ai/clients/pi/pi-safehouse.py"),
             str(self.spec), os.environ["SAFEHOUSE"], sys.executable, "-c", source,
@@ -66,7 +74,7 @@ class SafehouseTests(unittest.TestCase):
         def git(*args):
             return subprocess.check_output(
                 ["/usr/bin/git", "-c", "core.hooksPath=/dev/null", "-C", str(repo), *args],
-                stderr=subprocess.PIPE, text=True,
+                stderr=subprocess.PIPE, text=True, env=self.env,
             ).removesuffix("\n")
         git("init", "-q")
         git("-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
@@ -74,7 +82,7 @@ class SafehouseTests(unittest.TestCase):
         git("worktree", "add", "--detach", str(worktree))
         metadata = subprocess.check_output([
             "/usr/bin/git", "-C", str(worktree), "rev-parse", "--path-format=absolute", "--git-dir",
-        ], text=True).removesuffix("\n")
+        ], text=True, env=self.env).removesuffix("\n")
         source = (
             "from pathlib import Path; import subprocess\n"
             "Path('change').write_text('fixture')\n"
