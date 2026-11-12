@@ -33,8 +33,10 @@ let
 
   permissionSettings = {
     allow =
-      (lib.concatMap toCursorShell commands.allowed)
-      ++ map (cmd: "Shell(${builtins.head cmd}:${commandString (builtins.tail cmd)})") commands.exact
+      (lib.concatMap toCursorShell commands.hostInspection)
+      ++ map (cmd: "Shell(${builtins.head cmd}:${commandString (builtins.tail cmd)})") (
+        commands.exact ++ commands.hostExact
+      )
       ++ map (domain: "WebFetch(${domain})") network.fetch
       ++ map (name: "Mcp(${name}:*)") permissions.mcpServers;
     deny =
@@ -52,15 +54,29 @@ let
         "Write(**/.git/hooks/**)"
         "Write(**/.git/config)"
       ]
-      ++ map (path: "Read(${config.home.homeDirectory}/${path})") paths.homeSecrets
-      ++ map (pattern: "Read(${pattern})") paths.secretFiles;
+      ++ lib.concatMap (path: [
+        "Read(${path})"
+        "Read(${path}/**)"
+        "Write(${path})"
+        "Write(${path}/**)"
+      ]) paths.denied
+      ++ lib.concatMap (pattern: [
+        "Read(${pattern})"
+        "Write(${pattern})"
+      ]) paths.secretFiles;
   };
 
-  # Cursor CLI self-repairs and persists some keys into cli-config.json, so
-  # this file has to stay writable. Nix settings are merged on activation.
+  # Shell permissions have no ask tier; use the native pre-execution hook.
+  shellPolicy = pkgs.writeText "cursor-shell-policy.json" (builtins.toJSON commands);
+  shellReview = pkgs.writeShellScript "nix-config-shell-review-cursor" ''
+    exec ${pkgs.python3}/bin/python3 ${../shared/shell-review.py} cursor ${shellPolicy}
+  '';
+
+  # Cursor rewrites cli-config.json, so merge into a regular file on activation.
   settings = {
     version = 1;
     editor.vimMode = false;
+    approvalMode = "allowlist";
     permissions = permissionSettings;
     sandbox = {
       mode = "enabled";
@@ -115,6 +131,11 @@ let
   };
 in
 {
+  agentHooks = {
+    commandMarkers = [ "nix-config-shell-review-cursor" ];
+    cursor.beforeShellExecution = [ { command = "${shellReview}"; } ];
+  };
+
   home = {
     sessionVariables.CURSOR_CONFIG_DIR = cursorConfigDir;
 

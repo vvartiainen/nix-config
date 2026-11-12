@@ -10,9 +10,9 @@ let
       "/etc/profiles/per-user/${config.home.username}/bin/rex"
       "/run/current-system/sw/bin/rex"
     ]
-    ++ lib.optional ((config.programs.rex.enable or false) && (config.programs.rex.package or null) != null) (
-      lib.getExe config.programs.rex.package
-    )
+    ++ lib.optional (
+      (config.programs.rex.enable or false) && (config.programs.rex.package or null) != null
+    ) (lib.getExe config.programs.rex.package)
     ++
       lib.concatMap
         (app: [
@@ -27,273 +27,326 @@ let
           "${config.home.homeDirectory}/Applications/Rex Beta.app"
         ]
   );
+  # Native adapters cannot all express the same predicates. Keep argv prefixes,
+  # exact invocations and whole-command patterns separate; never approximate an
+  # exact allowance with a wider prefix.
+  argv = map (lib.splitString " ");
   commands = {
-    # Canonical command prefixes allowed without prompting. Each entry is argv.
-    allowed = [
-      [
-        "git"
-        "status"
-      ]
-      [
-        "git"
-        "diff"
-      ]
-      [
-        "git"
-        "add"
-      ]
-      [
-        "git"
-        "commit"
-      ]
-
-      [ "grep" ]
-      [ "printf" ]
-      [
-        "terraform"
-        "fmt"
-      ]
-      [
-        "tofu"
-        "fmt"
-      ]
-      [
-        "nix"
-        "eval"
-      ]
-      [
-        "statix"
-        "check"
-      ]
-
-      [ "tail" ]
-      [ "head" ]
-      [ "wc" ]
-      [ "base64" ]
-      [ "ls" ]
-      [ "echo" ]
-      [ "pwd" ]
-      [ "which" ]
-      [ "date" ]
-      [ "uname" ]
-      [ "file" ]
-      [ "stat" ]
-      [ "basename" ]
-      [ "dirname" ]
-      [ "realpath" ]
-      [ "cat" ]
-      [ "diff" ]
-      [ "cut" ]
-      [ "tr" ]
-      [ "jq" ]
-      [
-        "git"
-        "log"
-      ]
-      [
-        "git"
-        "show"
-      ]
-      [
-        "git"
-        "blame"
-      ]
-      [
-        "git"
-        "ls-files"
-      ]
-      [
-        "git"
-        "rev-parse"
-      ]
-      [
-        "nix"
-        "flake"
-        "show"
-      ]
-      [
-        "nix"
-        "flake"
-        "metadata"
-      ]
-      [
-        "nix"
-        "path-info"
-      ]
-      [
-        "nix"
-        "why-depends"
-      ]
-      [
-        "nix"
-        "derivation"
-        "show"
-      ]
-      [
-        "nix"
-        "log"
-      ]
-      [
-        "gh"
-        "pr"
-        "view"
-      ]
-      [
-        "gh"
-        "pr"
-        "diff"
-      ]
-      [
-        "gh"
-        "pr"
-        "checks"
-      ]
-      [
-        "gh"
-        "issue"
-        "view"
-      ]
-      [
-        "gh"
-        "run"
-        "view"
-      ]
-      [
-        "mise"
-        "ls"
-      ]
-      [
-        "mise"
-        "current"
-      ]
-      [
-        "mise"
-        "which"
-      ]
-      [
-        "mise"
-        "where"
-      ]
+    inspection = argv [
+      "git status"
+      "git diff"
+      "git log"
+      "git show"
+      "git blame"
+      "git ls-files"
+      "git rev-parse"
+      "git ls-tree"
+      "git check-ignore"
+      "git rev-list"
+      "git describe"
+      "nix eval"
+      "nix flake show"
+      "nix flake metadata"
+      "nix path-info"
+      "nix why-depends"
+      "nix derivation show"
+      "nix log"
+      "gh pr view"
+      "gh pr diff"
+      "gh pr checks"
+      "gh pr list"
+      "gh issue view"
+      "gh issue list"
+      "gh run view"
+      "gh run list"
+      "mise ls"
+      "mise current"
+      "mise which"
+      "mise where"
+      "printf"
+      "tail"
+      "head"
+      "wc"
+      "base64"
+      "ls"
+      "echo"
+      "pwd"
+      "which"
+      "date"
+      "uname"
+      "file"
+      "stat"
+      "basename"
+      "dirname"
+      "realpath"
+      "cat"
+      "diff"
+      "cut"
+      "tr"
+      "jq"
+      "grep"
+      "sort"
+      "uniq"
+      "readlink"
+      "du"
+      "df"
+      "type"
     ];
 
-    # Commands allowed only exactly as written; their prefixes would also allow
-    # e.g. `git branch -D` or `git remote add`. Codex only supports prefix
-    # rules, so it doesn't get these.
-    exact = [
-      [
-        "git"
-        "branch"
-        "--show-current"
-      ]
-      [
-        "git"
-        "remote"
-        "-v"
-      ]
+    exact = argv [
+      "git branch --show-current"
+      "git remote -v"
+      "gh auth status"
     ];
 
-    # These commands can delegate work outside the agent sandbox. Nix hands
-    # builds and store changes to the host daemon, and Rex can start commands or
-    # type into an unsandboxed terminal through its server. The sandboxed CLIs
-    # ask for the whole Nix build/run family, since `nix run` or `nix develop`
-    # builds just as `nix build` does.
-    sandboxAsk = [
-      [
-        "nix"
-        "fmt"
-      ]
-      [
-        "nix"
-        "build"
-      ]
-      [
-        "nix"
-        "run"
-      ]
-      [
-        "nix"
-        "shell"
-      ]
-      [
-        "nix"
-        "develop"
-      ]
-      [
-        "nix"
-        "flake"
-        "check"
-      ]
-      [
-        "nix"
-        "profile"
-      ]
-      [
-        "nix"
-        "store"
-      ]
-      [
-        "nix"
-        "copy"
-      ]
-    ]
-    ++ map (exe: [ exe ]) rexExecutables;
-
-    # Project-code runners and wrappers. The sandboxed CLIs run them without
-    # prompts; OpenCode has no sandbox, so it asks.
-    routine = [
-      [ "just" ]
-      [
-        "npm"
-        "run"
-      ]
-      [ "npx" ]
-      [
-        "npm"
-        "test"
-      ]
-      [
-        "cargo"
-        "test"
-      ]
-      [
-        "terraform"
-        "validate"
-      ]
-      [
-        "tofu"
-        "validate"
-      ]
+    # These can execute project code or mutate files. Only auto-allow them
+    # behind an OS sandbox; OpenCode must ask. Inspection tools with execution
+    # flags (rg --pre, find -exec, sed e, awk system) belong here too.
+    development = argv [
+      "git add"
+      "git commit"
+      "rg"
+      "fd"
+      "find"
+      "sed"
+      "awk"
+      "just"
+      "just lint"
+      "npm run"
+      "npm test"
+      "pnpm run"
+      "pnpm test"
+      "yarn run"
+      "yarn test"
+      "cargo test"
+      "cargo check"
+      "cargo build"
+      "cargo clippy"
+      "cargo fmt"
+      "go test"
+      "go build"
+      "go vet"
+      "pytest"
+      "python3 -m pytest"
+      "python3 -m unittest"
+      "node --test"
+      "statix check"
+      "terraform fmt"
+      "terraform validate"
+      "tofu fmt"
+      "tofu validate"
+      "mkdir"
+      "touch"
+      "cp"
+      "mv"
+      "rm"
+      "rmdir"
     ];
 
-    # Command prefixes that are never auto-approved. Prefix denies can be
-    # bypassed (`sh -c`, absolute paths), but those forms still prompt or run
-    # sandboxed; this keeps these from being approved by accident.
-    denied = [
-      [ "op" ]
-      [ "security" ]
-      [
-        "gh"
-        "auth"
+    # Host-side delegation, remote mutations and installation always need
+    # review, even if networking or the filesystem would permit them.
+    review = argv [
+      "nix fmt"
+      "nix build"
+      "nix run"
+      "nix shell"
+      "nix develop"
+      "nix flake check"
+      "nix profile"
+      "nix store"
+      "nix copy"
+      "nix flake update"
+      "git push"
+      "git fetch"
+      "git pull"
+      "git reset"
+      "git clean"
+      "git rebase"
+      "npm install"
+      "npm i"
+      "npm add"
+      "npm update"
+      "npm exec"
+      "npm ci"
+      "npm publish"
+      "npx"
+      "pnpm install"
+      "pnpm i"
+      "pnpm update"
+      "pnpm add"
+      "pnpm publish"
+      "pnpm dlx"
+      "yarn install"
+      "yarn up"
+      "yarn add"
+      "yarn publish"
+      "yarn dlx"
+      "pip"
+      "pip3"
+      "python3 -m pip"
+      "uv pip"
+      "uv tool"
+      "uv sync"
+      "uv add"
+      "pipx"
+      "cargo install"
+      "cargo publish"
+      "go install"
+      "mise install"
+      "mise use"
+      "mise trust"
+      "brew"
+      "sudo"
+      "doas"
+      "darwin-rebuild"
+      "just switch"
+      "just bootstrap"
+      "just rollback"
+      "just rollback-to"
+      "gh api"
+      "gh auth login"
+      "gh auth logout"
+      "gh auth refresh"
+      "gh auth setup-git"
+      "gh auth switch"
+      "gh pr create"
+      "gh pr merge"
+      "gh pr close"
+      "gh pr edit"
+      "gh pr comment"
+      "gh pr review"
+      "gh issue create"
+      "gh issue edit"
+      "gh issue close"
+      "gh issue comment"
+      "gh release"
+      "gh run cancel"
+      "gh run rerun"
+      "gh workflow run"
+      "terraform apply"
+      "terraform destroy"
+      "tofu apply"
+      "tofu destroy"
+      "ssh"
+      "scp"
+      "rsync"
+      "osascript"
+      "open"
+    ];
+
+    # Listing metadata is distinct from capturing a terminal's contents or
+    # dumping a VM's configuration, which can disclose secrets.
+    hostInspection = argv [
+      "rex ls"
+      "rex whoami"
+      "rex window ls"
+      "rex block ls"
+      "rex client ls"
+      "incus list"
+      "incus project list"
+      "incus remote list"
+    ];
+    hostExact =
+      lib.concatMap
+        (exe: [
+          [
+            exe
+            "--help"
+          ]
+          [
+            exe
+            "--version"
+          ]
+        ])
+        [
+          "rex"
+          "kitty"
+          "kitten"
+          "incus"
+        ]
+      ++ [
+        [
+          "rex"
+          "__internal"
+          "skill"
+          "--feature-session-naming=false"
+        ]
+      ];
+    hostExecutables = lib.unique (
+      rexExecutables
+      ++
+        lib.concatMap
+          (exe: [
+            exe
+            "${config.home.profileDirectory}/bin/${exe}"
+            "${config.home.homeDirectory}/.nix-profile/bin/${exe}"
+            "/etc/profiles/per-user/${config.home.username}/bin/${exe}"
+            "/run/current-system/sw/bin/${exe}"
+            "/opt/homebrew/bin/${exe}"
+          ])
+          [
+            "kitty"
+            "kitten"
+            "incus"
+          ]
+      ++ [
+        "/Applications/kitty.app/Contents/MacOS/kitty"
+        "/Applications/kitty.app/Contents/MacOS/kitten"
       ]
-      [
-        "gh"
-        "api"
-      ]
-      [ "sudo" ]
-      [ "darwin-rebuild" ]
-      [
-        "just"
-        "switch"
-      ]
-      [
-        "git"
-        "push"
-        "--force"
-      ]
-      [
-        "mise"
-        "trust"
-      ]
+    );
+
+    # Prefix blocks are accident prevention, not a shell security boundary.
+    # Flag reordering needs patterns in clients that support them; other forms
+    # still ask or stay sandboxed. Never turn these into broad runner grants.
+    denied = argv [
+      "op read"
+      "op item get"
+      "op document get"
+      "op run"
+      "op inject"
+      "op plugin run"
+      "security find-generic-password"
+      "security find-internet-password"
+      "security dump-keychain"
+      "security export"
+      "gh auth token"
+      "gh auth status --show-token"
+      "git push --force"
+      "git push --force-with-lease"
+      "git push -f"
+      "git reset --hard"
+      "git clean -f"
+      "git clean -fd"
+      "git clean -df"
+      "git clean -fdx"
+      "git clean -xdf"
+      "diskutil eraseDisk"
+      "diskutil eraseVolume"
+      "diskutil partitionDisk"
+      "diskutil zeroDisk"
+      "diskutil secureErase"
+      "diskutil apfs deleteContainer"
+      "diskutil apfs deleteVolume"
+      "rm -rf /"
+      "rm -fr /"
+      "newfs_apfs"
+      "newfs_hfs"
+      "mkfs"
+    ];
+    deniedPatterns = [
+      "gh auth status *--show-token*"
+      "git push *--force*"
+      "git push * -f"
+      "git push * -f *"
+      "git reset *--hard*"
+      "git clean *-f*"
+      "git clean *-df*"
+      "git clean *-xdf*"
+      "rm -rf /"
+      "rm -fr /"
+      "rm -rf ~"
+      "rm -fr ~"
+      "dd *of=/dev/*"
     ];
   };
 
@@ -392,6 +445,8 @@ let
       "Library/Application Support/Firefox/**"
       "Library/Application Support/BraveSoftware/**"
     ];
+
+    workspaceSecrets = [ "**/.env" "**/.env.*" ] ++ paths.secretFiles;
 
     secretFiles = [
       "**/*.pem"

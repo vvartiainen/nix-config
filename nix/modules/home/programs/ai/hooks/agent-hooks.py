@@ -12,6 +12,9 @@ def install(source, destination, *markers):
         raise ValueError("managed hook command markers are required")
     path = Path(destination)
     current = json.loads(path.read_text()) if path.exists() else {}
+    desired = json.loads(Path(source).read_text())
+    if "version" in desired:
+        current.setdefault("version", desired["version"])
     hooks = current.setdefault("hooks", {})
     # Store paths change on upgrades; identify our commands by stable fragments.
     for event, groups in hooks.items():
@@ -25,10 +28,10 @@ def install(source, destination, *markers):
                 ]
                 if group["hooks"]:
                     kept.append(group)
-            else:
+            elif not any(marker in group.get("command", "") for marker in markers):
                 kept.append(group)
         hooks[event] = kept
-    for event, groups in json.loads(Path(source).read_text())["hooks"].items():
+    for event, groups in desired["hooks"].items():
         hooks.setdefault(event, []).extend(groups)
     path.parent.mkdir(parents=True, exist_ok=True)
     fd, temporary = tempfile.mkstemp(dir=path.parent, prefix=".agent-hooks-")

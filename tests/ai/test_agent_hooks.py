@@ -67,6 +67,21 @@ class AgentHooksTests(unittest.TestCase):
             ],
         )
 
+    def test_cursor_flat_handlers_upgrade_without_duplicates(self):
+        marker = "nix-config-shell-review-cursor"
+        old = {"command": "/old/" + marker}
+        new = {"command": "/new/" + marker}
+        foreign = {"command": "vendor-audit"}
+        self.target.write_text(json.dumps({"hooks": {"beforeShellExecution": [old, foreign]}}))
+        self.source.write_text(json.dumps({"version": 1, "hooks": {"beforeShellExecution": [new]}}))
+        hooks.install(self.source, self.target, marker)
+        first = self.target.read_text()
+        hooks.install(self.source, self.target, marker)
+        self.assertEqual(first, self.target.read_text())
+        self.assertEqual(json.loads(first), {
+            "version": 1, "hooks": {"beforeShellExecution": [foreign, new]},
+        })
+
     def test_removed_event_handlers_are_cleaned_up(self):
         self.target.write_text(
             json.dumps(

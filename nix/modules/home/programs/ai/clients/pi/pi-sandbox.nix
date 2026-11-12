@@ -47,8 +47,11 @@ let
         {
           "*" = "allow";
         }
-        // rules "ask" policy.commands.sandboxAsk
-        // rules "deny" policy.commands.denied;
+        // rules "ask" (policy.commands.review ++ map (exe: [ exe ]) policy.commands.hostExecutables)
+        // rules "allow" policy.commands.hostInspection
+        // lib.genAttrs (map commandString policy.commands.hostExact) (_: "allow")
+        // rules "deny" policy.commands.denied
+        // lib.genAttrs policy.commands.deniedPatterns (_: "deny");
       path =
         {
           "*" = "allow";

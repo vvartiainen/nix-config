@@ -80,7 +80,8 @@ Commands run in an OS sandbox (see
   run through the daemon outside the agent sandbox.
 - Codex and Claude Code run routine project commands inside their sandboxes
   without prompts; Copilot requires normal approval for unlisted commands.
-  Claude runs only `gh` outside its sandbox.
+  Claude excludes `gh` from its sandbox; reviewed sandbox escapes may run
+  other commands outside it.
 - `Operation not permitted`, `403`/`Forbidden`, or `x509: OSStatus -26276`
   mean the sandbox blocked it: retry once with escalation or ask, don't try
   variants or work around it.

@@ -6,14 +6,29 @@ grant filesystem or command access.
 
 ## Client behavior
 
-| CLI | Routine commands | Approval boundary |
+| CLI | Routine work | Approval boundary |
 | --- | --- | --- |
-| Codex | Run inside the configured sandbox | Ask rules and sandbox escapes |
-| Claude Code | Run inside the configured sandbox | Ask rules, escapes and unlisted hosts; `gh` runs outside it |
-| Cursor | Run in sandbox | Escapes and reads outside the workspace and tool paths; Rex has no per-command ask rule here |
-| Copilot | Shared safe-command allowlist | Unlisted commands, file edits and sandbox bypasses |
-| OpenCode | No OS sandbox | Commands outside its allowlist ask |
-| Pi | Whole process runs in Safehouse | Permission extension asks for sandbox escapes and external tools; OS denials require manual work outside Pi |
+| Codex | Workspace commands run sandboxed | Explicit ask rules and sandbox escapes; all Rex/Kitty/Incus calls prompt because prefix rules cannot carve out safe exceptions |
+| Claude Code | Workspace edits and commands run sandboxed | Native ask rules plus a shell hook for host control; scoped `gh` inspection runs outside the sandbox |
+| Cursor | Workspace commands run sandboxed in Allowlist mode | Shell hook asks for risky operations and unsandboxed retries; narrow host metadata allowances remain available |
+| Copilot | Inspection, scoped development runners and file edits are approved | Unlisted commands and sandbox bypasses ask; `just lint` is scoped, other `just` recipes ask |
+| OpenCode | Inspection allowlist and workspace file tools | No OS sandbox: project runners, cleanup commands and unknown shell commands ask |
+| Pi | Whole process runs in Safehouse | Permission extension asks for risky commands and external tools; approved calls remain inside Safehouse |
+
+The shared policy distinguishes inspection, sandboxed development, reviewed
+operations and hard denies. Project runners and tools with execution options
+(`rg --pre`, `find -exec`, `sed`, `awk`) are only automatically approved behind
+an OS sandbox. Local edits, commits and workspace cleanup are routine work;
+there is no blanket `rm` ban. Copilot has no per-command ask override, so it
+does not get a broad `just` allowance that would also approve `just switch`.
+
+Installs, package publishing, Git pushes, remote mutations, privileged commands,
+system application and host control require review. Credential extraction and
+recognizable disk-erasure, force-push, hard-reset and forced Git-clean commands
+are denied. Reordered flags are covered where the client's patterns or hook can
+express them. Prefix-only clients cannot recognize every spelling or commands
+hidden inside scripts. These rules prevent accidental approvals; they do not
+replace filesystem and network isolation.
 
 Keep sandboxing enabled. Persistent broad command approvals can weaken these
 defaults. In Copilot, use `/reset-allowed-tools` to clear old broad grants before
@@ -48,14 +63,14 @@ widening file access.
 
 The pinned `@gotgenes/pi-permission-system` package installs on first launch,
 like the other Pi packages. Confirm it loads without extension errors; use
-`/permission-system show` to inspect its rules. File tools and bash run without
-prompts, because Safehouse is the boundary and the path rules still deny
-secrets; asking per command only led to session-wide `*` grants. The extension
-still asks for work that leaves the sandbox (Nix daemon builds, Rex), for shell
-wrappers such as `sh -c`, `eval`, `sudo`, `xargs` and `find -exec`, and for
-unparseable input; MCP and other extension tools ask too. The shared deny list
-(the allowlist does not apply here) remains denied. Permissions are an approval
-layer, not a security boundary: trusted project configuration and extensions
+`/permission-system show` to inspect its rules. Routine file tools and bash run
+without prompts because Safehouse is the boundary and path rules still deny
+secrets. The extension asks for installs, publishing, remote writes, host control
+and Nix daemon operations, for shell wrappers such as `sh -c`, `eval`, `sudo`,
+`xargs` and `find -exec`, and for unparseable input. MCP and other extension tools
+ask too. Credential extraction and destructive-command denies still apply.
+Narrow host metadata and help rules are allowed, though socket access may still
+fail inside Safehouse. Permissions are an approval layer, not a security boundary: trusted project configuration and extensions
 can affect their behavior. Do not load untrusted extensions or disable the
 permission package.
 
@@ -93,27 +108,41 @@ vault, need a separately reviewed grant before they can work.
 - Credential files, shell history, browser profiles, private host data, keys
   and environment files are restricted. Do not work around a denied read.
 
-Codex and Claude run `just`, `npm run`, `npx`, `npm test`, `cargo test`,
-`terraform validate` and `tofu validate` sandboxed without prompts. Copilot
-requires normal approval for unlisted commands. `nix build` and `nix fmt`
-require approval in Codex and Claude because they delegate work to the Nix
-daemon outside the agent sandbox.
-Prefix rules do not inspect commands inside wrappers or scripts.
+Codex and Claude run routine project checks and builds inside their sandbox
+without per-command approval. Nix build/run/develop/store operations require
+review because they delegate work to the host daemon. Package installation and
+remote mutation commands also ask. Copilot allows scoped development runners;
+OpenCode asks for them because it has no OS sandbox.
+
+The Claude and Cursor shell hooks add review and deny decisions; routine calls
+continue through the native permission and sandbox flow. Cursor also asks when sandbox
+metadata is missing. Hook errors return a valid denial instead of relying on a
+client's potentially fail-open exit-code handling.
 
 For nix-config, follow [AGENTS.md](../AGENTS.md): validate against the public
 fixture, never read private host data for routine checks, and never apply the
 fixture system. The user validates and applies real host configuration manually.
 
-## Rex control requires review
+## Terminal and VM control requires review
 
-Rex can execute through a separately running server with the server account's
-permissions. An approved call can therefore leave the calling agent's sandbox.
-Codex and Claude prompt for Rex calls, including help and guide commands;
-Copilot leaves them unlisted. Keep Rex endpoints out of sandbox socket/network
-allowlists and avoid persistent broad approvals. Cursor and Pi do not have the
-same native Rex prompt coverage; Pi's permission extension gates unlisted tools
-and Rex commands. The GUI Remote Control toggle alone does not constrain
-all server commands.
+Rex, Kitty and Incus can execute commands through host services with the user's
+permissions. Their execution, input injection, terminal-content capture and
+VM-changing operations require approval rather than a blanket command ban.
+Help/version and selected session/instance listings are allowed where the
+client can express a narrow exception. Reading terminal contents and dumping
+configuration remain reviewed operations because they can disclose secrets.
+
+Keep control endpoints out of sandbox socket/network allowlists. A metadata
+command may still need approval to reach its service; Pi cannot escape
+Safehouse after approval. Codex prompts for every invocation in these command
+families because a broad prompt prefix overrides narrower allowances.
+
+Secret-file denies apply to file tools and sandboxed commands where supported.
+They cannot contain an approved unrestricted command or a host daemon acting
+on its behalf. OpenCode's file rules and shell scanner are best effort, not OS
+isolation. Review escapes as full-access operations and avoid broad persistent
+approvals. Existing provider-authentication and trusted-extension exceptions
+remain, including Pi's stored-login limitation described above.
 
 ## Diagnose blocked commands
 

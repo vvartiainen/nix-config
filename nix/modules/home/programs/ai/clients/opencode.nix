@@ -6,43 +6,60 @@
 }:
 let
   permissions = import ../shared/permissions.nix { inherit lib config; };
-  inherit (permissions) commands;
-
-  # Permission patterns become attribute names, which cannot carry Nix store
-  # context. The Rex module already installs the package named in its rule.
+  inherit (permissions) commands paths;
   commandString = cmd: builtins.unsafeDiscardStringContext (lib.concatStringsSep " " cmd);
-  # OpenCode has no OS sandbox, so routine runners also need approval.
-  askCommands = commands.sandboxAsk ++ commands.routine;
-
-  toBashRules =
-    value: cmds:
-    builtins.listToAttrs (
-      map (cmd: {
-        name = "${commandString cmd} *";
-        inherit value;
-      }) cmds
-    );
-
-  permissionSettings = {
-    bash = {
-      "*" = "ask";
-    }
-    // toBashRules "allow" commands.allowed
-    // lib.genAttrs (map commandString commands.exact) (_: "allow")
-    // toBashRules "ask" askCommands
-    // lib.genAttrs (map commandString askCommands) (_: "ask")
-    // toBashRules "deny" commands.denied;
-    external_directory = {
-      "*" = "ask";
-      "/nix/store/**" = "allow";
-    };
-    read = {
-      "*" = "allow";
-      "*.env" = "deny";
-      "*.env.*" = "deny";
-      "*.env.example" = "allow";
-    };
-  };
+  rule = action: resource: effect: { inherit action resource effect; };
+  shellRules = effect: cmds: map (cmd: rule "shell" "${commandString cmd} *" effect) cmds;
+  # V2 evaluates ordered rules, last match wins. Never route project runners
+  # through an allowlist without an OS sandbox.
+  permissionSettings = [
+    (rule "shell" "*" "ask")
+    (rule "external_directory" "*" "ask")
+    (rule "external_directory" "/nix/store/*" "allow")
+    (rule "read" "*" "allow")
+    (rule "edit" "*" "allow")
+  ]
+  ++ shellRules "allow" commands.inspection
+  ++ map (cmd: rule "shell" (commandString cmd) "allow") commands.exact
+  ++ shellRules "ask" (
+    commands.development ++ commands.review ++ map (exe: [ exe ]) commands.hostExecutables
+  )
+  ++ shellRules "allow" commands.hostInspection
+  ++ map (cmd: rule "shell" (commandString cmd) "allow") commands.hostExact
+  ++ shellRules "deny" commands.denied
+  ++ map (pattern: rule "shell" pattern "deny") commands.deniedPatterns
+  ++ lib.concatMap (
+    path:
+    lib.concatMap
+      (action: [
+        (rule action path "deny")
+        (rule action "${path}/*" "deny")
+      ])
+      [
+        "read"
+        "edit"
+        "external_directory"
+      ]
+  ) paths.denied
+  ++
+    lib.concatMap
+      (pattern: [
+        (rule "read" pattern "deny")
+        (rule "edit" pattern "deny")
+      ])
+      (
+        [
+          "*.env"
+          "*.env.*"
+          "*.pem"
+          "*.key"
+        ]
+        ++ paths.workspaceSecrets
+      )
+  ++ [
+    (rule "edit" "*/.git/config" "deny")
+    (rule "edit" "*/.git/hooks/*" "deny")
+  ];
 
   settings = {
     model = "deepseek/deepseek-flash";
@@ -64,7 +81,7 @@ let
         ".cts"
       ];
     };
-    permission = permissionSettings;
+    permissions = permissionSettings;
     # The default, kept explicit like the other CLIs.
     compaction.auto = true;
   };

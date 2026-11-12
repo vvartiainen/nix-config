@@ -101,9 +101,11 @@ let
 
   # Leave routine commands to the sandbox and on-request approval policy.
   # Explicit prompt rules also prompt inside the sandbox, while allow rules
-  # can authorize leaving it. Delegation to Rex needs review even inside it.
+  # can authorize leaving it. Host-control CLIs need review even inside it.
   commandRules = pkgs.writeText "codex-nix-config.rules" (
-    lib.concatMapStringsSep "\n" (toCodexRule "prompt") commands.sandboxAsk
+    lib.concatMapStringsSep "\n" (toCodexRule "prompt") (
+      commands.review ++ map (exe: [ exe ]) commands.hostExecutables
+    )
     + "\n"
     + lib.concatMapStringsSep "\n" (toCodexRule "forbidden") commands.denied
     + "\n"

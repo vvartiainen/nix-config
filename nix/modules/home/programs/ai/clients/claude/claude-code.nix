@@ -24,27 +24,27 @@ let
 
   permissionSettings = {
     # Allow rules only matter outside the sandbox, so keep them for the
-    # excluded programs. Elsewhere they would let a retry outside the
+    # excluded programs and narrow host metadata calls. Broad runner allows
+    # would let a retry outside the
     # sandbox, e.g. a read under a denied home path, run without a prompt.
     allow =
       map (cmd: "Bash(${commandString cmd}:*)") (
-        lib.filter (cmd: lib.elem (lib.head cmd) unsandboxedPrograms) commands.allowed
+        lib.filter (cmd: lib.elem (lib.head cmd) unsandboxedPrograms) commands.inspection
       )
+      ++ map (cmd: "Bash(${commandString cmd})") (
+        lib.filter (cmd: lib.elem (lib.head cmd) unsandboxedPrograms) commands.exact
+      )
+      ++ map (cmd: "Bash(${commandString cmd}:*)") commands.hostInspection
+      ++ map (cmd: "Bash(${commandString cmd})") commands.hostExact
       ++ [ "Read(//nix/store/**)" ]
       # WebFetch allows also widen the Bash sandbox's network allowlist.
       ++ map (domain: "WebFetch(domain:${domain})") network.sandbox
       # Projects list these in .mcp.json (`ct agents sync`).
       ++ map (name: "mcp__${name}__*") permissions.mcpServers;
-    ask =
-      map (cmd: "Bash(${commandString cmd}:*)") commands.sandboxAsk
-      # Cover other absolute Rex locations too, including app/store versions
-      # outside the explicitly declared list. Include invocation with no args.
-      ++ [
-        "Bash(*/rex)"
-        "Bash(*/rex *)"
-      ];
+    ask = map (cmd: "Bash(${commandString cmd}:*)") commands.review;
     deny =
       map (cmd: "Bash(${commandString cmd}:*)") commands.denied
+      ++ map (pattern: "Bash(${pattern})") commands.deniedPatterns
       ++ [
         "Read(**/.env)"
         "Read(**/.env.*)"
@@ -119,6 +119,11 @@ let
     };
   };
 
+  shellPolicy = pkgs.writeText "claude-shell-policy.json" (builtins.toJSON commands);
+  shellReview = pkgs.writeShellScript "nix-config-shell-review-claude" ''
+    exec ${pkgs.python3}/bin/python3 ${../../shared/shell-review.py} claude ${shellPolicy}
+  '';
+
   settings = {
     "$schema" = "https://json.schemastore.org/claude-code-settings.json";
     model = "opus";
@@ -146,7 +151,8 @@ let
       # nixpkgs sets CLAUDE_CODE_CERT_STORE=system, which on macOS holds only
       # keychain certificates, not Apple's roots. Add the Nix bundle, which
       # follows cacert and nix-darwin distrust updates.
-      NODE_EXTRA_CA_CERTS = "/etc/ssl/certs/ca-certificates.crt";      # Compact at 80% of the auto-compact window, like the other CLIs.
+      NODE_EXTRA_CA_CERTS = "/etc/ssl/certs/ca-certificates.crt";
+      # Compact at 80% of the auto-compact window, like the other CLIs.
       CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = "80";
     };
     # MCP servers come from the projects (`ct agents`), not claude.ai.
@@ -226,6 +232,21 @@ let
   };
 in
 {
+  agentHooks = {
+    commandMarkers = [ "nix-config-shell-review-claude" ];
+    claude.PreToolUse = [
+      {
+        matcher = "Bash";
+        hooks = [
+          {
+            type = "command";
+            command = "${shellReview}";
+          }
+        ];
+      }
+    ];
+  };
+
   programs.claude-code = {
     enable = true;
     # Temporary release pin until nixpkgs catches up (Apple Silicon host).

@@ -25,7 +25,7 @@ in
       description = "Stable command fragments identifying hooks managed by this configuration.";
     };
   }
-  // lib.genAttrs [ "codex" "claude" "copilot" ] (
+  // lib.genAttrs [ "codex" "claude" "copilot" "cursor" ] (
     _:
     lib.mkOption {
       type = lib.types.attrsOf (lib.types.listOf lib.types.attrs);
@@ -49,12 +49,24 @@ in
         [
           "claudeCodeConfig"
           "codexMutableConfig"
+          "cursorCliConfig"
           "rexAgentHooks"
           "herdrAgentIntegrations"
         ]
         (
           install "claude" "${config.programs.claude-code.configDir}/settings.json"
           + install "codex" "${config.home.homeDirectory}/.codex/hooks.json"
+          + ''
+            cursor_hooks=${
+              json.generate "cursor-hooks.json" {
+                version = 1;
+                hooks = cfg.cursor;
+              }
+            }
+            run ${lib.getExe installer} "$cursor_hooks" ${
+              lib.escapeShellArgs ([ "${config.xdg.configHome}/cursor/hooks.json" ] ++ cfg.commandMarkers)
+            }
+          ''
         );
   };
 }

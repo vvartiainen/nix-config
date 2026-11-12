@@ -19,21 +19,42 @@ let
 
   # Copilot has no config file setting for tool rules or file tool paths,
   # only the `--allow-tool` / `--deny-tool` / `--add-dir` CLI flags.
+  # No ask override: exclude any development prefix that would also approve
+  # a reviewed operation, notably `just switch`. Keep `just lint` scoped.
+  sandboxedDevelopment = lib.filter (
+    cmd: !(lib.any (review: lib.take (lib.length cmd) review == cmd) commands.review)
+  ) commands.development;
   toolPermissions = {
     # Copilot has no per-command ask override for a blanket shell grant.
-    # Keep Rex, arbitrary runners and wrappers subject to normal approval.
+    # Keep host control, arbitrary runners and wrappers subject to approval.
     allowTools =
-      map (cmd: "shell(${commandString cmd}:*)") commands.allowed
-      ++ map (cmd: "shell(${commandString cmd})") commands.exact
+      map (cmd: "shell(${commandString cmd}:*)") (
+        commands.inspection ++ sandboxedDevelopment ++ commands.hostInspection
+      )
+      ++ map (cmd: "shell(${commandString cmd})") (commands.exact ++ commands.hostExact)
+      ++ [ "write" ]
       ++ permissions.mcpServers;
     # A relative write() path matches trailing components in any directory.
-    # Copilot has no read() rule, so reads can't be denied this way.
-    denyTools = map (cmd: "shell(${commandString cmd}:*)") commands.denied ++ [
-      "write(.env)"
-      "write(.git/config)"
-    ];
+    denyTools =
+      map (cmd: "shell(${commandString cmd}:*)") commands.denied
+      ++ [
+        "write(.env)"
+        "write(.git/config)"
+      ]
+      ++ lib.concatMap (path: [
+        "read(${path})"
+        "read(${path}/**)"
+        "write(${path})"
+        "write(${path}/**)"
+      ]) paths.denied
+      ++ lib.concatMap (pattern: [
+        "read(${pattern})"
+        "write(${pattern})"
+      ]) paths.workspaceSecrets
+      ++ [ "write(**/.git/hooks/**)" ];
     # Reads there need no path prompt, like Claude's Read(//nix/store/**).
-    # Edits still prompt, and the sandbox keeps the paths read-only.
+    # File tools follow the sandbox policy on a best-effort basis; shell
+    # writes to these paths remain blocked by the OS sandbox.
     # Added dirs also load repo settings, skills and agents; Homebrew's git
     # checkout ships a .claude/settings.json Stop hook (`brew lgtm`), so it
     # only gets the sandbox read grant.
@@ -80,7 +101,7 @@ let
         ++ paths.tmp
         # The backlog MCP servers (`bl <project> mcp start`) edit tasks there.
         ++ lib.optional (config.backlog.projects != [ ]) config.backlog.vault;
-        deniedPaths = paths.denied;
+        deniedPaths = paths.denied ++ paths.workspaceSecrets;
         clearPolicyOnExit = true;
       };
       # Local access otherwise adds localhost to a nonempty host allowlist,
@@ -141,6 +162,7 @@ let
   # projects (`ct agents`), not the built-in GitHub ones.
   toolFlags = [
     "--disable-builtin-mcps"
+    "--sandbox"
   ]
   ++ lib.concatMap (tool: [
     "--allow-tool"
