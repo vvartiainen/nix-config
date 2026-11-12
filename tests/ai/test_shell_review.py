@@ -83,6 +83,44 @@ class ShellReviewTests(unittest.TestCase):
             with self.subTest(command=command):
                 self.assertEqual(review.decide(command, self.policy), expected)
 
+    def test_lenient_decision_matrix(self):
+        # Claude mode: "allow" defers to native rules and the sandbox.
+        cases = {
+            "ls 2>/dev/null": "allow",
+            "make test 2>&1 | tail -20": "allow",
+            "grep -n TODO . > /tmp/out.txt": "allow",
+            "echo $HOME ${PATH}": "allow",
+            "NAME=value make test": "allow",
+            "timeout 60 python3 -m unittest": "allow",
+            "for f in *.nix; do statix check $f; done": "allow",
+            "git -C elsewhere status": "allow",
+            "bash -c 'git status'": "allow",
+            "git status &&": "allow",
+            "unterminated '": "allow",
+            "rex --help": "allow",
+            "git status 2>&1 && npm publish": "ask",
+            "echo $(rex run -- id)": "ask",
+            "echo `rex capture`": "ask",
+            "cat <(rex capture)": "ask",
+            "env NAME=value rex run -- id": "ask",
+            "timeout 5 git push origin main": "ask",
+            "sh -c 'rex run -- id'": "ask",
+            "bash -lc 'nix build .#system'": "ask",
+            "eval git push": "ask",
+            "if true; then rex run -- id; fi": "ask",
+            "git -C elsewhere push": "ask",
+            "git -c core.pager=cat push": "ask",
+            "find . -exec rex run -- id ;": "ask",
+            "FOO=1 git push origin main 2>/dev/null": "ask",
+            "git -C elsewhere push --force": "deny",
+            "xargs git clean -xfd": "deny",
+            "bash -c 'gh auth token'": "deny",
+            "ls && rm -rf /": "deny",
+        }
+        for command, expected in cases.items():
+            with self.subTest(command=command):
+                self.assertEqual(review.decide(command, self.policy, strict=False), expected)
+
     def run_hook(self, client, request):
         with tempfile.TemporaryDirectory() as scratch:
             policy = Path(scratch) / "policy.json"
@@ -102,6 +140,8 @@ class ShellReviewTests(unittest.TestCase):
         self.assertEqual(self.run_hook("cursor", {"command": 123})["permission"], "ask")
         self.assertEqual(self.run_hook("cursor", ["malformed"])["permission"], "deny")
         self.assertEqual(self.run_hook("claude", {"tool_input": {"command": "cat README.md"}}), {})
+        self.assertEqual(self.run_hook("claude", {"tool_input": {"command": "ls 2>/dev/null | head"}}), {})
+        self.assertEqual(self.run_hook("cursor", {"command": "ls 2>/dev/null | head", "sandbox": True})["permission"], "ask")
         response = self.run_hook("claude", {"tool_input": {"command": "rex send-key enter"}})
         self.assertEqual(response["hookSpecificOutput"]["permissionDecision"], "ask")
 

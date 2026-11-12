@@ -115,8 +115,10 @@ remote mutation commands also ask. Copilot allows scoped development runners;
 OpenCode asks for them because it has no OS sandbox.
 
 The Claude and Cursor shell hooks add review and deny decisions; routine calls
-continue through the native permission and sandbox flow. Cursor also asks when sandbox
-metadata is missing. Hook errors return a valid denial instead of relying on a
+continue through the native permission and sandbox flow. Cursor's hook also asks
+for shell syntax and wrappers it cannot see through and when sandbox metadata is
+missing. Claude's hook looks through redirects, substitutions, `sh -c` and
+wrappers and asks only when a part matches a review, deny or host rule. Hook errors return a valid denial instead of relying on a
 client's potentially fail-open exit-code handling.
 
 For nix-config, follow [AGENTS.md](../AGENTS.md): validate against the public
