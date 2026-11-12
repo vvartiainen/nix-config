@@ -44,6 +44,7 @@ Agents follow [AGENTS.md](AGENTS.md) and use the public fixture for validation.
 - `nix/modules/home/`: Home Manager and CLI program modules
 - `nix/modules/darwin/`: macOS system and program modules
 - `dotfiles/`: app configs, generally linked live with `mkOutOfStoreSymlink`
+- `tests/`: behavior checks grouped by program or subsystem
 
 Other flakes can import individual Home Manager modules directly, for example
 `${inputs.nix-config}/nix/modules/home/programs/lazygit.nix`, without importing

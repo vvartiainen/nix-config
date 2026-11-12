@@ -6,7 +6,7 @@ import subprocess
 import tempfile
 import unittest
 
-SCRIPT = Path(__file__).with_name("set-default-application.sh")
+SCRIPT = Path(__file__).resolve().parents[2] / "nix/modules/darwin/set-default-application.sh"
 APP = "net.kovidgoyal.kitty"
 
 

@@ -55,7 +55,7 @@ class SafehouseTests(unittest.TestCase):
     def run_probe(self, source, workdir=None):
         env = dict(os.environ, HOME=str(self.home), SYNTHETIC_HOST_SECRET="must-not-pass")
         return subprocess.run([
-            sys.executable, str(Path(__file__).with_name("pi-safehouse.py")),
+            sys.executable, str(Path(__file__).resolve().parents[2] / "nix/modules/home/programs/ai/pi-safehouse.py"),
             str(self.spec), os.environ["SAFEHOUSE"], sys.executable, "-c", source,
         ], cwd=workdir or self.work, env=env, text=True, capture_output=True)
 

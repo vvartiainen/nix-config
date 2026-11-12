@@ -14,7 +14,7 @@ import unittest
 from unittest.mock import patch
 
 
-SCRIPT = Path(__file__).with_name("terminal-status.py")
+SCRIPT = Path(__file__).resolve().parents[2] / "nix/modules/home/programs/ai/terminal-status.py"
 spec = importlib.util.spec_from_file_location("terminal_status", SCRIPT)
 status = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(status)

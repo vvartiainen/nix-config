@@ -8,7 +8,7 @@ from kitty.config import load_config
 from kitty.fast_data_types import set_options
 from kitty.open_actions import actions_for_url_from_list, load_actions_from_path
 
-CONFIG = Path(__file__).resolve().parents[4] / "dotfiles/kitty"
+CONFIG = Path(__file__).resolve().parents[2] / "dotfiles/kitty"
 
 
 class OpenActionsTests(unittest.TestCase):

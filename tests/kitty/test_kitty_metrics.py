@@ -12,7 +12,7 @@ import time
 import unittest
 
 
-SCRIPT = Path(__file__).resolve().parents[4] / "dotfiles/kitty/metrics.py"
+SCRIPT = Path(__file__).resolve().parents[2] / "dotfiles/kitty/metrics.py"
 PYTHON = os.environ.get("METRICS_TEST_PYTHON", sys.executable)
 spec = importlib.util.spec_from_file_location("metrics", SCRIPT)
 metrics = importlib.util.module_from_spec(spec)

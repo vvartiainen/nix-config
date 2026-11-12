@@ -10,7 +10,7 @@ from unittest.mock import patch
 
 
 module_spec = importlib.util.spec_from_file_location(
-    "pi_safehouse", Path(__file__).with_name("pi-safehouse.py")
+    "pi_safehouse", Path(__file__).resolve().parents[2] / "nix/modules/home/programs/ai/pi-safehouse.py"
 )
 launcher = importlib.util.module_from_spec(module_spec)
 module_spec.loader.exec_module(launcher)

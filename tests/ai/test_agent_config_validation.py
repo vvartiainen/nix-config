@@ -15,15 +15,17 @@ import agent_config_validation as validation
 
 sys.dont_write_bytecode = True
 spec = importlib.util.spec_from_file_location(
-    "cleanup", Path(__file__).with_name("cleanup-agent-config.py")
+    "cleanup",
+    os.environ.get("CLEANUP_AGENT_CONFIG")
+    or Path(__file__).resolve().parents[2] / "nix/modules/home/programs/ai/cleanup-agent-config.py",
 )
 cleanup = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(cleanup)
-# Resolve the repository fallback only when MERGE_CONFIG is unset: the Linux
-# build sandbox runs this file from /build, which has no parents[2].
+# Resolve repository fallbacks only when unset: build sandboxes copy tests
+# outside the checkout and provide explicit source paths instead.
 MERGE = Path(
     os.environ.get("MERGE_CONFIG")
-    or Path(__file__).parents[2] / "merge-config.py"
+    or Path(__file__).resolve().parents[2] / "nix/modules/home/merge-config.py"
 )
 
 

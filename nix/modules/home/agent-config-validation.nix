@@ -56,9 +56,10 @@ let
       cp ${./agent_config_validation.py} agent_config_validation.py
       cp ${manifest} agent-config-schemas.json
       cp ${./programs/ai/cleanup-agent-config.py} cleanup-agent-config.py
-      cp ${./programs/ai/test_cleanup_agent_config.py} test_cleanup_agent_config.py
-      cp ${./programs/ai/test_agent_config_validation.py} test_agent_config_validation.py
+      cp ${../../../tests/ai/test_cleanup_agent_config.py} test_cleanup_agent_config.py
+      cp ${../../../tests/ai/test_agent_config_validation.py} test_agent_config_validation.py
       export PYTHONPATH="$PWD''${PYTHONPATH:+:$PYTHONPATH}"
+      export CLEANUP_AGENT_CONFIG="$PWD/cleanup-agent-config.py"
       export MERGE_CONFIG=${./merge-config.py}
       ${pkgs.python3.interpreter} -m unittest discover -v
     '';

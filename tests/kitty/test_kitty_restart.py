@@ -12,7 +12,7 @@ from unittest.mock import Mock, patch
 from kittens.runner import import_kitten_main_module
 
 
-SCRIPT = Path(__file__).resolve().parents[4] / "dotfiles/kitty/restart.py"
+SCRIPT = Path(__file__).resolve().parents[2] / "dotfiles/kitty/restart.py"
 spec = importlib.util.spec_from_file_location("kitty_restart", SCRIPT)
 restart = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(restart)

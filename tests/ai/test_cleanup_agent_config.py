@@ -4,6 +4,7 @@ import contextlib
 import importlib.util
 import io
 import json
+import os
 from pathlib import Path
 import tempfile
 import unittest
@@ -13,7 +14,9 @@ import tomlkit
 
 sys.dont_write_bytecode = True
 spec = importlib.util.spec_from_file_location(
-    "cleanup", Path(__file__).with_name("cleanup-agent-config.py")
+    "cleanup",
+    os.environ.get("CLEANUP_AGENT_CONFIG")
+    or Path(__file__).resolve().parents[2] / "nix/modules/home/programs/ai/cleanup-agent-config.py",
 )
 cleanup = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(cleanup)

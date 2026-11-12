@@ -11,7 +11,7 @@ import unittest
 from unittest.mock import Mock, patch
 
 
-SCRIPT = Path(__file__).resolve().parents[4] / "dotfiles/kitty/tab_bar.py"
+SCRIPT = Path(__file__).resolve().parents[2] / "dotfiles/kitty/tab_bar.py"
 spec = importlib.util.spec_from_file_location("tab_bar", SCRIPT)
 tab_bar = importlib.util.module_from_spec(spec)
 with patch.dict(sys.modules, {"kitty": Mock(), "kitty.fast_data_types": Mock()}):
@@ -38,10 +38,9 @@ class TabTitleTests(unittest.TestCase):
         )
 
     def title(self, cwd, name=""):
-        boss = SimpleNamespace(tab_for_id=lambda _: SimpleNamespace(name=name))
+        tab = SimpleNamespace(name=name)
         data = {"tab_id": 1, "title": "agent title", "tab": SimpleNamespace(active_oldest_wd=str(cwd))}
-        with patch.object(tab_bar, "get_boss", return_value=boss):
-            return tab_bar.draw_title(data)
+        return tab_bar._name(tab, data)
 
     def worktree(self):
         path = self.root / "task 42"

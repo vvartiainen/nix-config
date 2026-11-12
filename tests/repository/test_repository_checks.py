@@ -11,7 +11,7 @@ import unittest
 from unittest.mock import patch
 
 
-SCRIPT = Path(__file__).resolve().parents[1] / "check-repository.py"
+SCRIPT = Path(__file__).resolve().parents[2] / "scripts/check-repository.py"
 spec = importlib.util.spec_from_file_location("checks", SCRIPT)
 checks = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(checks)
