@@ -1,6 +1,6 @@
 { lib, pkgs, ... }:
 let
-  inherit (import ../../agent-config-validation.nix { inherit pkgs; }) validator;
+  inherit (import ./agent-config-validation.nix { inherit pkgs; }) validator;
 in
 {
   home = {

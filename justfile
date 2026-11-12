@@ -49,7 +49,7 @@ bootstrap host=host: (init-host host)
 
 # Fast read-only checks; --all includes unchanged files, --format checks style.
 lint *args:
-    python3 scripts/check-repository.py {{ args }}
+    python3 nix/validation/check-repository.py {{ args }}
 
 # Lint nix files and evaluate the darwin system derivation.
 check host=host: require-host

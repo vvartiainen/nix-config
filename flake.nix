@@ -88,7 +88,7 @@
     in
     {
       packages.aarch64-darwin.validate-agent-config =
-        (import ./nix/modules/home/agent-config-validation.nix {
+        (import ./nix/validation/agent-config-validation.nix {
           pkgs = nixpkgs.legacyPackages.aarch64-darwin;
         }).validator;
 

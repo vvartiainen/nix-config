@@ -33,7 +33,7 @@ in
     };
 
     packages = with pkgs; [
-      (import ../../packages/repository-checks.nix { inherit pkgs; })
+      (import ../../validation/repository-checks.nix { inherit pkgs; })
       cmake
       deadnix
       gdu

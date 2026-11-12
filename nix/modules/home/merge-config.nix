@@ -9,11 +9,11 @@ let
   mergeConfig = pkgs.writers.writePython3Bin "merge-config" {
     libraries = [
       pkgs.python3Packages.tomli-w
-      (import ./agent-config-validation.nix { inherit pkgs; })
+      (import ../../validation/agent-config-validation.nix { inherit pkgs; })
     ];
   } ./merge-config.py;
   python = pkgs.python3.withPackages (_: [
-    (import ./agent-config-validation.nix { inherit pkgs; })
+    (import ../../validation/agent-config-validation.nix { inherit pkgs; })
   ]);
 in
 {

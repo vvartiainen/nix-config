@@ -5,7 +5,7 @@
   ...
 }:
 let
-  checker = import ../../../../packages/repository-checks.nix { inherit pkgs; };
+  checker = import ./repository-checks.nix { inherit pkgs; };
   hook = event: {
     type = "command";
     command = "${lib.getExe checker} --hook ${event} --repository ${lib.escapeShellArg repoRoot}";

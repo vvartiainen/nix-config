@@ -15,6 +15,6 @@ pkgs.writeShellApplication {
     zsh
   ];
   text = ''
-    exec python3 ${../../scripts/check-repository.py} "$@"
+    exec python3 ${./check-repository.py} "$@"
   '';
 }
