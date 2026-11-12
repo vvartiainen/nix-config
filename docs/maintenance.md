@@ -56,7 +56,7 @@ behavior tests and private-host validation remain separate.
 
 Validation tooling and its agent hook handlers live in `nix/validation/`.
 Agent hook registration and installation live in
-`nix/modules/home/programs/ai/agent-hooks.nix`. Terminal status and repository
+`nix/modules/home/programs/ai/hooks/agent-hooks.nix`. Terminal status and repository
 validation register their handlers separately through `agentHooks`; the shared
 installer combines them and preserves unrelated user and integration hooks.
 

@@ -44,7 +44,7 @@ The user accepts and completes review tickets; agents leave them open.
 
 ## Skill library
 
-- Reusable skills: `nix/modules/home/programs/ai/skills/<name>/SKILL.md`.
+- Reusable skills: `nix/modules/home/programs/ai/shared/skills/<name>/SKILL.md`.
 - Private host guides: `agents.localSkills.<name> = <dir>;` in a private
   Home Manager module. Keep workstation-specific inventories there.
 - Remote skills: `agents.skillSources`, then `ct agents library install` after

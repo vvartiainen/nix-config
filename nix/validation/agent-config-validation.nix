@@ -55,7 +55,7 @@ let
     checkPhase = ''
       cp ${./agent_config_validation.py} agent_config_validation.py
       cp ${manifest} agent-config-schemas.json
-      cp ${../modules/home/programs/ai/cleanup-agent-config.py} cleanup-agent-config.py
+      cp ${../modules/home/programs/ai/shared/cleanup-agent-config.py} cleanup-agent-config.py
       cp ${../../tests/ai/test_cleanup_agent_config.py} test_cleanup_agent_config.py
       cp ${../../tests/ai/test_agent_config_validation.py} test_agent_config_validation.py
       export PYTHONPATH="$PWD''${PYTHONPATH:+:$PYTHONPATH}"

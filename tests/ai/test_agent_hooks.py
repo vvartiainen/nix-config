@@ -7,7 +7,7 @@ import tempfile
 import unittest
 
 
-SCRIPT = Path(__file__).resolve().parents[2] / "nix/modules/home/programs/ai/agent-hooks.py"
+SCRIPT = Path(__file__).resolve().parents[2] / "nix/modules/home/programs/ai/hooks/agent-hooks.py"
 spec = importlib.util.spec_from_file_location("agent_hooks", SCRIPT)
 hooks = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(hooks)

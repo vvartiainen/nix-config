@@ -5,8 +5,8 @@
   ...
 }:
 let
-  mergeConfig = import ../../merge-config.nix { inherit lib pkgs config; };
-  permissions = import ./permissions.nix { inherit lib config; };
+  mergeConfig = import ../../../merge-config.nix { inherit lib pkgs config; };
+  permissions = import ../shared/permissions.nix { inherit lib config; };
   inherit (permissions)
     commands
     paths

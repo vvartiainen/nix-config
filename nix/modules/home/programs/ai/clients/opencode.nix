@@ -5,7 +5,7 @@
   ...
 }:
 let
-  permissions = import ./permissions.nix { inherit lib config; };
+  permissions = import ../shared/permissions.nix { inherit lib config; };
   inherit (permissions) commands;
 
   # Permission patterns become attribute names, which cannot carry Nix store

@@ -9,7 +9,7 @@ import unittest
 from unittest.mock import patch
 
 
-SCRIPT = Path(__file__).resolve().parents[2] / "nix/modules/home/programs/ai/pi-safehouse.py"
+SCRIPT = Path(__file__).resolve().parents[2] / "nix/modules/home/programs/ai/clients/pi/pi-safehouse.py"
 spec = importlib.util.spec_from_file_location("pi_safehouse", SCRIPT)
 launcher = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(launcher)

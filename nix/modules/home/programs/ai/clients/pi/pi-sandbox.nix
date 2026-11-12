@@ -5,7 +5,7 @@
   ...
 }:
 let
-  policy = import ./permissions.nix { inherit lib config; };
+  policy = import ../../shared/permissions.nix { inherit lib config; };
   agentDir = config.programs.pi-coding-agent.configDir;
   permissionFile = "${agentDir}/extensions/pi-permission-system/config.json";
   commandString = cmd: builtins.unsafeDiscardStringContext (lib.concatStringsSep " " cmd);

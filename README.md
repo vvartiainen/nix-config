@@ -42,7 +42,7 @@ Agents follow [AGENTS.md](AGENTS.md) and use the public fixture for validation.
 - `nix/hosts/`: host composition roots
 - `nix/modules/shared/`: shared system modules
 - `nix/validation/`: repository checks, agent config validation, schemas, and validation hooks
-- `nix/modules/home/`: Home Manager and CLI program modules
+- `nix/modules/home/`: Home Manager and CLI program modules; AI tools group clients, hooks, and shared tooling
 - `nix/modules/darwin/`: macOS system and program modules
 - `dotfiles/`: app configs, generally linked live with `mkOutOfStoreSymlink`
 - `tests/`: behavior checks grouped by program or subsystem

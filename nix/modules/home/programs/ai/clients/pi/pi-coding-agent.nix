@@ -44,5 +44,5 @@
   };
 
   home.file.".pi/agent/themes/catppuccin-mocha.json".source =
-    ../../../../../dotfiles/pi/themes/catppuccin-mocha.json;
+    ../../../../../../../dotfiles/pi/themes/catppuccin-mocha.json;
 }

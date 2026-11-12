@@ -17,7 +17,7 @@ sys.dont_write_bytecode = True
 spec = importlib.util.spec_from_file_location(
     "cleanup",
     os.environ.get("CLEANUP_AGENT_CONFIG")
-    or Path(__file__).resolve().parents[2] / "nix/modules/home/programs/ai/cleanup-agent-config.py",
+    or Path(__file__).resolve().parents[2] / "nix/modules/home/programs/ai/shared/cleanup-agent-config.py",
 )
 cleanup = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(cleanup)

@@ -1,24 +1,24 @@
 { lib, config, ... }:
 let
-  permissions = import ./permissions.nix { inherit lib config; };
+  permissions = import ./shared/permissions.nix { inherit lib config; };
 in
 {
   imports = [
-    ./agent-hooks.nix
-    ./agents-catalog.nix
-    ./backlog.nix
-    ./claude.nix
-    ./claude-code.nix
-    ./cleanup-agent-config.nix
+    ./hooks/agent-hooks.nix
+    ./shared/agents-catalog.nix
+    ./shared/backlog.nix
+    ./clients/claude/claude.nix
+    ./clients/claude/claude-code.nix
+    ./shared/cleanup-agent-config.nix
     ../../../../validation/validate-agent-config.nix
-    ./codex.nix
-    ./cursor-cli.nix
-    ./github-copilot-cli.nix
-    ./mcp.nix
-    ./opencode.nix
-    ./pi-coding-agent.nix
+    ./clients/codex.nix
+    ./clients/cursor-cli.nix
+    ./clients/github-copilot-cli.nix
+    ./shared/mcp.nix
+    ./clients/opencode.nix
+    ./clients/pi/pi-coding-agent.nix
     ../../../../validation/repository-check-hooks.nix
-    ./terminal-status.nix
+    ./hooks/terminal-status.nix
   ];
 
   # Homebrew checks that its cache (or its parent) is writable before use.
