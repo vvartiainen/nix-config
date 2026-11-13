@@ -319,6 +319,7 @@ in
           {
             context = "Chat";
             bindings = {
+              "alt+a" = "command:tasks";
               "alt+t" = "command:effort";
               "alt+y" = "command:copy";
             };

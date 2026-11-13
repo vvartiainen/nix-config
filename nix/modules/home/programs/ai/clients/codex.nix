@@ -174,13 +174,19 @@ let
       resume_cwd = "current";
       # Notify from background Herdr panes even while the terminal has focus.
       notification_condition = "always";
-      presets."0" = {
-        label = "Model";
-        input = "/model";
-      };
-      presets."1" = {
-        label = "Review";
-        input = "/review";
+      presets = {
+        "0" = {
+          label = "Model";
+          input = "/model";
+        };
+        "1" = {
+          label = "Review";
+          input = "/review";
+        };
+        "2" = {
+          label = "Subagents";
+          input = "/subagents";
+        };
       };
       status_line_use_colors = true;
       status_line = [

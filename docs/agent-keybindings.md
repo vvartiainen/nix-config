@@ -37,7 +37,8 @@ leader shortcuts still open its editor and model picker.
 OpenCode uses Alt+P for model selection. Codex effort stepping stops at the
 supported boundary; Alt+, / Alt+. and Shift+Down / Shift+Up remain aliases.
 Use `/model` for tiers requiring explicit selection. Codex Alt+P opens presets:
-0 is Model (`/model`), 1 is Review (`/review`). Model selection preserves the draft.
+0 is Model (`/model`), 1 is Review (`/review`), 2 is Subagents (`/subagents`).
+Model selection preserves the draft.
 
 Claude Alt+T opens effort controls; Pi Alt+T cycles effort. Claude's Shift+Tab
 mode switching remains native.
@@ -55,6 +56,26 @@ mode switching remains native.
 Letters type normally in text fields. Autocomplete keeps arrow navigation so
 J/K remain usable while entering commands and paths. Ctrl+G opens Neovim;
 Vim prompt editing is not enabled. Alt+Y runs `/copy`.
+
+## Subagents
+
+Claude lists subagents in a panel below the prompt; Codex runs each subagent
+in its own thread.
+
+| Action | Claude Code | Codex |
+|---|---|---|
+| Open subagent list | Alt+A runs `/tasks` | Alt+P → 2 runs `/subagents` |
+| Move between agents | Up/Down or J/K in the panel below the prompt | Alt+Left / Alt+Right with an empty prompt |
+| Open selected agent | Enter opens its transcript; messages go to that agent | Select it in the picker |
+| Return to the prompt | Esc | Alt+Left/Right or the picker back to the main thread |
+| Background running work | Ctrl+X Ctrl+B; Ctrl+B outside Herdr | Subagents always run in the background |
+| Stop | X stops the selected row; Ctrl+X Ctrl+K twice stops all | Ask the main agent |
+| Side chat | `/btw` | Ctrl+/ switches between `/side` and its parent |
+
+Herdr uses Ctrl+B as its prefix, so use Ctrl+X Ctrl+B in Claude there. Codex
+Alt+Left/Right is built in and cannot be remapped; with text in the prompt it
+moves by word. In Codex approval prompts from another thread, O opens that
+thread. Claude has no next/previous agent binding.
 
 ## Reload changes
 
