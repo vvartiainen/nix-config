@@ -67,7 +67,7 @@ in
   system = {
     primaryUser = userName;
 
-    # Keep Finder and file dialogs from indexing the store.
+    # Hide the store in Finder and file dialogs; Spotlight is configured separately.
     activationScripts.preActivation.text = lib.mkBefore ''
       /usr/bin/chflags hidden /nix
     '';

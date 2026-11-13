@@ -44,9 +44,16 @@ in
     };
   };
 
-  # The menu bar item lives in the per-host domain, which
-  # CustomUserPreferences cannot write.
   system.activationScripts.postActivation.text = lib.mkAfter ''
+    # mdutil controls whole volumes, not folders. Only target /nix when it is
+    # mounted separately so a plain directory cannot disable the Data index.
+    if /sbin/mount | /usr/bin/grep -q ' on /nix ('; then
+      /usr/bin/mdutil -i off /nix \
+        || echo "warning: failed to disable Spotlight indexing for /nix" >&2
+    fi
+
+    # The menu bar item lives in the per-host domain, which
+    # CustomUserPreferences cannot write.
     ${asUser} defaults -currentHost write com.apple.Spotlight MenuItemHidden -bool true
     # Apply shortcut changes without logging out.
     ${asUser} /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
