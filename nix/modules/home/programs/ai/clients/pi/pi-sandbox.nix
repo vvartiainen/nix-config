@@ -10,6 +10,17 @@ let
   permissionFile = "${agentDir}/extensions/pi-permission-system/config.json";
   commandString = cmd: builtins.unsafeDiscardStringContext (lib.concatStringsSep " " cmd);
   rules = value: commands: lib.genAttrs (map (cmd: "${commandString cmd} *") commands) (_: value);
+  # Pi matches the command name as typed, so a path with spaces also needs
+  # its quoted and escaped spellings, e.g. Rex's app-bundled CLI. Rules are
+  # last-match-wins and toJSON sorts keys, so a key must not sort before the
+  # "*" catch-all: `?` stands for either quote.
+  spellings =
+    exe:
+    [ exe ]
+    ++ lib.optionals (lib.hasInfix " " exe) [
+      "?${exe}?"
+      (lib.replaceStrings [ " " ] [ "\\ " ] exe)
+    ];
   # Mirror the OS deny list on the permission layer. The sandbox is the
   # boundary, but an exact-path deny misses a directory read, so deny each
   # secret path and everything beneath it too.
@@ -47,7 +58,10 @@ let
         {
           "*" = "allow";
         }
-        // rules "ask" (policy.commands.review ++ map (exe: [ exe ]) policy.commands.hostExecutables)
+        // rules "ask" (
+          policy.commands.review
+          ++ map (exe: [ exe ]) (lib.concatMap spellings policy.commands.hostExecutables)
+        )
         // rules "allow" policy.commands.hostInspection
         // lib.genAttrs (map commandString policy.commands.hostExact) (_: "allow")
         // rules "deny" policy.commands.denied

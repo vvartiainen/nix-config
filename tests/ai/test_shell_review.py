@@ -235,6 +235,32 @@ EOF
             {self.fixture["paths"]["nixDaemonSocket"]: "allow"},
         )
 
+    def settings_file(self, client, name):
+        path = Path(re.search(rf"--settings (/nix/store/[^ ]+-{name}[^ ]*\.json)", self.fixture[client]).group(1))
+        self.assertTrue(path.exists(), "build the fixture system before settings tests")
+        return json.loads(path.read_text())
+
+    def test_sandbox_sockets_match_codex(self):
+        # Only the Nix daemon socket is reachable; Rex and localhost stay out.
+        socket = self.fixture["paths"]["nixDaemonSocket"]
+        claude = self.settings_file("claude", "claude-code-settings")
+        self.assertTrue(claude["sandbox"]["enabled"])
+        self.assertFalse(claude["sandbox"]["network"]["allowAllUnixSockets"])
+        self.assertEqual(claude["sandbox"]["network"]["allowUnixSockets"], [socket])
+        self.assertEqual(claude["permissions"]["defaultMode"], "acceptEdits")
+        self.assertIn("Bash(npm publish:*)", claude["permissions"]["ask"])
+        self.assertFalse([rule for rule in claude["permissions"]["allow"] if rule.startswith("Bash(rex run")])
+        copilot = self.settings_file("copilot", "github-copilot-cli-settings")
+        policy = copilot["sandbox"]["userPolicy"]
+        self.assertTrue(copilot["sandbox"]["enabled"])
+        self.assertFalse(policy["network"]["allowLocalNetwork"])
+        self.assertFalse([p for p in policy["filesystem"]["readwritePaths"] if "rex" in p.lower()])
+        self.assertIn(socket, policy["filesystem"]["readwritePaths"])
+        launch = self.fixture["launch"]
+        self.assertIn("shell(rex ls:*)", launch)
+        self.assertNotIn("shell(rex:*)", launch)
+        self.assertNotIn("shell(rex run", launch)
+
     def test_generated_adapter_boundaries(self):
         rules = self.fixture["opencode"]
         self.assertIn({"action": "shell", "resource": "*", "effect": "ask"}, rules)
