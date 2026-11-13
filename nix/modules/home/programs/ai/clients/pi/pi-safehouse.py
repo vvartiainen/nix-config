@@ -17,6 +17,27 @@ def subpath(path):
     return f"(subpath {sb_string(path)})"
 
 
+def resolved_path(value):
+    """Rewrite PATH entries to the real directories they link to.
+
+    Safehouse grants the Nix store, not the profile symlinks that PATH names, so
+    resolving `mcp-nixos`, `bl` or `statix` through `~/.nix-profile/bin` or
+    `/etc/profiles/per-user/<user>/bin` fails with EPERM. Resolving here, outside
+    the sandbox, keeps tools reachable under the names projects configure.
+    """
+    entries = []
+    for entry in value.split(":"):
+        if not entry:
+            continue
+        try:
+            directory = Path(entry).resolve()
+        except OSError:
+            continue
+        if directory.is_dir() and str(directory) not in entries:
+            entries.append(str(directory))
+    return ":".join(entries)
+
+
 def worktree_git_dirs(workdir):
     try:
         common, current = [
@@ -116,6 +137,7 @@ def main():
             if not key.startswith("SAFEHOUSE_") and key not in ("BASH_ENV", "ENV")
         }
         env.update(spec["env"])
+        env["PATH"] = resolved_path(env.get("PATH", ""))
         env["PI_CODING_AGENT_DIR"] = spec["agentDir"]
         t3_env = sorted(key for key in os.environ if key.startswith("T3_"))
         passed = ["DEEPSEEK_API_KEY", "PI_CODING_AGENT_DIR", *spec["env"], *t3_env]

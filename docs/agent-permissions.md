@@ -87,8 +87,10 @@ permission package.
 
 The sandbox also denies writes to extension code under Pi state (except the
 permission extension's review log) and to the user-level `mcp.json`, so a session
-cannot persist code or servers for a later one. Nix profile links are readable,
-so Home Manager tools such as `statix` and `bl` resolve inside Pi.
+cannot persist code or servers for a later one. The wrapper resolves PATH entries
+to the directories they link to before launch, so Home Manager tools such as
+`statix` and `bl`, and MCP servers configured by name such as `mcp-nixos`, start
+inside Pi; the profile symlinks themselves stay outside the read grants.
 
 Safehouse leaves IP networking open, including local TCP services; it does not
 provide the domain allowlist used by Codex and Claude or prevent exfiltration

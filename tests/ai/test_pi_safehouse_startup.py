@@ -139,6 +139,44 @@ class StartupTests(unittest.TestCase):
         self.assertIn("T3_MCP_URL", passed)
         self.assertNotIn("SYNTHETIC_HOST_SECRET", passed)
 
+    def test_path_entries_resolve_away_from_profile_symlinks(self):
+        # Safehouse grants the store, not the profile symlinks PATH names, so a
+        # lookup of `mcp-nixos` under ~/.nix-profile/bin fails with EPERM.
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch).resolve()
+            store_bin = root / "store" / "profile" / "bin"
+            store_bin.mkdir(parents=True)
+            profile = root / ".nix-profile"
+            profile.symlink_to(root / "store" / "profile")
+            plain = root / "bin"
+            plain.mkdir()
+            agent = root / "state"
+            cache = root / "cache"
+            spec = root / "spec.json"
+            spec.write_text(json.dumps({
+                "agentDir": str(agent), "readable": [],
+                "writable": [str(agent), str(cache)], "denied": [],
+                "protected": [], "env": {},
+            }))
+            captured = {}
+
+            def capture(command, env):
+                captured["path"] = env["PATH"]
+                return 0
+
+            with (
+                patch.object(launcher.sys, "argv", ["launcher", str(spec), "safehouse", "pi"]),
+                patch.object(launcher.Path, "cwd", return_value=root),
+                patch.dict(os.environ, {
+                    "HOME": str(root / "home"),
+                    "TMPDIR": str(root),
+                    "PATH": f"{profile / 'bin'}:{plain}:{root / 'absent'}:{plain}",
+                }),
+                patch.object(launcher.subprocess, "call", side_effect=capture),
+            ):
+                self.assertEqual(launcher.main(), 0)
+        self.assertEqual(captured["path"], f"{store_bin}:{plain}")
+
 
 if __name__ == "__main__":
     unittest.main()
