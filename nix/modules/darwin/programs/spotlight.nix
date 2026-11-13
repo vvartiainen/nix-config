@@ -29,10 +29,14 @@ in
       PasteboardHistoryEnabled = true; # clipboard history
       # Result categories turned off in System Settings → Spotlight.
       DisabledUTTypes = [ ];
-      # Enabled exclusion rules: keep related content and iPhone apps off.
+      # Enabled exclusion rules: keep related content, files, folders,
+      # iPhone apps and menu items out of results.
       EnabledPreferenceRules = [
         "Custom.relatedContents"
+        "System.files"
+        "System.folders"
         "System.iphoneApps"
+        "System.menuItems"
       ];
     };
 
