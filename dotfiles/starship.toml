@@ -2,6 +2,10 @@
 
 add_newline = true
 
+# Keep prompt work bounded: no runtime version commands, cloud profile reads,
+# or Git status scans. Add modules explicitly instead of using the default $all.
+format = "$username$hostname$directory$git_branch$cmd_duration$line_break$jobs$character"
+
 palette = "catppuccin_mocha"
 
 [palettes.catppuccin_mocha]
@@ -31,9 +35,3 @@ surface0 = "#313244"
 base = "#1e1e2e"
 mantle = "#181825"
 crust = "#11111b"
-
-[azure]
-disabled = false
-format = "on [$symbol($subscription)]($style) "
-symbol = "󰠅 "
-style = "blue bold"
