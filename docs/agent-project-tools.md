@@ -73,11 +73,26 @@ credentials out.
 Close agent CLIs before switching so they cannot write stale settings back.
 
 Claude Code keeps its global state in `~/.claude/.claude.json` through
-`CLAUDE_CONFIG_DIR`, which launchd also sets for GUI apps such as CodexBar
-started after a switch. The first
+`CLAUDE_CONFIG_DIR`. The managed `claude` launcher at `~/.local/bin/claude`
+defaults this variable before running the Homebrew CLI, preserving explicit
+overrides. GUI apps must use this launcher; invoking the Homebrew binary or
+an app-bundled binary directly bypasses it. The first
 switch moves `~/.claude.json` and its backups there; if a destination already
 exists, resolve the conflicting files before switching again. Restart Claude
 from a new terminal after switching.
+
+GUI apps do not depend on a session-global launchd PATH. In T3 Code's provider
+settings, set **Binary path** to the absolute path of `~/.local/bin/claude`
+for Claude and `/etc/profiles/per-user/<user>/bin/pi` for sandboxed Pi.
+Expand `~` and replace `<user>` with your local home/user name. Use
+`~/.local/bin/pi-unsandboxed` only when intentionally giving T3's Pi sessions
+access without Safehouse; T3's approval prompts are then the boundary.
+See [T3's Pi setup](https://github.com/pingdotgg/t3code/blob/main/docs/user/providers-pi.md).
+
+After first applying the removal of the old launchd environment settings,
+reboot before testing GUI apps. Removing the Nix options does not clear values
+already set in the running launchd session. Confirm provider discovery and
+Claude's config directory again after reboot.
 
 Every switch removes global MCP registrations and undeclared global skills/
 plugins, then restores declared Rex and Herdr integrations. Project tools,

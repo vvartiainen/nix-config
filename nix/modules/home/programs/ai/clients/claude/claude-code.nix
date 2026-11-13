@@ -7,6 +7,14 @@
 }:
 let
   jsonFormat = pkgs.formats.json { };
+  # Keep Homebrew's release, but make config discovery independent of the
+  # launching app's environment. Preserve explicit per-provider overrides.
+  claudeLauncher = pkgs.writeShellScriptBin "claude" ''
+    if [[ ! -v CLAUDE_CONFIG_DIR ]]; then
+      export CLAUDE_CONFIG_DIR=${lib.escapeShellArg config.programs.claude-code.configDir}
+    fi
+    exec /opt/homebrew/bin/claude "$@"
+  '';
   mergeConfig = import ../../../../merge-config.nix { inherit lib pkgs config; };
   permissions = import ../../shared/permissions.nix { inherit lib config; };
   inherit (permissions)
@@ -249,8 +257,8 @@ in
 
   programs.claude-code = {
     enable = true;
-    # Installed by the claude-code@latest Homebrew cask (darwin/programs/claude-code.nix).
-    package = null;
+    # The launcher delegates to the claude-code@latest Homebrew cask.
+    package = claudeLauncher;
     configDir = "${config.home.homeDirectory}/.claude";
     # Global ~/.claude/CLAUDE.md; repo instructions add to or narrow these.
     context = ''
@@ -297,77 +305,82 @@ in
       (pkgs.writeTextDir "share/zsh/site-functions/_claude" (builtins.readFile ./claude-completion.zsh))
     ];
 
-    file."${config.programs.claude-code.configDir}/themes/catppuccin-mocha.json".source =
-      catppuccinMocha;
+    file = {
+      # Stable path for GUI provider settings and shell command discovery.
+      ".local/bin/claude".source = lib.getExe claudeLauncher;
 
-    file."${config.programs.claude-code.configDir}/keybindings.json".source =
-      jsonFormat.generate "claude-code-keybindings.json" {
-        "$schema" = "https://www.schemastore.org/claude-code-keybindings.json";
-        bindings = [
-          {
-            context = "Chat";
-            bindings = {
-              "alt+a" = "command:tasks";
-              "alt+t" = "command:effort";
-              "alt+y" = "command:copy";
-            };
-          }
-          # Navigation belongs to UI contexts; keep prompt editing non-modal.
-          {
-            context = "Select";
-            bindings = {
-              j = "select:next";
-              k = "select:previous";
-              "g g" = "select:first";
-              "shift+g" = "select:last";
-            };
-          }
-          {
-            context = "Confirmation";
-            bindings = {
-              j = "confirm:next";
-              k = "confirm:previous";
-            };
-          }
-          {
-            context = "Tabs";
-            bindings = {
-              h = "tabs:previous";
-              l = "tabs:next";
-            };
-          }
-          {
-            context = "ModelPicker";
-            bindings = {
-              h = "modelPicker:decreaseEffort";
-              l = "modelPicker:increaseEffort";
-            };
-          }
-          {
-            context = "EffortSlider";
-            bindings = {
-              h = "effortSlider:decreaseEffort";
-              l = "effortSlider:increaseEffort";
-            };
-          }
-          {
-            context = "Footer";
-            bindings = {
-              h = "footer:previous";
-              j = "footer:down";
-              k = "footer:up";
-              l = "footer:next";
-            };
-          }
-          {
-            context = "Attachments";
-            bindings = {
-              h = "attachments:previous";
-              l = "attachments:next";
-            };
-          }
-        ];
-      };
+      "${config.programs.claude-code.configDir}/themes/catppuccin-mocha.json".source =
+        catppuccinMocha;
+
+      "${config.programs.claude-code.configDir}/keybindings.json".source =
+        jsonFormat.generate "claude-code-keybindings.json" {
+          "$schema" = "https://www.schemastore.org/claude-code-keybindings.json";
+          bindings = [
+            {
+              context = "Chat";
+              bindings = {
+                "alt+a" = "command:tasks";
+                "alt+t" = "command:effort";
+                "alt+y" = "command:copy";
+              };
+            }
+            # Navigation belongs to UI contexts; keep prompt editing non-modal.
+            {
+              context = "Select";
+              bindings = {
+                j = "select:next";
+                k = "select:previous";
+                "g g" = "select:first";
+                "shift+g" = "select:last";
+              };
+            }
+            {
+              context = "Confirmation";
+              bindings = {
+                j = "confirm:next";
+                k = "confirm:previous";
+              };
+            }
+            {
+              context = "Tabs";
+              bindings = {
+                h = "tabs:previous";
+                l = "tabs:next";
+              };
+            }
+            {
+              context = "ModelPicker";
+              bindings = {
+                h = "modelPicker:decreaseEffort";
+                l = "modelPicker:increaseEffort";
+              };
+            }
+            {
+              context = "EffortSlider";
+              bindings = {
+                h = "effortSlider:decreaseEffort";
+                l = "effortSlider:increaseEffort";
+              };
+            }
+            {
+              context = "Footer";
+              bindings = {
+                h = "footer:previous";
+                j = "footer:down";
+                k = "footer:up";
+                l = "footer:next";
+              };
+            }
+            {
+              context = "Attachments";
+              bindings = {
+                h = "attachments:previous";
+                l = "attachments:next";
+              };
+            }
+          ];
+        };
+    };
 
     # Claude Code persists /config changes here, so merge defaults into a
     # regular file instead of using the Home Manager settings symlink.
