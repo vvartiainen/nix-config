@@ -139,6 +139,11 @@ Grant Accessibility to `/opt/yabai/bin/yabai` and `/Applications/skhd.app` in
 System Settings → Privacy & Security. Grant skhd Input Monitoring if requested.
 Signing/permission recovery is documented in Backlog doc-5.
 
+Activation rewrites `/etc/sudoers.d/yabai` only when the yabai binary changes.
+Endpoint security tools may kill activation (exit 137) during that write; it
+then fails on every switch until the file holds the rule for the new hash, so
+install that rule manually.
+
 Restart Kitty after changing remote-control or menu settings. Reload Herdr
 with `herdr server reload-config`; Rex Lua uses `rex config reload`.
 Quit Zen and Rex before applying GUI preferences, then reopen them.

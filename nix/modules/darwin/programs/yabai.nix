@@ -69,7 +69,8 @@ in
   # activation. Keep the Dock scripting addition and launchd service in sync:
   #
   # 1. Write /etc/sudoers.d/yabai so `sudo yabai --load-sa` needs no password,
-  #    pinned to the binary's sha256. The file is validated before it's installed.
+  #    pinned to the binary's sha256. The file is rewritten only when it differs
+  #    and is validated before it's installed.
   # 2. The remaining steps run only if the user is logged into a GUI session:
   #    a. If the binary's hash differs from the one recorded in the installed
   #       scripting addition, reinstall the addition. This restarts Dock.
@@ -83,27 +84,36 @@ in
     sudoersFile="$sudoersDir/yabai"
 
     yabaiHash=$(shasum -a 256 "$yabaiBin" | cut -d " " -f 1)
-    mkdir -p "$sudoersDir"
-    # Create the temp file in sudoers.d itself so the final `mv` is a rename on
-    # the same filesystem. sudo ignores names containing a dot, so it never
-    # reads the partly written temp file. The trap removes it if a later step fails.
-    sudoersTemp=$(mktemp "$sudoersDir/.yabai.XXXXXX")
-    trap 'rm -f "$sudoersTemp"' EXIT
-
     # `sha256:<digest>` makes sudo allow the command only if the binary's hash
     # still matches, so replacing the binary makes the rule stop working until
     # the next activation rewrites it.
-    printf '%s ALL=(root) NOPASSWD: sha256:%s %s --load-sa\n' \
-      "${userName}" "$yabaiHash" "$yabaiBin" > "$sudoersTemp"
-    # sudo refuses sudoers files that aren't root-owned or are writable by others.
-    chmod 0440 "$sudoersTemp"
-    chown root:wheel "$sudoersTemp"
-    # -c checks syntax only and -f selects the file. A syntax error aborts here,
-    # before the file is installed; a broken sudoers file could lock out sudo.
-    /usr/sbin/visudo -cf "$sudoersTemp" > /dev/null
-    mv -f "$sudoersTemp" "$sudoersFile"
+    sudoersRule="${userName} ALL=(root) NOPASSWD: sha256:$yabaiHash $yabaiBin --load-sa"
 
-    trap - EXIT
+    # Endpoint security tools may kill processes that write to sudoers.d, so
+    # only touch it when the rule, owner or mode differs. sudo refuses sudoers
+    # files that aren't root-owned or are writable by others.
+    if [[ -f "$sudoersFile" && ! -L "$sudoersFile" ]] \
+      && [[ "$(/usr/bin/stat -f '%Su:%Sg %Lp' "$sudoersFile")" == "root:wheel 440" ]] \
+      && [[ "$(< "$sudoersFile")" == "$sudoersRule" ]]; then
+      :
+    else
+      mkdir -p "$sudoersDir"
+      # Create the temp file in sudoers.d itself so the final `mv` is a rename on
+      # the same filesystem. sudo ignores names containing a dot, so it never
+      # reads the partly written temp file. The trap removes it if a later step fails.
+      sudoersTemp=$(mktemp "$sudoersDir/.yabai.XXXXXX")
+      trap 'rm -f "$sudoersTemp"' EXIT
+
+      printf '%s\n' "$sudoersRule" > "$sudoersTemp"
+      chmod 0440 "$sudoersTemp"
+      chown root:wheel "$sudoersTemp"
+      # -c checks syntax only and -f selects the file. A syntax error aborts here,
+      # before the file is installed; a broken sudoers file could lock out sudo.
+      /usr/sbin/visudo -cf "$sudoersTemp" > /dev/null
+      mv -f "$sudoersTemp" "$sudoersFile"
+
+      trap - EXIT
+    fi
 
     # Run in the user's GUI session, after installing the binary and sudo rule.
     # The gui/<uid> launchd domain exists only while the user is logged in at
