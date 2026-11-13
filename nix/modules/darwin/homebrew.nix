@@ -67,6 +67,7 @@
       "font-symbols-only-nerd-font"
       "font-ubuntu-mono-nerd-font"
       "ghostty"
+      "home-assistant"
       "kitty"
       "localsend"
       "moonlight"
