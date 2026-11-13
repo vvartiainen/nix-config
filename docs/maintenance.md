@@ -147,11 +147,14 @@ install that rule manually.
 Restart Kitty after changing remote-control or menu settings. Reload Herdr
 with `herdr server reload-config`; Rex Lua uses `rex config reload`.
 Quit Zen and Rex before applying GUI preferences, then reopen them.
-Rex in the Nix store is updated through Nix. Bump the flake's pinned `rex`
-release and the GUI DMG pin in `nix/modules/darwin/programs/rex.nix` together;
-the CLI and app share an API revision. Run `rex terminfo setup` once for SSH
-fallback. Select **Apply Catppuccin Mocha** in Rex's palette once per Mac
-and again after changing the palette; reloading Lua alone does not select it.
+Rex in the Nix store is updated through Nix. The flake tracks Rex's preview
+channel, so `nix flake update rex` moves the CLI to the newest preview while
+`flake.lock` keeps the exact release URL. The GUI build in
+`nix/modules/darwin/programs/rex.nix` is still pinned by hand; bump it in the
+same change, because the CLI and app share an API revision. Run
+`rex terminfo setup` once for SSH fallback. Select **Apply Catppuccin Mocha**
+in Rex's palette once per Mac and again after changing the palette; reloading
+Lua alone does not select it.
 
 ## Quotas and agent status
 

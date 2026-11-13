@@ -267,7 +267,7 @@
       },
       "original": {
         "type": "tarball",
-        "url": "https://pkgs.superlogical.com/rex/nix/preview/0.1.0-preview.18.tar.gz"
+        "url": "https://pkgs.superlogical.com/rex/nix/preview.tar.gz"
       }
     },
     "root": {

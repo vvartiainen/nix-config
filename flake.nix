@@ -28,10 +28,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Pin the CLI release to the GUI build in nix/modules/darwin/programs/rex.nix.
-    # The CLI and app share an API revision, so bump both together.
+    # Track the preview channel; Nix locks the immutable release URL that it
+    # redirects to, so `nix flake update rex` moves to the newest preview.
+    # The CLI and the GUI build in nix/modules/darwin/programs/rex.nix share an
+    # API revision, so bump that app pin together with this input.
     rex = {
-      url = "https://pkgs.superlogical.com/rex/nix/preview/0.1.0-preview.18.tar.gz";
+      url = "https://pkgs.superlogical.com/rex/nix/preview.tar.gz";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
