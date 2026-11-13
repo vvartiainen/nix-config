@@ -218,6 +218,23 @@ EOF
                 )
                 self.assertEqual(json.loads(result.stdout).get("decision"), expected)
 
+    def test_codex_network_enforcement(self):
+        settings = re.search(
+            r"--settings (/nix/store/[^ ]+)", self.fixture["codex"]
+        ).group(1)
+        self.assertTrue(Path(settings).exists(), "build the fixture system before settings tests")
+        config = json.loads(Path(settings).read_text())
+        # UI feature settings must not replace the network enforcement flag.
+        self.assertTrue(config["features"]["network_proxy"])
+        self.assertFalse(config["features"]["apps"])
+        self.assertFalse(config["features"]["mentions_v2"])
+        network = config["permissions"]["workspace-only"]["network"]
+        self.assertFalse(network["dangerously_allow_all_unix_sockets"])
+        self.assertEqual(
+            network["unix_sockets"],
+            {self.fixture["paths"]["nixDaemonSocket"]: "allow"},
+        )
+
     def test_generated_adapter_boundaries(self):
         rules = self.fixture["opencode"]
         self.assertIn({"action": "shell", "resource": "*", "effect": "ask"}, rules)
