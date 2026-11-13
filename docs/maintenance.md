@@ -169,10 +169,12 @@ Time Machine excludes the Nix store, VM disks and rebuildable tool caches.
 Check with `tmutil isexcluded /nix`. Treat VM disks as rebuildable; keep
 important data elsewhere.
 
-Spotlight indexing is disabled for the separately mounted `/nix` volume on
-activation. Check with `mdutil -s /nix`. Time Machine exclusions do not affect
-Spotlight. Folder exclusions for rebuildable caches must be added in System
-Settings → Spotlight → Search Privacy; `mdutil` controls entire volumes.
+Activation disables Spotlight indexing on a separately mounted `/nix` only when
+`mdutil -s /nix` reports `Indexing enabled.` Standard Nix volumes may instead
+report `unknown indexing state` (-400); activation skips these, without claiming
+an exclusion was applied. Time Machine exclusions do not affect Spotlight.
+Folder exclusions for rebuildable caches must be added in System Settings →
+Spotlight → Search Privacy; `mdutil` controls entire volumes.
 
 Claude, Codex and Pi JSONL sessions are copied hourly into
 `~/.local/share/agent-transcripts/<host>/`; source deletions do not delete the
