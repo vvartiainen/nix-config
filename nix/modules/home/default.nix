@@ -36,6 +36,7 @@ in
       (import ../../validation/repository-checks.nix { inherit pkgs; })
       cmake
       deadnix
+      forgejo-cli
       gdu
       lnav
       nh
