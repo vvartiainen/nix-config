@@ -77,11 +77,19 @@ in
   #    b. Stop the nix-darwin agent so KeepAlive restarts it. Its plist doesn't
   #       change when only the binary does, so launchd wouldn't restart it otherwise.
   #
+  # Steps 1 and 2a are skipped while SIP is fully enabled, because the addition
+  # can't be injected then. yabairc makes the same check at runtime.
+  #
   # Accessibility approval stays manual, once per signing key.
   system.activationScripts.postActivation.text = lib.mkAfter ''
     yabaiBin="${yabaiBin}"
     sudoersDir="/private/etc/sudoers.d"
     sudoersFile="$sudoersDir/yabai"
+
+    yabaiUseSa=1
+    if /usr/bin/csrutil status | grep -q 'status: enabled'; then
+      yabaiUseSa=
+    fi
 
     yabaiHash=$(shasum -a 256 "$yabaiBin" | cut -d " " -f 1)
     # `sha256:<digest>` makes sudo allow the command only if the binary's hash
@@ -92,7 +100,9 @@ in
     # Endpoint security tools may kill processes that write to sudoers.d, so
     # only touch it when the rule, owner or mode differs. sudo refuses sudoers
     # files that aren't root-owned or are writable by others.
-    if [[ -f "$sudoersFile" && ! -L "$sudoersFile" ]] \
+    if [[ -z "$yabaiUseSa" ]]; then
+      :
+    elif [[ -f "$sudoersFile" && ! -L "$sudoersFile" ]] \
       && [[ "$(/usr/bin/stat -f '%Su:%Sg %Lp' "$sudoersFile")" == "root:wheel 440" ]] \
       && [[ "$(< "$sudoersFile")" == "$sudoersRule" ]]; then
       :
@@ -123,7 +133,8 @@ in
       # Forks can share OSAX_VERSION with upstream, so --load-sa alone may
       # reuse an incompatible payload. Track the binary that installed it.
       saHashFile=/Library/ScriptingAdditions/yabai.osax/Contents/nix-binary-sha256
-      if [[ ! -f "$saHashFile" ]] || [[ "$(cat "$saHashFile")" != "$yabaiHash" ]]; then
+      if [[ -n "$yabaiUseSa" ]] \
+        && { [[ ! -f "$saHashFile" ]] || [[ "$(cat "$saHashFile")" != "$yabaiHash" ]]; }; then
         # Deletes /Library/ScriptingAdditions/yabai.osax so --load-sa has to
         # reinstall it instead of treating it as up to date.
         "$yabaiBin" --uninstall-sa
@@ -150,7 +161,7 @@ in
       xdg.configFile = linkTree "yabai";
 
       programs.zsh.shellAliases = {
-        reloadyabai = ''sudo yabai --load-sa && launchctl kickstart -k gui/"$(id -u)"/${label}'';
+        reloadyabai = ''{ /usr/bin/csrutil status | grep -q 'status: enabled' || sudo yabai --load-sa; } && launchctl kickstart -k gui/"$(id -u)"/${label}'';
       };
     };
 }

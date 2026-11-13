@@ -1,7 +1,11 @@
 #!/usr/bin/env sh
 
-yabai -m signal --add label=load_sa event=dock_did_restart action="sudo -n yabai --load-sa"
-sudo -n yabai --load-sa
+# The scripting addition needs SIP partially disabled; with SIP fully enabled,
+# space focus falls back to synthesized gestures (docs/maintenance.md).
+if ! /usr/bin/csrutil status | grep -q 'status: enabled'; then
+  yabai -m signal --add label=load_sa event=dock_did_restart action="sudo -n yabai --load-sa"
+  sudo -n yabai --load-sa
+fi
 
 yabai -m config external_bar all:49:0 \
   mouse_follows_focus off \
