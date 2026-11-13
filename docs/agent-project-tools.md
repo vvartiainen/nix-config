@@ -59,11 +59,14 @@ ct agents sync
 ```
 
 Start a new agent session to use it. Available workflow skills include
-`backlog-task`, `work-on-task`, `rebase-main`, `review-before-push`, `handoff`
-and `mac-disk-cleanup`; read their SKILL.md for scope. For an existing ticket,
+`agent-planning`, `backlog-task`, `work-on-task`, `rebase-main`,
+`review-before-push`, `handoff` and `mac-disk-cleanup`; read their SKILL.md for scope. For an existing ticket,
 invoke `work-on-task TASK-123`; `work-on-task prepare TASK-123` produces a brief
-without starting implementation. Skills do not grant permissions. Skill files
-enter the Nix store and project files, so keep credentials out.
+without starting implementation. Invoke `agent-planning <your goal or handoff>`
+to prepare task briefs, temporary workspace and note conventions, and a
+continuation prompt; implementation starts only when requested. Skills do not
+grant permissions. Skill files enter the Nix store and project files, so keep
+credentials out.
 
 ## Global cleanup
 
