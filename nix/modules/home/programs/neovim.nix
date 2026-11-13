@@ -124,7 +124,11 @@ let
     "plenary.nvim" = pkgs.vimPlugins.plenary-nvim;
     "refactoring.nvim" = pkgs.vimPlugins.refactoring-nvim;
     "render-markdown.nvim" = pkgs.vimPlugins.render-markdown-nvim;
-    "rustaceanvim" = pkgs.vimPlugins.rustaceanvim;
+    # Upstream integration tests need a working rust-analyzer workspace and
+    # fail in the Nix build sandbox.
+    "rustaceanvim" = pkgs.neovimUtils.buildNeovimPlugin {
+      luaAttr = pkgs.luajitPackages.rustaceanvim.overrideAttrs { doCheck = false; };
+    };
     "sidekick.nvim" = pkgs.vimPlugins.sidekick-nvim;
     "snacks.nvim" = pkgs.vimPlugins.snacks-nvim;
     "todo-comments.nvim" = pkgs.vimPlugins.todo-comments-nvim;
