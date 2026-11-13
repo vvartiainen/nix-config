@@ -34,6 +34,77 @@ RANK = {"allow": 0, "ask": 1, "deny": 2}
 MAX_DEPTH = 4
 
 
+def mask_literal_heredocs(command):
+    """Hide quoted heredoc data from shell rules, preserving executable headers.
+
+    Unquoted bodies can expand shell commands, so keep scanning those. Fall
+    back to the original input for headers we cannot parse or missing endings.
+    This is only for Claude's lenient scan, never a grant of permission.
+    """
+    lines = iter(command.splitlines(keepends=True))
+    output = []
+    word = re.compile(r"(?:'[^'\n]*'|\"[^\"$`\\\n]*\"|\\[^\n]|[A-Za-z0-9_])+")
+    for line in lines:
+        pending, pieces = [], []
+        i = start = 0
+        while i < len(line):
+            char = line[i]
+            if char == "#" and (i == 0 or line[i - 1] in " \t\r\n;&|()<>"):
+                break
+            if char == "`" or line.startswith("$(", i):
+                return command
+            if char == "\\":
+                i += 2
+                continue
+            if char in "'\"":
+                quote = char
+                i += 1
+                while i < len(line) and line[i] != quote:
+                    if quote == '"' and (line[i] == "`" or line.startswith("$(", i)):
+                        return command
+                    i += 2 if quote == '"' and line[i] == "\\" else 1
+                if i == len(line):
+                    return command
+                i += 1
+                continue
+            if line.startswith("<<<", i):
+                i += 3
+                continue
+            if not line.startswith("<<", i):
+                i += 1
+                continue
+            operator = i
+            i += 2
+            tabs = line[i:i + 1] == "-"
+            i += tabs
+            while i < len(line) and line[i] in " \t":
+                i += 1
+            match = word.match(line, i)
+            if not match or (match.end() < len(line) and line[match.end()] not in " \t\r\n;&|)"):
+                return command
+            raw = match.group()
+            delimiter = shlex.split(raw)[0]
+            literal = any(c in raw for c in "'\"\\")
+            pending.append((delimiter, tabs, literal))
+            i = match.end()
+            if literal:
+                pieces.append(line[start:operator])
+                start = i
+        output.append("".join(pieces) + line[start:])
+        for delimiter, tabs, literal in pending:
+            for body in lines:
+                text = body.lstrip("\t") if tabs else body
+                if text.rstrip("\n") == delimiter:
+                    if not literal:
+                        output.append(body)
+                    break
+                if not literal:
+                    output.append(body)
+            else:
+                return command
+    return "".join(output)
+
+
 def rule_decision(argv, policy):
     """Match the policy lists; None when no rule applies."""
     argv = list(argv)
@@ -121,6 +192,8 @@ def decide(command, policy, strict=True, depth=0):
     unknown = "ask" if strict else "allow"
     if not isinstance(command, str) or not command.strip():
         return unknown
+    if not strict:
+        command = mask_literal_heredocs(command)
     try:
         lexer = shlex.shlex(command, posix=True, punctuation_chars=PUNCTUATION)
         lexer.whitespace = " \t\r"

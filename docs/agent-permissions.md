@@ -132,6 +132,11 @@ missing. Claude's hook looks through redirects, substitutions, `sh -c` and
 wrappers and asks only when a part matches a review, deny or host rule. Hook errors return a valid denial instead of relying on a
 client's potentially fail-open exit-code handling.
 
+Claude's hook skips quoted heredoc bodies, which are literal input rather than
+shell commands. It still checks the command receiving that input and commands
+after the heredoc. Unquoted bodies remain subject to review because they can
+expand shell commands. Native Claude permission checks can still prompt.
+
 For nix-config, follow [AGENTS.md](../AGENTS.md): validate against the public
 fixture, never read private host data for routine checks, and never apply the
 fixture system. The user validates and applies real host configuration manually.

@@ -131,6 +131,46 @@ class ShellReviewTests(unittest.TestCase):
             )
         return json.loads(result.stdout)
 
+    def test_claude_literal_heredocs(self):
+        # Python open() in both reported edit-and-check calls is data, not
+        # the macOS host command. Include text that shlex cannot parse as shell.
+        for checks in [
+            "gofmt -l cmd internal; go build ./... && go vet ./internal/provision ./internal/service ./cmd/...",
+            "gofmt -l internal cmd; go vet ./internal/provision && go test ./internal/provision/ 2>&1 | tail -30",
+        ]:
+            command = """cd /tmp/agents-work/wt/example && python3 - <<'EOF'
+p='internal/service/example.go'
+s=open(p).read()
+s=s.replace("old", "new")
+open(p,'w').write(s)
+# Don't interpret rex run, git push, or unmatched ' as shell here.
+EOF
+""" + checks
+            with self.subTest(checks=checks):
+                self.assertEqual(self.run_hook("claude", {"tool_input": {"command": command}}), {})
+                # Cursor still asks for syntax it cannot inspect.
+                self.assertEqual(review.decide(command, self.policy), "ask")
+
+        cases = {
+            'cat <<"END"\nopen(file)\nEND\n': "allow",
+            "cat <<\\END\nopen(file)\nEND\n": "allow",
+            "cat <<-'END'\n\topen(file)\n\tEND\n": "allow",
+            "cat <<'A' <<'B'\nopen(file)\nA\nrex run\nB\ngo test ./...": "allow",
+            "cat <<'A' <<B\nopen(file)\nA\n$(rex run -- id)\nB\n": "ask",
+            "cat <<'END'\n$(rex run -- id)\nEND\n": "allow",
+            "cat <<'END'\ntext\nEND\nrex run -- id": "ask",
+            "cat <<'END'; git push\ntext\nEND\n": "ask",
+            "rex run <<'END'\ntext\nEND\n": "ask",
+            "cat <<END\n$(rex run -- id)\nEND\n": "ask",
+            "cat <<'END'\ntext\nEND\ncat <<END\n$(git push --force)\nEND\n": "deny",
+            "echo \"<<'END'\"\nrex run\nEND\n": "ask",
+            "echo hi;# <<'END'\nrex run\nEND\n": "ask",
+            "cat <<'END'\nrex run\n": "ask",
+        }
+        for command, expected in cases.items():
+            with self.subTest(command=command):
+                self.assertEqual(review.decide(command, self.policy, strict=False), expected)
+
     def test_hook_outputs_and_unsandboxed_retries(self):
         for sandbox, expected in [(True, "allow"), (False, "ask"), (None, "ask")]:
             response = self.run_hook("cursor", {"command": "cat README.md", "sandbox": sandbox})
