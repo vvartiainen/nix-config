@@ -423,6 +423,14 @@ let
       ".config/github-copilot/**"
       ".claude/.credentials.json"
       ".gemini/oauth_creds.json"
+      # T3 Code's service environment, sign-in cache, provider server registry
+      # and thread database. Its cache, attachments, browser artifacts and
+      # worktrees stay readable as shared host paths below.
+      ".t3/service.env"
+      ".t3/userdata/secrets/**"
+      ".t3/userdata/clerk/**"
+      ".t3/userdata/opencode-servers/**"
+      ".t3/userdata/statev2.sqlite*"
       ".kube/**"
       ".config/gcloud/**"
       ".git-credentials"
@@ -458,8 +466,9 @@ let
       path: "${config.home.homeDirectory}/${lib.removeSuffix "/**" path}"
     ) paths.homeSecrets;
 
-    # homeReadable as absolute paths.
-    readable = map (path: "${config.home.homeDirectory}/${path}") paths.homeReadable;
+    # homeReadable as absolute paths, plus state an agent host app shares.
+    readable =
+      map (path: "${config.home.homeDirectory}/${path}") paths.homeReadable ++ paths.hostShared;
 
     readonly = [
       "/nix/store"
@@ -489,6 +498,17 @@ let
       "/private/var/run/current-system"
       "/nix/var/nix/profiles"
       "/etc/nix"
+    ];
+
+    # Read-only paths an agent host app shares with the CLI it runs. T3 Code
+    # injects Pi's extension from its cache, hands attachment and browser
+    # artifact paths to the model, and creates thread worktrees in its own
+    # root. Everything else under its home stays in homeSecrets.
+    hostShared = [
+      "${config.home.homeDirectory}/.t3/caches"
+      "${config.home.homeDirectory}/.t3/userdata/attachments"
+      "${config.home.homeDirectory}/.t3/userdata/browser-artifacts"
+      "${config.home.homeDirectory}/.t3/worktrees"
     ];
 
     # Shared scratch space, writable in every sandbox so agents can use

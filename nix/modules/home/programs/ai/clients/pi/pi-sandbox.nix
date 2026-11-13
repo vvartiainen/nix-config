@@ -86,15 +86,8 @@ let
       readable =
         policy.paths.readonly
         ++ policy.paths.runtime
-        ++ [
-          "${config.home.homeDirectory}/.agents"
-          # T3 Code drives Pi over RPC: its injected extension sits in the T3
-          # cache directory and thread attachments live in the T3 state
-          # directory. The rest of the T3 home (databases, service.env) stays
-          # unreadable.
-          "${config.home.homeDirectory}/.t3/caches"
-          "${config.home.homeDirectory}/.t3/userdata/attachments"
-        ];
+        ++ policy.paths.hostShared
+        ++ [ "${config.home.homeDirectory}/.agents" ];
       writable = policy.caches.writePaths ++ [ agentDir ];
       denied = policy.paths.denied;
       protected = [

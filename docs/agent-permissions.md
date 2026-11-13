@@ -110,6 +110,13 @@ vault, need a separately reviewed grant before they can work.
 
 ## Working in the sandboxes
 
+- Host apps share state with the CLIs they run. T3 Code's cache, thread
+  attachments, browser artifacts and worktrees are readable in every sandbox
+  that has a path allowlist; its thread database, provider secrets, sign-in
+  cache, provider server registry and `service.env` stay denied. The host can
+  still pass a readable path to the model: a sandbox bounds what a command
+  reaches, not what the host already shares.
+
 - Write in the workspace, `$TMPDIR`, `/tmp`, or `~/.cache/<tool>-agent`.
   Package cache variables already point there; do not redirect them.
 - Package download hosts are allowlisted. Other hosts need approval or a
