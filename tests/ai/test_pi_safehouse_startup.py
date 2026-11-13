@@ -63,6 +63,82 @@ class StartupTests(unittest.TestCase):
                     self.assertEqual(launcher.main(), 0)
                     run.assert_called_once()
 
+    def test_home_and_root_do_not_grant_the_working_directory(self):
+        # Host apps probe the CLI from $HOME; that must start, but must not make
+        # the home directory (or /) the writable workspace.
+        for name in ("home", "root"):
+            with self.subTest(name), tempfile.TemporaryDirectory() as scratch:
+                root = Path(scratch).resolve()
+                home = root / "home"
+                home.mkdir()
+                agent = root / "state"
+                cache = root / "cache"
+                spec = root / "spec.json"
+                spec.write_text(json.dumps({
+                    "agentDir": str(agent), "readable": [],
+                    "writable": [str(agent), str(cache)], "denied": [],
+                    "protected": [], "env": {},
+                }))
+                cwd = home if name == "home" else Path("/")
+
+                def capture(command, env):
+                    grants = []
+                    for arg in command:
+                        if arg.startswith(("--add-dirs=", "--add-dirs-ro=")):
+                            grants.extend(arg.split("=", 1)[1].split(":"))
+                    self.assertNotIn(str(home), grants)
+                    self.assertNotIn("/", grants)
+                    workdir = next(a for a in command if a.startswith("--workdir="))
+                    self.assertNotIn(str(home), workdir)
+                    self.assertNotEqual(workdir, "--workdir=/")
+                    return 0
+
+                with (
+                    patch.object(launcher.sys, "argv", ["launcher", str(spec), "safehouse", "pi", "--version"]),
+                    patch.object(launcher.Path, "cwd", return_value=cwd),
+                    patch.dict(os.environ, {"HOME": str(home), "TMPDIR": str(root)}),
+                    patch.object(launcher.subprocess, "call", side_effect=capture) as run,
+                ):
+                    self.assertEqual(launcher.main(), 0)
+                    run.assert_called_once()
+
+    def test_t3_session_variables_reach_the_sandboxed_process(self):
+        # T3 Code hands its MCP endpoint, runtime mode and injected extension to
+        # Pi through T3_* variables; unrelated host variables stay withheld.
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch).resolve()
+            agent = root / "state"
+            cache = root / "cache"
+            spec = root / "spec.json"
+            spec.write_text(json.dumps({
+                "agentDir": str(agent), "readable": [],
+                "writable": [str(agent), str(cache)], "denied": [],
+                "protected": [], "env": {},
+            }))
+            passed = []
+
+            def capture(command, env):
+                value = next(a for a in command if a.startswith("--env-pass="))
+                passed.extend(value.split("=", 1)[1].split(","))
+                return 0
+
+            with (
+                patch.object(launcher.sys, "argv", ["launcher", str(spec), "safehouse", "pi"]),
+                patch.object(launcher.Path, "cwd", return_value=root),
+                patch.dict(os.environ, {
+                    "HOME": str(root / "home"),
+                    "TMPDIR": str(root),
+                    "T3_PI_RUNTIME_MODE": "approval-required",
+                    "T3_MCP_URL": "http://127.0.0.1:3773/mcp",
+                    "SYNTHETIC_HOST_SECRET": "must-not-pass",
+                }),
+                patch.object(launcher.subprocess, "call", side_effect=capture),
+            ):
+                self.assertEqual(launcher.main(), 0)
+        self.assertIn("T3_PI_RUNTIME_MODE", passed)
+        self.assertIn("T3_MCP_URL", passed)
+        self.assertNotIn("SYNTHETIC_HOST_SECRET", passed)
+
 
 if __name__ == "__main__":
     unittest.main()

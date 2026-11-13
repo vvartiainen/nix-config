@@ -71,11 +71,22 @@ def make_profile(spec, workdir, tmpdir):
 def main():
     spec_path, safehouse, pi, *args = sys.argv[1:]
     spec = json.loads(Path(spec_path).read_text())
-    workdir = str(Path.cwd().resolve())
+    cwd = Path.cwd().resolve()
+    workdir = str(cwd)
     tmpdir = str(Path(os.environ.get("TMPDIR", "/tmp")).resolve())
-    # Starting at / or $HOME would make the workspace grant unreasonably broad.
+    # Starting at / or $HOME would make the workspace grant unreasonably broad,
+    # so keep those ungranted. Host apps probe the CLI from $HOME
+    # (`pi --version`, provider status discovery) and have no project at hand,
+    # so run with an empty workspace instead of refusing; Pi keeps its own cwd
+    # and a real session still starts from a project directory.
     if workdir in ("/", str(Path.home().resolve())):
-        sys.exit("Start Pi in a project directory, not / or your home directory.")
+        workdir = tempfile.mkdtemp(prefix="pi-safehouse-workspace-", dir=tmpdir)
+        if sys.stderr.isatty():
+            print(
+                "pi: started in %s, which the sandbox does not grant; "
+                "run Pi in a project directory for file access" % cwd,
+                file=sys.stderr,
+            )
     # Linked worktrees share objects and refs with the original checkout.
     # Grant only their Git metadata, not the main checkout's source files.
     git_dirs = worktree_git_dirs(workdir)
@@ -96,14 +107,18 @@ def main():
         overlay = Path(scratch) / "policy.sb"
         overlay.write_text(make_profile(spec, workdir, tmpdir))
         # Safehouse sanitizes the inherited environment; pass only the selected
-        # API key and our cache variables. Stored Pi credentials also work.
+        # API key, our cache variables and T3's session variables. T3 Code drives
+        # Pi over RPC and hands its MCP endpoint, runtime mode and injected
+        # extension path to the process through T3_* names. Stored Pi credentials
+        # also work.
         env = {
             key: value for key, value in os.environ.items()
             if not key.startswith("SAFEHOUSE_") and key not in ("BASH_ENV", "ENV")
         }
         env.update(spec["env"])
         env["PI_CODING_AGENT_DIR"] = spec["agentDir"]
-        passed = ["DEEPSEEK_API_KEY", "PI_CODING_AGENT_DIR", *spec["env"]]
+        t3_env = sorted(key for key in os.environ if key.startswith("T3_"))
+        passed = ["DEEPSEEK_API_KEY", "PI_CODING_AGENT_DIR", *spec["env"], *t3_env]
         command = [
             safehouse,
             f"--workdir={workdir}",

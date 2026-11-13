@@ -61,7 +61,11 @@ class SafehouseTests(unittest.TestCase):
         cls.scratch.cleanup()
 
     def run_probe(self, source, workdir=None):
-        env = dict(self.env, SYNTHETIC_HOST_SECRET="must-not-pass")
+        env = dict(
+            self.env,
+            SYNTHETIC_HOST_SECRET="must-not-pass",
+            T3_PI_RUNTIME_MODE="approval-required",
+        )
         return subprocess.run([
             sys.executable, str(Path(__file__).resolve().parents[2] / "nix/modules/home/programs/ai/clients/pi/pi-safehouse.py"),
             str(self.spec), os.environ["SAFEHOUSE"], sys.executable, "-c", source,
@@ -104,6 +108,7 @@ class SafehouseTests(unittest.TestCase):
             "Path(os.environ['PI_CODING_AGENT_DIR'], 'session').write_text('ok'); "
             "Path(os.environ['npm_config_cache'], 'cache').write_text('ok'); "
             "assert 'SYNTHETIC_HOST_SECRET' not in os.environ; "
+            "assert os.environ['T3_PI_RUNTIME_MODE'] == 'approval-required'; "
             "assert Path('.env.example').read_text() == 'SYNTHETIC='"
         )
         self.assertEqual(result.returncode, 0, result.stderr)

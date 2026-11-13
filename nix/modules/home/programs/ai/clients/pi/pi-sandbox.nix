@@ -84,7 +84,17 @@ let
     builtins.toJSON {
       inherit agentDir;
       readable =
-        policy.paths.readonly ++ policy.paths.runtime ++ [ "${config.home.homeDirectory}/.agents" ];
+        policy.paths.readonly
+        ++ policy.paths.runtime
+        ++ [
+          "${config.home.homeDirectory}/.agents"
+          # T3 Code drives Pi over RPC: its injected extension sits in the T3
+          # cache directory and thread attachments live in the T3 state
+          # directory. The rest of the T3 home (databases, service.env) stays
+          # unreadable.
+          "${config.home.homeDirectory}/.t3/caches"
+          "${config.home.homeDirectory}/.t3/userdata/attachments"
+        ];
       writable = policy.caches.writePaths ++ [ agentDir ];
       denied = policy.paths.denied;
       protected = [
@@ -115,4 +125,10 @@ in
   };
 
   home.file."${permissionFile}".text = builtins.toJSON permissionSettings;
+
+  # App-hosted sessions (T3 Code drives Pi over RPC and injects its own
+  # extension) can start the unwrapped binary from this stable path instead of
+  # a store path that moves with every update. The tradeoff is explicit: no
+  # Safehouse boundary, only the host app's own approvals.
+  home.file.".local/bin/pi-unsandboxed".source = lib.getExe pkgs.pi-coding-agent;
 }
