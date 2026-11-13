@@ -251,10 +251,10 @@ in
     enable = true;
     # Temporary release pin until nixpkgs catches up (Apple Silicon host).
     package = pkgs.claude-code.overrideAttrs {
-      version = "2.1.318";
+      version = "2.1.323";
       src = pkgs.fetchurl {
-        url = "https://downloads.claude.ai/claude-code-releases/2.1.318/darwin-arm64/claude.zst";
-        sha256 = "f49b990254804131f0be0f60260da9b4a55ec9fa73af0252816e423cb0e178dc";
+        url = "https://downloads.claude.ai/claude-code-releases/2.1.323/darwin-arm64/claude.zst";
+        sha256 = "20788f38f520395da5dc315ba6ef2f86c6a0850d9104e6b870cd980697e81055";
       };
       # GUI apps such as CodexBar don't read shell variables; without a
       # default, their `claude` runs recreate ~/.claude.json.

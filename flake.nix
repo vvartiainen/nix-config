@@ -31,7 +31,7 @@
     # Pin the CLI release to the GUI build in nix/modules/darwin/programs/rex.nix.
     # The CLI and app share an API revision, so bump both together.
     rex = {
-      url = "https://pkgs.superlogical.com/rex/nix/preview/0.1.0-preview.14.tar.gz";
+      url = "https://pkgs.superlogical.com/rex/nix/preview/0.1.0-preview.18.tar.gz";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

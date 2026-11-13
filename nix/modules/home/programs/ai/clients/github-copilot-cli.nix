@@ -190,10 +190,10 @@ in
     # ships no shell completions, so generate them from the CLI.
     package = pkgs.github-copilot-cli.overrideAttrs (old: {
       # Temporary release pin until nixpkgs catches up (Apple Silicon host).
-      version = "1.0.106";
+      version = "1.0.110";
       src = pkgs.fetchurl {
-        url = "https://github.com/github/copilot-cli/releases/download/v1.0.106/github-copilot-1.0.106-darwin-arm64.tgz";
-        hash = "sha256-SDm5Bu8nDFrXKKumDXBzZvwtv22Imk+I3FQraM1VFc8=";
+        url = "https://github.com/github/copilot-cli/releases/download/v1.0.110/github-copilot-1.0.110-darwin-arm64.tgz";
+        hash = "sha256-GJ4ljgK3rgMd15moSoVX5zoNStgva3AVhusbd7Uv1i8=";
       };
       nativeBuildInputs = old.nativeBuildInputs ++ [ pkgs.installShellFiles ];
       postInstall = ''
