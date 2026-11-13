@@ -2,6 +2,7 @@
   lib,
   pkgs,
   config,
+  repoRoot,
   ...
 }:
 let
@@ -15,6 +16,13 @@ let
     ;
   quote = s: ''"${s}"'';
   worktrees = "${config.home.homeDirectory}/.codex/worktrees";
+  projects = builtins.dirOf repoRoot;
+  # Local Git edits stay sandboxed. Other clients retain their own adapters.
+  localGit = [
+    [ "git" "reset" ]
+    [ "git" "clean" ]
+    [ "git" "rebase" ]
+  ];
   toCodexRule =
     decision: cmd:
     ''prefix_rule(pattern = [${lib.concatMapStringsSep ", " quote cmd}], decision = "${decision}")'';
@@ -74,6 +82,7 @@ let
       // lib.genAttrs (paths.readonly ++ paths.runtime ++ paths.readable) (_: "read")
       // lib.genAttrs caches.writePaths (_: "write")
       // lib.genAttrs paths.denied (_: "deny")
+      // lib.genAttrs (map (pattern: "${projects}/${pattern}") paths.workspaceSecrets) (_: "deny")
       // lib.genAttrs (map (pattern: "${worktrees}/${pattern}") (
         [
           "**/.env"
@@ -82,6 +91,9 @@ let
         ++ paths.secretFiles
       )) (_: "deny")
       // {
+        # Match Claude's project reads without granting sibling writes. Linked
+        # worktrees need to read Git metadata outside their workspace root.
+        "${projects}" = "read";
         # Managed worktrees can be created after the session starts, outside
         # its original workspace roots. Keep the grant within their directory.
         # Codex allows mid-path globs only for deny rules; linked worktrees
@@ -104,7 +116,8 @@ let
   # can authorize leaving it. Host-control CLIs need review even inside it.
   commandRules = pkgs.writeText "codex-nix-config.rules" (
     lib.concatMapStringsSep "\n" (toCodexRule "prompt") (
-      commands.review ++ map (exe: [ exe ]) commands.hostExecutables
+      (builtins.filter (cmd: !(builtins.elem cmd localGit)) commands.review)
+      ++ map (exe: [ exe ]) commands.hostExecutables
     )
     + "\n"
     + lib.concatMapStringsSep "\n" (toCodexRule "forbidden") commands.denied

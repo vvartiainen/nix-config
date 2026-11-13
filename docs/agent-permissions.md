@@ -39,6 +39,17 @@ including worktrees created during a session. Secret-file denies still apply
 there; their Git hooks/config stay in the main checkout's read-only Git dir.
 Other Codex state retains its existing permissions. Apply permission changes manually and start a fresh session.
 
+Like Claude, Codex can read sibling projects under the directory containing
+this checkout, with environment files and keys denied throughout that directory.
+Writes remain scoped to its workspace, managed worktrees, scratch space and
+agent caches. Ordinary local Git rebases, resets and cleanup use the sandbox
+without an extra command prompt; destructive variants still have deny rules.
+The shell launch wrapper grants a linked worktree's shared Git metadata while
+keeping hooks and config read-only. App launches bypass that wrapper; a worktree
+outside the session's roots or shared Git metadata without a write grant still
+needs an explicit directory grant and a fresh session. Moving a worktree to
+`/tmp` does not grant writes to its shared Git metadata in the original repo.
+
 Claude CLI worktrees live under the repository's `.claude/worktrees`; Claude
 also grants their shared Git metadata. Copilot starts worktree sessions inside
 `<repo>.worktrees/`. OpenCode treats its active worktree as part of the project.

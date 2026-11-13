@@ -153,6 +153,9 @@ class ShellReviewTests(unittest.TestCase):
         self.assertTrue(Path(rules).exists(), "build the fixture system before native policy tests")
         for argv, expected in [
             (["git", "status"], None),
+            (["git", "rebase", "main"], None),
+            (["git", "reset", "--soft", "HEAD~1"], None),
+            (["git", "clean", "--dry-run"], None),
             (["npm", "i"], "prompt"),
             (["sudo", "id"], "prompt"),
             (["rex", "run", "--", "id"], "prompt"),
