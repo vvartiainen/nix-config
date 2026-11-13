@@ -185,9 +185,7 @@ disable TLS checks, move credentials, or disguise commands to evade rules.
 Nixpkgs-built Go tools honor the configured certificate bundle; upstream Go
 binaries may still need escalation. Claude keeps the system certificate store
 plus the Nix CA bundle; a private CA override must include both private and Nix
-roots. Certificate and per-client details are in Backlog doc-3.
+roots.
 
 Shared policy is in [permissions.nix](../nix/modules/home/programs/ai/shared/permissions.nix);
-each CLI module renders its own adapter. Detailed policy tables, Codex profiles,
-cache variables, certificate rationale and known limits:
-Backlog **doc-3 — AI CLI permissions and sandbox behavior**.
+each CLI module renders its own adapter.

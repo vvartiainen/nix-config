@@ -128,6 +128,3 @@ not transactional: earlier successful steps may already have written files.
 Project settings, custom CLI homes, private modules and runtime environment/
 flag overrides are outside this check. Agents use only the public fixture;
 the user validates private host settings manually before applying.
-
-Catalog, cleanup, schema sources and merge details:
-Backlog **doc-8 — Agent project tooling and configuration implementation**.

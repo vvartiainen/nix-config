@@ -47,6 +47,3 @@ tests in both editors before changing the default editor.
 Markdown line-length diagnostics are hidden from inline text, but remain
 available through `<leader>cd` (float) and `<leader>xx` (list). For an optional
 80-column guide, use `:setlocal colorcolumn=81`.
-
-Packaging, per-language ownership, formatter rules and regression checks:
-Backlog **doc-7 — Neovim and language-tool implementation notes**.

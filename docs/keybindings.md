@@ -76,7 +76,7 @@ capture before answering a confirmation or clicking into a text field.
 ### Zen
 
 | Key in Zen mode | Action |
-|---|---|
+| --- | --- |
 | H / L | Previous / next horizontal workspace |
 | J / K | Next / previous vertical tab |
 | N | Exit mode and open a new tab |
@@ -93,7 +93,7 @@ order; H/L changes workspaces.
 ### Kitty
 
 | Key in Kitty mode | Action |
-|---|---|
+| --- | --- |
 | H / L | Previous / next tab |
 | J / K | Next / previous window in the tab |
 | Shift+H / L | Move tab backward / forward |
@@ -119,7 +119,7 @@ reaches every tab. **Cmd+S** toggles the tab bar in the current OS window. Reloa
 configuration restores its configured visibility. Font controls:
 
 | Key | Action |
-|---|---|
+| --- | --- |
 | Cmd+Plus / Cmd+Equal | Increase font size in the current OS window by 2 points |
 | Cmd+Minus | Decrease font size in the current OS window by 2 points |
 | Cmd+0 | Reset font size in the current OS window |
@@ -150,7 +150,7 @@ Reopen it from another terminal with `kitty --detach --session <snapshot>`.
 ### Rex
 
 | Key in Rex mode | Action |
-|---|---|
+| --- | --- |
 | K / J | Previous / next tab |
 | H / L | Previous / next pane |
 | Ctrl+H / J / K / L | Focus pane left / down / up / right |
@@ -168,7 +168,7 @@ Reopen it from another terminal with `kitty --detach --session <snapshot>`.
 Outside navigation mode:
 
 | Key | Action |
-|---|---|
+| --- | --- |
 | Ctrl+Shift+K / J | Previous / next tab |
 | Ctrl+Shift+H / L | Previous / next pane |
 | Ctrl+Shift+1–9 | Jump to tab |
@@ -185,7 +185,7 @@ changes, run `rex config reload`; GUI preference changes need an app restart.
 ### Herdr
 
 | Key in Herdr mode | Action |
-|---|---|
+| --- | --- |
 | H / L | Previous / next Herdr tab |
 | J / K | Next / previous agent |
 | Shift+J / K | Next / previous Herdr workspace |
@@ -205,7 +205,7 @@ These act on Herdr tabs and agents. Numbered agents follow the visible panel
 order. Direct controls remain available outside mode:
 
 | Action | Binding |
-|---|---|
+| --- | --- |
 | Previous / next agent | Alt+K / Alt+J |
 | Jump to agent 1–9 | Herdr mode 1–9; in Kitty, skhd turns Alt+1–9 into tab jumps |
 | Go To picker | Alt+G |
@@ -230,5 +230,3 @@ In the Go To picker, `/` searches; b/w/i/d filters blocked/working/idle/done,
 and a shows all terminals. Reload changes with `herdr server reload-config`.
 
 For reloads, quotas and agent status indicators, see [maintenance](maintenance.md).
-Implementation rationale and integration checks: Backlog **doc-5 — Desktop and
-terminal integration details**.

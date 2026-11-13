@@ -123,8 +123,7 @@ podman machine stop
 Start the VZ builder before the first Rosetta image build. Stopped VZ builders
 can cause KVM tests to fall back to slow emulation. Nested virtualization
 requires M3+ and macOS 15+; only aarch64 guests are accelerated.
-Podman is also manual-start; `docker` invokes Podman. Builder disk recreation,
-provider/size changes and removal procedures are in Backlog doc-6.
+Podman is also manual-start; `docker` invokes Podman.
 
 ## Desktop reloads and permissions
 
@@ -137,7 +136,6 @@ when skhd itself needs restarting. Nix manages their launchd services; avoid
 upstream skhd service-install commands, which create a competing service.
 Grant Accessibility to `/opt/yabai/bin/yabai` and `/Applications/skhd.app` in
 System Settings → Privacy & Security. Grant skhd Input Monitoring if requested.
-Signing/permission recovery is documented in Backlog doc-5.
 
 Activation rewrites `/etc/sudoers.d/yabai` only when the yabai binary changes.
 Endpoint security tools may kill activation (exit 137) during that write; it
@@ -217,6 +215,3 @@ state and pairing addresses private. Check access after a server restart and
 from the phone on cellular before relying on it.
 
 Tailscale enrollment, persistent personal Linux servers and VM state handling:
-Backlog **doc-6 — Maintenance and builder implementation notes**.
-Desktop service, signing, theme and hook details: Backlog **doc-5 — Desktop and
-terminal integration details**.

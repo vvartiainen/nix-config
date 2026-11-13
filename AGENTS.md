@@ -126,47 +126,6 @@ Commands run in an OS sandbox (see
 - Keep repository documentation small: setup, everyday usage, required
   maintenance, agent instructions, and concise rationale needed to use or change
   the configuration correctly. Use clear categories by purpose.
-- Put implementation details, design/research notes, version comparisons,
-  migration history, investigation logs, and detailed verification procedures
-  in Backlog documents through `backlog-nix-config`. Keep task-specific plans
-  and check results in the task. Backlog may contain more implementation detail
-  than repository guides; it must still be relevant and current.
-- Search existing repository and Backlog documentation before writing. Update
-  the relevant guide or Backlog document instead of creating excessive docs,
-  per-change writeups, duplicated configuration inventories, or session reports
-  in the repo. Link the Backlog document ID/title when deeper context is useful.
 - Keep agent-only guides focused on agents; put desktop, browser and terminal
   shortcuts in the general keybindings guide. Remove obsolete instructions and
   deprecated comparisons rather than preserving them as current guidance.
-- Preserve essential reasons and operational caveats, not a transcript of how
-  the change was implemented. When moving detail, save the Backlog document
-  first, update links, and review the documentation diff.
-
-## Backlog
-
-Ideas and open work are tracked in a Backlog.md backlog through the `backlog-nix-config` MCP server, not in the repo.
-
-- Read `backlog://workflow/overview` or call `get_backlog_instructions` first,
-  and the matching guide (`task-creation`, `task-execution`,
-  `task-finalization`) before each of those steps
-- Search for an existing task before creating one, and ask before creating
-  follow-up tasks
-- Take a task into progress and record its plan before implementing; keep the
-  status and notes current while working
-- Check an acceptance criterion only with evidence such as a passing check;
-  leave the task In Progress with a note on what is still unverified, for
-  example private-host validation
-- Work that spans repositories gets a task in each repository's backlog
-  (`backlog-nix-config`, `backlog-agent-server`, `backlog-agent-sandbox`,
-  `backlog-cli-toolbox`, `backlog-agent-secret-proxy`), each referring to the
-  others as `<repo> TASK-N`
-- Before creating or changing tasks, find the document titled "Agent handoff
-  and review workflow" with `document_search` on `backlog-nix-config` and
-  read it with `document_view`. Follow its review queue, user acceptance, and
-  end-of-session handoff rules alongside the built-in workflow guides.
-- Create or update a session handoff task tagged `handoff` and `needs-review`
-  after changing tasks or repository files, as that document describes. The user
-  completes and archives tasks; agents do not mark them Done. Do not maintain
-  the archived "Latest session handoff" document.
-- Simple tasks do not need handoffs; ask whether the user wants a handoff
-  after implementation.

@@ -8,7 +8,7 @@ Desktop, browser, terminal and Herdr navigation are in
 ## Prompt and output
 
 | Action | Binding | Coverage and exceptions |
-|---|---|---|
+| --- | --- | --- |
 | Send prompt | Enter | All six CLIs |
 | Insert newline | Shift+Enter | All six; Ctrl+J is also available in Codex, Claude, OpenCode, Pi, and Cursor |
 | Interrupt a running turn | Esc | Codex, Claude, OpenCode, and Pi; Copilot uses Esc twice, Cursor uses Ctrl+C |
@@ -27,7 +27,7 @@ leader shortcuts still open its editor and model picker.
 ## Model and reasoning effort
 
 | CLI | Model | Effort |
-|---|---|---|
+| --- | --- | --- |
 | Codex | Alt+P → 0 recalls the `/model` preset | Alt+T raises effort; Alt+Shift+T lowers it |
 | Claude Code | Alt+P opens the model picker | Alt+T opens `/effort`; Left/Right adjusts the level, Enter confirms, Esc cancels |
 | Pi | Alt+P opens the model picker; Ctrl+L remains available | Alt+T cycles thinking effort |
@@ -46,7 +46,7 @@ mode switching remains native.
 ## Claude navigation
 
 | Context | Navigation |
-|---|---|
+| --- | --- |
 | Lists and pickers | J/K next/previous, G G first, Shift+G last |
 | Confirmation options | J/K next/previous |
 | Tabs and attachments | H/L previous/next |
@@ -63,7 +63,7 @@ Claude lists subagents in a panel below the prompt; Codex runs each subagent
 in its own thread.
 
 | Action | Claude Code | Codex |
-|---|---|---|
+| --- | --- | --- |
 | Open subagent list | Alt+A runs `/tasks` | Alt+P → 2 runs `/subagents` |
 | Move between agents | Up/Down or J/K in the panel below the prompt | Alt+Left / Alt+Right with an empty prompt |
 | Open selected agent | Enter opens its transcript; messages go to that agent | Select it in the picker |
@@ -82,6 +82,3 @@ thread. Claude has no next/previous agent binding.
 Restart Codex after changing settings. Claude reloads keybindings automatically;
 Pi uses `/reload`. When testing model or effort controls, selection and
 cancellation should preserve drafts and attachments without sending the prompt.
-
-Configuration and detailed checks: Backlog **doc-8 — Agent project tooling and
-configuration implementation**.
