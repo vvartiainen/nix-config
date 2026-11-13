@@ -76,6 +76,7 @@
       "sf-symbols"
       "slack"
       "spotify"
+      "t3-code"
       "tidal"
       "visual-studio-code"
     ];

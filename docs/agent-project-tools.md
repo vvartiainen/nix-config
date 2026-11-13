@@ -73,8 +73,8 @@ credentials out.
 Close agent CLIs before switching so they cannot write stale settings back.
 
 Claude Code keeps its global state in `~/.claude/.claude.json` through
-`CLAUDE_CONFIG_DIR`, which the `claude` wrapper also defaults for GUI apps
-such as CodexBar. Claude binaries bundled in other apps don't get it. The first
+`CLAUDE_CONFIG_DIR`, which launchd also sets for GUI apps such as CodexBar
+started after a switch. The first
 switch moves `~/.claude.json` and its backups there; if a destination already
 exists, resolve the conflicting files before switching again. Restart Claude
 from a new terminal after switching.
