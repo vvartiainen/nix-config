@@ -29,10 +29,6 @@ in
       save = 100000;
     };
     shellAliases = {
-      rm = "rm -i";
-      cp = "cp -i";
-      mv = "mv -i";
-
       ".." = "cd ..";
 
       rg = "rg --hyperlink-format=kitty";
