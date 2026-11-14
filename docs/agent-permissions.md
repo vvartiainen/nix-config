@@ -168,6 +168,11 @@ Claude's hook skips quoted heredoc bodies, which are literal input rather than
 shell commands. It still checks the command receiving that input and commands
 after the heredoc. Unquoted bodies remain subject to review because they can
 expand shell commands. Native Claude permission checks can still prompt.
+For example, Claude asks before read-only Git commands in sibling repositories
+unless the session was started with `--add-dir` for them.
+
+Claude's Code Mode is enabled for terminal sessions. Tool calls from its
+scripts still go through deny and ask rules, the shell hook and the sandbox.
 
 For nix-config, follow [AGENTS.md](../AGENTS.md): validate against the public
 fixture, never read private host data for routine checks, and never apply the

@@ -168,6 +168,10 @@ let
       NODE_EXTRA_CA_CERTS = "/etc/ssl/certs/ca-certificates.crt";
       # Compact at 80% of the auto-compact window, like the other CLIs.
       CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = "80";
+      # Experimental: Claude writes JavaScript that calls its tools. Each call
+      # still goes through deny/ask rules, PreToolUse hooks and the sandbox.
+      # Interactive terminal sessions only; SDK hosts such as T3 Code ignore it.
+      CLAUDE_CODE_EXPERIMENTAL_CODE_MODE = "1";
     };
     # MCP servers come from the projects (`ct agents`), not claude.ai.
     disableClaudeAiConnectors = true;
@@ -194,6 +198,7 @@ let
     ] (_: "user-invocable-only");
     sandbox = {
       enabled = true;
+      # Not the default since 2.1.325: without it sandboxed Bash prompts too.
       autoAllowBashIfSandboxed = true;
       # gh needs the user's token and api.github.com, both outside the
       # sandbox, so it runs through the normal permission flow: read-only
