@@ -86,7 +86,7 @@ Commands run in an OS sandbox (see
 [sandbox usage](docs/agents/permissions.md#working-in-the-sandboxes)).
 
 - Writable: the workspace, `$TMPDIR`, `/tmp`, and `~/.cache/<tool>-agent`;
-  package caches already point there, and treefmt runs without its cache.
+  package caches and `XDG_CACHE_HOME` already point there.
   Use `/tmp` for scratch files.
   Nix refuses `--output-lock-file` and `--reference-lock-file` paths through
   the `/tmp` symlink; pass `/private/tmp/...` instead.

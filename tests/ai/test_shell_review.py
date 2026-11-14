@@ -286,7 +286,9 @@ EOF
         self.assertIn("git fetch *", claude["sandbox"]["excludedCommands"])
         self.assertNotIn("Bash(git rebase:*)", claude["permissions"]["ask"])
         self.assertEqual(claude["env"]["GIT_CONFIG_KEY_0"], "branch.autoSetupMerge")
-        self.assertEqual(claude["env"]["TREEFMT_NO_CACHE"], "1")
+        xdg_cache = claude["env"]["XDG_CACHE_HOME"]
+        self.assertTrue(xdg_cache.endswith("/.cache/xdg-agent"))
+        self.assertIn(xdg_cache, claude["sandbox"]["filesystem"]["allowWrite"])
         copilot = self.settings_file("copilot", "github-copilot-cli-settings")
         policy = copilot["sandbox"]["userPolicy"]
         self.assertTrue(copilot["sandbox"]["enabled"])
