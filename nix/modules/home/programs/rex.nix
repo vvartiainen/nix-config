@@ -57,7 +57,7 @@ in
   programs.rex = {
     enable = true;
     # SSH is managed outside Home Manager. Run `rex terminfo setup` once
-    # to add the fallback to that configuration (see docs/maintenance.md).
+    # to add the fallback to that configuration (see docs/programs/rex.md).
     sshGuard = false;
     config = ''
       -- GUI themes use client actions rather than server configuration fields.

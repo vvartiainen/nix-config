@@ -6,7 +6,8 @@ It targets Apple Silicon and is tailored to my machines; feel free to borrow par
 ## Setup
 
 Install Xcode, Homebrew, just, and Nix with flakes support, then clone this repo.
-Follow the [setup guide](docs/setup.md) for prerequisites and private host data.
+Follow the [new Mac setup](docs/runbooks/new-mac.md) for prerequisites, private
+host data and the manual steps after the first activation.
 From the repository root:
 
 ```sh
@@ -32,8 +33,8 @@ just rollback             # return to the previous system generation
 just clean                # remove generations older than 7 days and collect garbage
 ```
 
-See the [maintenance guide](docs/maintenance.md) for repository checks,
-generation selection, Linux builds, backups, and desktop notes.
+See [maintenance](docs/maintenance.md) for repository checks, updates,
+generation selection and backups.
 Agents follow [AGENTS.md](AGENTS.md) and use the public fixture for validation.
 
 ## Repository layout
@@ -53,10 +54,21 @@ expects a configured `nvim` on `PATH`.
 
 ## Documentation
 
-- [Setup and host data](docs/setup.md)
-- [Maintenance and validation](docs/maintenance.md)
-- [Desktop, browser and terminal keybindings](docs/keybindings.md)
-- [Neovim and language tools](docs/neovim.md)
-- [Agent CLI keybindings](docs/agents/keybindings.md)
-- [Agent permissions and sandboxes](docs/agents/permissions.md)
-- [Agent configuration: project tools, skills, cleanup and validation](docs/agents/config.md)
+Everyday pages:
+
+- [Maintenance](docs/maintenance.md): validate, apply, lint, update, roll back,
+  Homebrew data, backups
+- [Keybindings](docs/keybindings.md): desktop, browser and terminal shortcuts
+
+The rest of `docs/`:
+
+- [`programs/`](docs/programs/): everyday use of one program or area:
+  [desktop](docs/programs/desktop.md), [terminal and files](docs/programs/terminal.md),
+  [Neovim](docs/programs/neovim.md), [Rex](docs/programs/rex.md) and
+  [Linux builders](docs/programs/linux-builders.md)
+- [`agents/`](docs/agents/): coding agents:
+  [permissions and sandboxes](docs/agents/permissions.md),
+  [configuration](docs/agents/config.md), [keybindings](docs/agents/keybindings.md)
+  and [quotas, status and history](docs/agents/sessions.md)
+- [`runbooks/`](docs/runbooks/): procedures done rarely, such as
+  [new Mac setup](docs/runbooks/new-mac.md)

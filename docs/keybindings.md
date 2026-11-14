@@ -15,7 +15,7 @@ aliases also work in the app's navigation mode; other apps keep their own shortc
 | Left Cmd+Option+Space | Open Spotlight |
 | Ctrl+Cmd+Z / K / C / O / M / E | Open or focus Zen / Kitty / Calendar / Obsidian / Mail / Finder |
 | Ctrl+Shift+Space | Toggle the quick-access terminal |
-| Cmd+Space | Toggle Vicinae (see [launcher setup](setup.md#vicinae-launcher)) |
+| Cmd+Space | Toggle Vicinae (see [Vicinae](programs/desktop.md#vicinae)) |
 | Ctrl+Cmd+U | Toggle CodexBar's usage menu |
 | Ctrl+Cmd+Shift+U | Toggle the quota dashboard |
 | Ctrl+Cmd+Shift+M | Toggle microphone input volume between zero and its previous level (requires SketchyBar) |
@@ -128,24 +128,10 @@ configuration restores its configured visibility. Font controls:
 | Cmd+Shift+0 | Reset font size in all OS windows |
 
 Cmd+Shift+/ also increases all-window font size for keyboard layouts where
-Shift+Plus is intercepted. Restart Kitty after changing macOS menu shortcuts.
+Shift+Plus is intercepted.
 
-Kitty 0.50+ restores all running instances after logout or a computer restart,
-including window geometry and scrollback, with fresh shells. Start Kitty normally
-to restore; an explicit `--session` bypasses logout restore.
-
-Press **F7 → R** and confirm to save, quit and automatically reopen the current
-Kitty process with all its OS windows, tabs, layouts, working directories and
-window geometry. Other Kitty processes remain running. Apply the configuration
-manually once to link the restart helpers, then reload with **Ctrl+Shift+F5**.
-
-This restart omits scrollback and live process state. Programs started inside
-shells need to be resumed manually; commands launched directly by a session
-can run again. Window placement remains subject to yabai. A failed save leaves
-Kitty running. If reopening fails, inspect `~/.local/state/kitty/restart.log`;
-the recovery snapshot is `~/.local/state/kitty/restart-<old-pid>.kitty-session`.
-Reopen it from another terminal with `kitty --detach --session <snapshot>`.
-**F7 → S** still saves a reviewed session file, including foreground commands.
+**F7 → R** saves, quits and reopens Kitty with its windows and tabs; **F7 → S**
+saves a session file. See [restore and restart](programs/terminal.md#restore-and-restart-kitty).
 
 ### Rex
 
@@ -179,8 +165,7 @@ Outside navigation mode:
 | Cmd+Enter / Cmd+Shift+Enter | Split right / down, also in navigation mode |
 
 Tab/pane closes retain capture; release it with Escape or Return before answering
-Rex's confirmation. Remote hosts need the same Lua bindings. After configuration
-changes, run `rex config reload`; GUI preference changes need an app restart.
+Rex's confirmation. Remote hosts need the same Lua bindings.
 
 ### Herdr
 
@@ -227,6 +212,8 @@ order. Direct controls remain available outside mode:
 Alt+C requires an empty agent prompt and does nothing during a running turn.
 It clears the shell, runs `/clear` in Claude, or `/new` in other agents.
 In the Go To picker, `/` searches; b/w/i/d filters blocked/working/idle/done,
-and a shows all terminals. Reload changes with `herdr server reload-config`.
+and a shows all terminals.
 
-For reloads, quotas and agent status indicators, see [maintenance](maintenance.md).
+To load changed bindings, see the reload steps for the
+[desktop](programs/desktop.md#reload-after-changes),
+[terminal](programs/terminal.md#reload-changes) and [Rex](programs/rex.md#reload).

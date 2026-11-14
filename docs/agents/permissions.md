@@ -15,7 +15,7 @@
 
 Active session policy is authoritative. Apply configuration changes manually
 and start fresh sessions. In T3 Code, use **Auto-accept edits** for Codex and
-Claude when escapes should come to you; see [provider setup](config.md#gui-providers).
+Claude when escapes should come to you; see [T3 Code permission modes](#t3-code-permission-modes).
 
 ## Client behavior
 
@@ -57,6 +57,20 @@ its database, provider secrets, sign-in cache, provider registry and service
 environment stay denied. A host can also pass content directly to the model.
 
 For this repository's validation rules, use [AGENTS.md](../../AGENTS.md).
+
+## T3 Code permission modes
+
+Choose **Auto-accept edits** for Codex and Claude to keep sandbox escapes
+reviewed by you. Set the default under **Settings → Threads → New threads →
+Permissions**, and change existing threads separately. **Auto** uses automatic
+review; **Full access** removes the ordinary approval boundary. T3 injects its
+own MCP endpoint and allows its Claude tool namespace; Codex tool-specific
+prompts remain separate from shell approvals. See [T3 permission modes](https://github.com/pingdotgg/t3code/blob/main/docs/user/permission-modes.md).
+Provider binary paths are set once during
+[new Mac setup](../runbooks/new-mac.md#after-the-first-activation).
+
+Sandboxed Pi cannot reach T3's local MCP endpoint or escape after approval.
+Run blocked operations manually or use Codex/Claude; see [Pi's limits](#pi).
 
 ## Worktrees
 

@@ -33,11 +33,11 @@ provide the selected tool in the project. Python uses Ruff.
 
 ## Change or update nightly
 
-Edit [the Lua config](../dotfiles/nvim) and rebuild for nightly; the live editor
+Edit [the Lua config](../../dotfiles/nvim) and rebuild for nightly; the live editor
 sees edits immediately. Change nightly extras in `dotfiles/nvim/lazyvim.json`
 rather than `:LazyExtras`. Plugin/parser packages are declared in
-[neovim.nix](../nix/modules/home/programs/neovim.nix); the common tool baseline is
-[language-tools.nix](../nix/modules/home/programs/language-tools.nix).
+[neovim.nix](../../nix/modules/home/programs/neovim.nix); the common tool baseline is
+[language-tools.nix](../../nix/modules/home/programs/language-tools.nix).
 
 Update the nightly input with `just up neovim-nightly`, review the lock diff,
 then build and apply manually. Plugin versions follow the main nixpkgs pin,

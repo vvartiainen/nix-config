@@ -33,24 +33,6 @@ commands can read the clients' plugin caches to run packaged skill helpers.
 Rex's vendor bootstrap skill and hooks remain managed with its pinned CLI.
 Skills and plugins do not grant permissions; the active session policy applies.
 
-## GUI providers
-
-In T3 Code's provider settings, set **Binary path** to the absolute path of
-`~/.local/bin/claude` for Claude and `/etc/profiles/per-user/<user>/bin/pi` for
-sandboxed Pi. Expand `~` and replace `<user>` with your local home/user name.
-The Claude launcher selects `~/.claude` through `CLAUDE_CONFIG_DIR`; app-bundled
-or Homebrew binaries invoked directly bypass it.
-
-Choose **Auto-accept edits** for Codex and Claude to keep sandbox escapes
-reviewed by you. Set the default under **Settings → Threads → New threads →
-Permissions**, and change existing threads separately. **Auto** uses automatic
-review; **Full access** removes the ordinary approval boundary. T3 injects its
-own MCP endpoint and allows its Claude tool namespace; Codex tool-specific
-prompts remain separate from shell approvals. See [T3 permission modes](https://github.com/pingdotgg/t3code/blob/main/docs/user/permission-modes.md).
-
-Sandboxed Pi cannot reach T3's local MCP endpoint or escape after approval.
-Run blocked operations manually or use Codex/Claude; see [Pi's limits](permissions.md#pi).
-
 ## Global cleanup
 
 Close agent CLIs before switching so they cannot write stale settings back.

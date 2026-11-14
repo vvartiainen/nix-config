@@ -2,7 +2,7 @@
 let
   # macOS 27 has no Apple Intelligence switch, and nix-darwin cannot install
   # configuration profiles. This builds one for manual approval; see
-  # docs/maintenance.md. Keys and asset types follow RemoveMacAI
+  # docs/runbooks/new-mac.md. Keys and asset types follow RemoveMacAI
   # (github.com/omlahore/RemoveMacAI, MIT), which credits pared.
   identifier = "nix-config.apple-intelligence";
 
