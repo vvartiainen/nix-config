@@ -12,7 +12,7 @@ Claude when escapes should come to you; see [T3 Code permission modes](#t3-code-
 | CLI | Routine work | Approval boundary |
 | --- | --- | --- |
 | Codex | Workspace commands run sandboxed; ordinary internet access is allowed | Additional access and reviewed commands ask; all Rex/Kitty/Incus calls ask |
-| Claude Code | Workspace edits and commands run sandboxed | Additional access and reviewed commands ask; Rex runs unsandboxed with approval; scoped `gh` inspection is allowed outside the sandbox |
+| Claude Code | Workspace edits and commands run sandboxed | Additional access and reviewed commands ask; Rex runs unsandboxed with approval; scoped `gh` and `fj` inspection is allowed outside the sandbox |
 | Cursor | Workspace commands run sandboxed in Allowlist mode | Risky commands, uncertain shell syntax and unsandboxed retries ask |
 | Copilot | Inspection, scoped development runners and file edits are approved | Unlisted commands and sandbox bypasses ask; `just lint` is scoped, other `just` recipes ask |
 | OpenCode | Inspection commands and workspace file tools are allowed | No OS sandbox; project runners, cleanup and unknown commands ask |
@@ -44,6 +44,16 @@ a sibling repository; launch with `--add-dir` when it belongs in the session.
 T3 Code's caches, attachments, browser artifacts and worktrees are readable;
 its database, provider secrets, sign-in cache, provider registry and service
 environment stay denied. A host can also pass content directly to the model.
+
+Git over SSH and `fj` need keys, the SSH agent socket or a stored token, so
+fetches, pushes and Forgejo calls to such remotes run as approved commands
+outside the sandbox. A Claude `allowed_domains` entry does not help: SSH
+bypasses the sandbox proxy. Use HTTPS for public fetches. Claude runs `fj`
+like `gh`: read-only views run without prompting and everything else asks.
+When a task writes to a sibling repository, add it to the session (`/add-dir`
+or `--add-dir`) instead of escaping. `git worktree add`, `move` and `remove`
+for worktrees other than the session's own write the main repository's Git
+metadata and need an approved run outside the sandbox.
 
 For this repository's validation rules, use [AGENTS.md](../../AGENTS.md).
 

@@ -90,6 +90,9 @@ Commands run in an OS sandbox (see
 - `Operation not permitted`, `403`/`Forbidden`, or `x509: OSStatus -26276`
   mean the sandbox blocked it: retry once with escalation or ask, don't try
   variants or work around it.
+- Git over SSH, `fj`, and worktree add/move/remove outside the session's own
+  worktree run outside the sandbox with approval; `allowed_domains` does not
+  cover SSH. Add sibling repositories to the session before writing to them.
 - Credentials (`~/.ssh`, `~/.aws`, `.env`, keys) and tool installs
   (`mise install`) are off-limits; ask the user.
 - Avoid interactive commands; pass non-interactive flags.

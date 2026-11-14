@@ -28,7 +28,10 @@ let
 
   # Programs in sandbox.excludedCommands always run outside the sandbox;
   # every other command runs inside it without a prompt.
-  unsandboxedPrograms = [ "gh" ];
+  unsandboxedPrograms = [
+    "gh"
+    "fj"
+  ];
 
   permissionSettings = {
     # Allow rules only matter outside the sandbox, so keep them for the
@@ -200,15 +203,15 @@ let
       enabled = true;
       # Not the default since 2.1.325: without it sandboxed Bash prompts too.
       autoAllowBashIfSandboxed = true;
-      # gh needs the user's token and api.github.com, both outside the
-      # sandbox, so it runs through the normal permission flow: read-only
+      # gh and fj need the user's token and their forge APIs, both outside
+      # the sandbox, so they run through the normal permission flow: read-only
       # allow rules run without prompting, deny rules still apply, everything
       # else asks. Terraform and Go run sandboxed; upstream Go binaries such
       # as Terraform's provider downloads still fail TLS there and need an
       # approved retry.
       # Rex delegates to the host terminal server. Excluding it only selects
       # unsandboxed execution; the explicit ask rules above require approval.
-      excludedCommands = [ "gh *" ] ++ map (exe: "${exe} *") commands.rexExecutables;
+      excludedCommands = map (exe: "${exe} *") (unsandboxedPrograms ++ commands.rexExecutables);
       # Would let Go tools reach trustd inside the sandbox, at the cost of a
       # possible exfiltration channel through it.
       enableWeakerNetworkIsolation = false;
