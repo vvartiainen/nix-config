@@ -53,6 +53,26 @@ Review the dry run first. Changed configuration files are backed up under
 changed something is retained. Inspect that private backup before recovery.
 Custom CLI homes and administrator-managed tools are outside cleanup coverage.
 
+## T3 Code settings
+
+The Homebrew cask provides the app; Nix supplies only these server settings,
+merged into `~/.t3/userdata/settings.json` on every switch:
+
+| Setting | Value | Effect |
+| --- | --- | --- |
+| `sidebarAutoSettleOnMerge` | `true` | Settle a thread after every pull request linked to it merges |
+| `storageCleanup.worktreeOnMerge` | `true` | Remove its worktree once those commits are in the remote default branch |
+
+Merge cleanup needs a linked pull request, so create the pull request from T3
+Code or with `gh pr create`; a plain `git merge` leaves the worktree in place.
+The server watches the file, so no restart is needed after a switch.
+
+Everything else in that file stays app-managed. Cleanup for idle, settled,
+unchanged and deleted-thread worktrees, plus browser capture and log retention,
+stays off until enabled under **Settings → Worktrees → Cleanup**. Provider
+switches, forks and delegated tasks hand off conversation context on their own;
+see [portable handoffs](https://github.com/pingdotgg/t3code/blob/main/docs/user/portable-handoffs.md).
+
 ## Configuration validation
 
 ```sh
