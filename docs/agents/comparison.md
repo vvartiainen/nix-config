@@ -67,6 +67,9 @@ each use, and **denied** means no approval can allow it.
 
 Where a client matches exact prefixes only, a reordered form such as
 `git reset HEAD~1 --hard` is not denied: it runs in the sandbox or asks.
+For standalone `fj` views in worktrees with multiple remotes, use the
+[fully qualified repository forms](permissions.md#forgejo-repository-discovery)
+to keep the existing read-only allowances.
 
 ## In T3 Code
 
