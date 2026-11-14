@@ -47,6 +47,8 @@ in
       vimode = "bindkey -v";
       sshc = "vi ~/.ssh/config";
       sshkh = "vi ~/.ssh/known_hosts";
+      # Inspect sudo requests from another terminal while authentication is pending.
+      sudops = "ps -axww -o pid,ppid,tty,command | rg '[s]udo'";
       ginit = "git init && touch .gitignore && touch README.md && git add . && git commit -m 'chore: initial commit'";
     };
     initContent = lib.mkMerge [
