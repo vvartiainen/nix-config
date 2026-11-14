@@ -151,6 +151,11 @@ let
   shellReview = pkgs.writeShellScript "nix-config-shell-review-claude" ''
     exec ${pkgs.python3}/bin/python3 ${../../shared/shell-review.py} claude ${shellPolicy}
   '';
+  # Approve web research from a hook rather than WebFetch allow rules, which
+  # would also open those domains to sandboxed Bash. Deny rules still apply.
+  webApprove = pkgs.writeShellScript "nix-config-web-approve-claude" ''
+    printf '%s\n' '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow","permissionDecisionReason":"Web search and page reads are pre-approved."}}'
+  '';
 
   settings = {
     "$schema" = "https://json.schemastore.org/claude-code-settings.json";
@@ -274,7 +279,10 @@ let
 in
 {
   agentHooks = {
-    commandMarkers = [ "nix-config-shell-review-claude" ];
+    commandMarkers = [
+      "nix-config-shell-review-claude"
+      "nix-config-web-approve-claude"
+    ];
     claude.PreToolUse = [
       {
         matcher = "Bash";
@@ -282,6 +290,15 @@ in
           {
             type = "command";
             command = "${shellReview}";
+          }
+        ];
+      }
+      {
+        matcher = "WebSearch|WebFetch";
+        hooks = [
+          {
+            type = "command";
+            command = "${webApprove}";
           }
         ];
       }
