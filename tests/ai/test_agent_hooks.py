@@ -1,8 +1,10 @@
-"""Check hook upgrades, coexistence and preservation of unrelated settings."""
+"""Check hooks and the shared permission patterns rendered by Claude."""
 
+import fnmatch
 import importlib.util
 import json
 from pathlib import Path
+import re
 import tempfile
 import unittest
 
@@ -17,6 +19,31 @@ CHECK = "/bin/nix-config-check --hook "
 
 
 class AgentHooksTests(unittest.TestCase):
+    def test_claude_fetch_review_patterns_use_working_globs(self):
+        # Fast checks cannot evaluate Nix. Read the literal shared patterns
+        # rendered verbatim as Bash(pattern) by Claude's adapter; the full
+        # fixture suite also checks every generated allow/ask/deny rule.
+        source = (SCRIPT.parent.parent / "shared/permissions.nix").read_text()
+        block = re.search(r"fetchReviewPatterns = \[(.*?)\];", source, re.S).group(1)
+        patterns = re.findall(r'"([^"\n]+)"', block)
+        self.assertTrue(patterns)
+        for pattern in patterns:
+            with self.subTest(pattern=pattern):
+                self.assertFalse(pattern.endswith(":*") and "*" in pattern[:-2])
+        for command in (
+            "git fetch git@example.invalid:repo.git",
+            "git fetch file:/tmp/repo",
+            "git fetch file:///tmp/repo",
+            "git fetch https://example.invalid/repo.git",
+            "git fetch /tmp/repo",
+            "git fetch ~/repo",
+            "git fetch ../repo",
+            "git fetch --upload-pack=other origin",
+        ):
+            with self.subTest(command=command):
+                self.assertTrue(any(fnmatch.fnmatchcase(command, pattern) for pattern in patterns))
+        self.assertFalse(any(fnmatch.fnmatchcase("git fetch origin", pattern) for pattern in patterns))
+
     def setUp(self):
         self.scratch = tempfile.TemporaryDirectory()
         self.addCleanup(self.scratch.cleanup)
