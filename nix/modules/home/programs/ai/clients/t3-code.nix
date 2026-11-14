@@ -6,6 +6,16 @@
 }:
 let
   mergeConfig = import ../../../merge-config.nix { inherit lib pkgs config; };
+  permissions = import ../shared/permissions.nix { inherit lib config; };
+  # Apply before provider startup and shell snapshots, rather than relying on
+  # client settings to replace Home Manager's inherited normal-shell cache.
+  environment = [
+    {
+      name = "XDG_CACHE_HOME";
+      value = permissions.caches.env.XDG_CACHE_HOME;
+      sensitive = false;
+    }
+  ];
   keybindings = (pkgs.formats.json { }).generate "t3-code-keybindings.json" (
     map (binding: binding // { when = "!terminalFocus && !previewFocus"; }) [
       {
@@ -207,6 +217,7 @@ let
       };
       providerInstances = {
         codex = {
+          inherit environment;
           driver = "codex";
           config = {
             # Use our installed CLI rather than T3's managed tool download.
@@ -219,6 +230,7 @@ let
           };
         };
         claudeAgent = {
+          inherit environment;
           driver = "claudeAgent";
           config = {
             binaryPath = "${config.home.homeDirectory}/.local/bin/claude";
@@ -226,10 +238,12 @@ let
           };
         };
         opencode = {
+          inherit environment;
           driver = "opencode";
           enabled = true;
         };
         pi = {
+          inherit environment;
           enabled = true;
           driver = "pi";
           config.binaryPath = "${config.home.profileDirectory}/bin/pi";

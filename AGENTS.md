@@ -89,6 +89,8 @@ For T3 mode selection and approval behavior, follow the
 
 - Writable: the workspace, `$TMPDIR`, `/tmp`, and `~/.cache/<tool>-agent`;
   package caches and `XDG_CACHE_HOME` already point there.
+  T3 sets `XDG_CACHE_HOME` on its managed provider instances; see
+  [cache configuration](docs/agents/permissions.md#working-in-the-sandboxes).
   Use `/tmp` for scratch files.
   Nix refuses `--output-lock-file` and `--reference-lock-file` paths through
   the `/tmp` symlink; pass `/private/tmp/...` instead.
