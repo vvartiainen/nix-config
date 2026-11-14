@@ -134,15 +134,26 @@ Commands run in an OS sandbox (see
 - Keep changes minimal and easy to review
 - Prefer updating existing modules/files over adding new abstractions
 - Only update `flake.lock` when dependency updates are intentional
-- `git commit` the changes you have made, but let user manually handle the push of the changes
-  - use existing project commit style (conventional commits, short message, no long descriptions, no trailers such as Co-Authored-By or Claude-Session)
+- Commit the changes, push them as a new branch to `origin` (Forgejo) and open
+  a pull request
+  - Start each task's branch from a freshly fetched `origin/main`, not the
+    worktree's current branch: cleanups reset worktrees after a merge.
+    `git fetch origin`, then `git switch --no-track -c <branch> origin/main`.
+  - Use the existing commit style: conventional commits, short message, no
+    long descriptions, no trailers such as Co-Authored-By or Claude-Session.
+  - Push with `git push -u origin <branch>` and open the pull request with
+    `fj pr create --base main --head <branch> --body-file <file> "<title>"`.
+  - Write the body with the sections of
+    [the PR template](.forgejo/pull_request_template.md), keeping its
+    headings and order. Forgejo fills it in only in the web UI;
+    `fj pr create --body-file` does not apply it. Write "None" for sections
+    that do not apply instead of dropping them.
+  - In T3, link the pull request to the thread; see
+    [T3 Code settings](docs/agents/config.md#t3-code-settings).
+  - Push only to `origin`. Pushing to the public `github` mirror stays with
+    the user, after a pre-push review.
 - At the end of implementation tasks summarize the changes in the final
-  response with the same sections as
-  [the PR template](.forgejo/pull_request_template.md).
-- Write pull request bodies with the sections of the PR template, keeping its
-  headings and order. Forgejo fills it in only in the web UI;
-  `fj pr create --body-file` does not apply it. Write "None" for sections
-  that do not apply instead of dropping them.
+  response with the same sections as the PR template.
 - Also inform if you ran into some permission issues that could be fixed
 - Clearly list any commands the user must run manually in the final response,
   using copyable code blocks with the required working directory and purpose.

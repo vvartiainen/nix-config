@@ -78,8 +78,8 @@ is 400,000 tokens. Automatic settlement by age is disabled.
 
 Threads settle after every linked pull request merges. Worktrees are cleaned up
 on merge, thread deletion, or when unchanged, subject to T3's local-change
-protection. Merge cleanup needs a linked pull request, so create the pull request
-from T3 Code or with `gh pr create`; a plain `git merge` leaves the worktree in
+protection. Merge cleanup needs a linked pull request, so agents link the pull
+request they open to their thread; a plain `git merge` leaves the worktree in
 place. Idle/settled-age cleanup, browser capture retention and log retention
 remain app-managed under **Settings → Worktrees → Cleanup**.
 
