@@ -11,7 +11,7 @@ each use, and **denied** means no approval can allow it.
 
 | Task | Use | Why |
 | --- | --- | --- |
-| Everyday work in this or another repository: edit, test, evaluate Nix, commit, read pull requests, web research | Claude Code, in the terminal or T3 | Sandboxed, reaches the Nix daemon, reads `gh`/`fj`, fetches and searches the web without prompts |
+| Everyday work in this or another repository: edit, test, evaluate Nix, commit, read pull requests, web research | Claude Code, in the terminal or T3 | Sandboxed, reaches the Nix daemon, reads `gh`/`fj`, [configured-remote fetches](permissions.md#working-in-the-sandboxes) and web research without prompts |
 | The same, with downloads from arbitrary hosts | Codex in the terminal | Sandboxed with ordinary internet access |
 | T3 work that needs a Codex model | Codex in T3 | Use the [T3 permission mode guidance](permissions.md#t3-code-permission-modes) |
 | Code you do not trust, or an untrusted extension or MCP server | Pi | The whole process is confined and no approval can leave the sandbox |
@@ -59,7 +59,7 @@ each use, and **denied** means no approval can allow it.
 | Installs, publishing, `sudo`, `ssh`, `open`, `tofu apply` | Asks | Asks | Asks | Asks | Asks | Asks; fails where it needs a host service |
 | `git push`, forge writes | Asks | Asks | Asks | Asks | Asks | Asks; SSH and tokens fail |
 | [Flake update preview](permissions.md#flake-update-previews) | Runs outside sandbox | Runs outside sandbox (T3 may ask) | Approved retry | Approved retry | Runs, unsandboxed | Fails |
-| `git fetch` from a configured remote | Runs | Asks | Asks | Asks | Asks | Asks; SSH fails |
+| [`git fetch` from a configured remote](permissions.md#working-in-the-sandboxes) | Runs | Asks | Asks | Asks | Asks | Asks; SSH fails |
 | `gh` and `fj` read-only views | Runs | Runs | Approved retry | Approved retry | Runs | Fails without a token |
 | Rex, Kitty, Incus | Rex always asks; others ask beyond help and listings | Always asks | Asks beyond help and listings | Asks beyond help and listings | Asks beyond help and listings | Asks, then fails |
 | `op read`, keychain lookups, force push, `git reset --hard`, `git clean -f`, disk erase | Denied | Denied, exact prefixes only | Denied | Denied, exact prefixes only | Denied | Denied |
