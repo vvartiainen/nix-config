@@ -84,6 +84,8 @@ Do not run apply commands (for example `just switch <hostName>` or
 
 Commands run in an OS sandbox (see
 [sandbox usage](docs/agents/permissions.md#working-in-the-sandboxes)).
+For T3 mode selection and approval behavior, follow the
+[provider permission mode guidance](docs/agents/permissions.md#t3-code-permission-modes).
 
 - Writable: the workspace, `$TMPDIR`, `/tmp`, and `~/.cache/<tool>-agent`;
   package caches and `XDG_CACHE_HOME` already point there.
