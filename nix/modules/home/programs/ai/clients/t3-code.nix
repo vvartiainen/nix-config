@@ -192,7 +192,8 @@ let
           ];
         };
       };
-      defaultRuntimeMode = "auto-accept-edits";
+      # Let the provider's automatic review evaluate approvals.
+      defaultRuntimeMode = "auto";
       # Settle a thread once every linked pull request has merged.
       sidebarAutoSettleOnMerge = true;
       storageCleanup = {
