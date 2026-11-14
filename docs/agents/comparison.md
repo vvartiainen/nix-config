@@ -70,9 +70,13 @@ Where a client matches exact prefixes only, a reordered form such as
 
 ## In T3 Code
 
+Managed providers receive the same agent cache path through T3's
+[provider environment](permissions.md#working-in-the-sandboxes).
+
 The tables above describe terminal clients. Choose the provider's mode using
 [T3 Code permission modes](permissions.md#t3-code-permission-modes),
 which covers the new-thread default, manual overrides and observed behavior.
+
 
 | Provider | Difference from the terminal |
 | --- | --- |
