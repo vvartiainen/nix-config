@@ -5,6 +5,7 @@
     ./atuin.nix
     ./btop.nix
     ./cli-toolbox.nix
+    ./direnv.nix
     ./forgejo-cli.nix
     ./fzf.nix
     ./git.nix
