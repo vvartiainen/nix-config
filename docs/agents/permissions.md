@@ -62,8 +62,22 @@ Git over SSH and `fj` need keys, the SSH agent socket or a stored token, so
 fetches, pushes and Forgejo calls to such remotes run outside the sandbox.
 Pushes and forge writes ask. Claude and Codex run read-only `gh` and `fj`
 views without prompting, and Claude does the same for `git fetch` from a
-configured remote; fetches naming a URL, a local path or `--upload-pack` still
-ask, and Codex asks for every fetch. These rules match only standalone
+configured remote. A Claude `PreToolUse` hook reads `git remote` in the command's
+`cwd` without writing config. It defers for standalone `git fetch` with only
+known option flags, configured remote names followed by refspecs, `--all`,
+and `--multiple`/`--prefetch` with only configured remotes. Configured remotes
+remain trusted, including file URLs, `insteadOf` rewrites and `ext::`/transport
+commands configured in Git config. Explicit URLs, scp-style addresses, paths,
+unknown names, `--upload-pack`/`-u`, unknown options,
+tilde syntax (even quoted), noncanonical whitespace, unclassified shell syntax
+and remote-read failures return `ask`. The fetch handler requires Claude Code
+2.1.295 or later: [`onFailure: "block"`](https://code.claude.com/docs/en/hooks#block-the-action-when-a-hook-fails)
+blocks the action if the hook crashes, cannot start or times out. The existing
+fetch ask patterns remain as defence in depth. Per Claude's
+[hook decision documentation](https://code.claude.com/docs/en/hooks#pretooluse-decision-control),
+`ask` prompts even when an allow rule matches; hooks run before every tool call.
+[Sandbox exclusions](https://code.claude.com/docs/en/sandboxing#run-commands-outside-the-sandbox-with-excludedcommands)
+still use that permission flow. Codex asks for every fetch. These rules match only standalone
 commands: with `cd`, pipes, loops, `-C` or `-H` the command runs sandboxed and
 fails (`fj` reports `Operation not permitted` from its keychain), or prompts.
 `fj pr edit <n> body` and `fj issue edit <n> body` take the body only as an

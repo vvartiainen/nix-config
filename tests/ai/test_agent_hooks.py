@@ -5,6 +5,9 @@ import importlib.util
 import json
 from pathlib import Path
 import re
+import subprocess
+import sys
+from unittest import mock
 import tempfile
 import unittest
 
@@ -13,6 +16,104 @@ SCRIPT = Path(__file__).resolve().parents[2] / "nix/modules/home/programs/ai/hoo
 spec = importlib.util.spec_from_file_location("agent_hooks", SCRIPT)
 hooks = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(hooks)
+
+FETCH_SCRIPT = SCRIPT.parent.parent / "clients/claude/fetch-review.py"
+fetch_spec = importlib.util.spec_from_file_location("fetch_review", FETCH_SCRIPT)
+fetch_review = importlib.util.module_from_spec(fetch_spec)
+fetch_spec.loader.exec_module(fetch_review)
+
+
+class ClaudeFetchTests(unittest.TestCase):
+    def setUp(self):
+        self.scratch = tempfile.TemporaryDirectory()
+        self.addCleanup(self.scratch.cleanup)
+        self.cwd = self.scratch.name
+        subprocess.run(["git", "init", "-q", self.cwd], check=True)
+        for remote in ("origin", "github"):
+            subprocess.run(["git", "-C", self.cwd, "remote", "add", remote,
+                            "https://example.invalid/synthetic.git"], check=True)
+
+    def test_decisions(self):
+        passes = [
+            "git fetch", "git fetch origin", "git fetch origin main:main",
+            "git fetch origin feature/x", "git fetch --prune origin",
+            "git fetch --all", "git fetch --multiple origin github",
+            "git fetch --prefetch origin github", "git fetch -qvp origin",
+            "git fetch --depth 1 origin", "git fetch --depth=1 origin",
+            "git fetch 'origin' 'main:main'", "git fetch -- origin",
+            "git fetch origin --prune", "git fetch --prune", "git status",
+            "git fetch --recurse-submodules origin",
+            "git fetch --no-recurse-submodules origin",
+            "git fetch --recurse-submodules=yes origin",
+            "git fetch --recurse-submodules=on-demand origin",
+            "git fetch --recurse-submodules=no origin",
+        ]
+        asks = [
+            "git fetch example.invalid:repo.git", "git fetch repos/project.git",
+            "git fetch ../x", "git fetch /tmp/x", "git fetch ~/x",
+            "git fetch file:///x", "git fetch ssh://h/x", "git fetch git@h:x",
+            "git fetch --upload-pack=x origin", "git fetch -u x origin",
+            "git fetch notaremote", "git fetch --upload-pack x origin",
+            "git fetch -ux origin", "git fetch -qvu x origin",
+            "git fetch origin --upload-pack=x", "git fetch origin -- --upload-pack=x", "git fetch --multiple origin ../x",
+            "git fetch --prefetch origin notaremote", "git fetch --all ../x",
+            "git fetch --unknown origin", "git fetch --depth",
+            "git fetch --depth= origin", "git fetch origin; git status",
+            "git fetch origin | cat", "git fetch $(echo origin)",
+            "git fetch $REMOTE", "git fetch origin > /tmp/x",
+            "git fetch origin\ngit status", "git fetch 'origin",
+            "git -C /tmp fetch origin", "cd /tmp && git fetch origin",
+            "GIT_DIR=/tmp git fetch origin", "command git fetch origin",
+            "git fetch origin # comment", "git fetch origin feature/*",
+        ]
+        for expected, commands in ((False, passes), (True, asks)):
+            for command in commands:
+                with self.subTest(command=command):
+                    self.assertEqual(fetch_review.needs_review(command, self.cwd), expected)
+
+    def test_tilde_remote_names_ask(self):
+        for remote in ("~", "~/x", "~user"):
+            subprocess.run(["git", "-C", self.cwd, "config",
+                            f"remote.{remote}.url", "https://example.invalid/repo.git"], check=True)
+            for prefix in ("git fetch ", "git fetch --\t", "git fetch --multiple origin "):
+                with self.subTest(command=prefix + remote):
+                    self.assertTrue(fetch_review.needs_review(prefix + remote, self.cwd))
+
+    def test_unusual_whitespace_asks(self):
+        for command in ("git\tfetch origin", "git fetch\torigin",
+                        "git  fetch origin", "git fetch  origin",
+                        "git fetch --\torigin", "git fetch\norigin"):
+            with self.subTest(command=command):
+                self.assertTrue(fetch_review.needs_review(command, self.cwd))
+
+    def test_remote_lookup_is_hardened(self):
+        with mock.patch.object(fetch_review.subprocess, "run",
+                               return_value=subprocess.CompletedProcess([], 0, "origin\n")) as run:
+            self.assertFalse(fetch_review.needs_review("git fetch origin", self.cwd, "/pinned/git"))
+        self.assertEqual(run.call_args.args[0],
+                         ["/pinned/git", "--no-optional-locks", "-c", "core.fsmonitor=", "remote"])
+        self.assertEqual(run.call_args.kwargs["env"]["GIT_CONFIG_NOSYSTEM"], "1")
+        self.assertFalse(run.call_args.kwargs.get("shell", False))
+
+    def test_missing_cwd_and_remote_read_failures_ask(self):
+        for cwd in (None, "", self.cwd + "/missing"):
+            self.assertTrue(fetch_review.needs_review("git fetch origin", cwd))
+        with mock.patch.object(fetch_review.subprocess, "run",
+                               side_effect=subprocess.TimeoutExpired("git", 5)):
+            self.assertTrue(fetch_review.needs_review("git fetch", self.cwd))
+        with tempfile.TemporaryDirectory() as nonrepo:
+            self.assertTrue(fetch_review.needs_review("git fetch --all", nonrepo))
+
+    def test_hook_protocol(self):
+        for command, expected in (("git fetch origin", None), ("git fetch ../x", "ask")):
+            result = subprocess.run([sys.executable, str(FETCH_SCRIPT)],
+                                    input=json.dumps({"cwd": self.cwd, "tool_input": {"command": command}}),
+                                    text=True, capture_output=True, check=True)
+            self.assertEqual(json.loads(result.stdout).get("hookSpecificOutput", {}).get("permissionDecision"), expected)
+        result = subprocess.run([sys.executable, str(FETCH_SCRIPT)], input="invalid",
+                                text=True, capture_output=True, check=True)
+        self.assertEqual(json.loads(result.stdout)["hookSpecificOutput"]["permissionDecision"], "ask")
+
 
 STATUS = "/bin/nix-config-terminal-status report "
 CHECK = "/bin/nix-config-check --hook "

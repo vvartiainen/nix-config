@@ -39,7 +39,7 @@ let
   ];
 
   # Fetches from configured remotes run outside the sandbox without a prompt;
-  # the shared fetch review patterns still ask.
+  # the fetch hook and shared review patterns still ask for other forms.
   review = lib.filter (cmd: !(lib.elem cmd commands.fetch)) commands.review;
 
   permissionSettings = {
@@ -156,6 +156,9 @@ let
   );
   shellReview = pkgs.writeShellScript "nix-config-shell-review-claude" ''
     exec ${pkgs.python3}/bin/python3 ${../../shared/shell-review.py} claude ${shellPolicy}
+  '';
+  fetchReview = pkgs.writeShellScript "nix-config-fetch-review-claude" ''
+    exec ${pkgs.python3}/bin/python3 ${./fetch-review.py} ${pkgs.git}/bin/git
   '';
   # Approve web research from a hook rather than WebFetch allow rules, which
   # would also open those domains to sandboxed Bash. Deny rules still apply.
@@ -289,6 +292,7 @@ in
     commandMarkers = [
       "nix-config-shell-review-claude"
       "nix-config-web-approve-claude"
+      "nix-config-fetch-review-claude"
     ];
     claude.PreToolUse = [
       {
@@ -297,6 +301,11 @@ in
           {
             type = "command";
             command = "${shellReview}";
+          }
+          {
+            type = "command";
+            command = "${fetchReview}";
+            onFailure = "block";
           }
         ];
       }

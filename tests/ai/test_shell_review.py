@@ -353,6 +353,16 @@ EOF
         self.assertIn("read(/Users/agent/.ssh/**)", launch)
         self.assertIn("beforeShellExecution", self.fixture["hooks"]["cursor"])
         self.assertIn("PreToolUse", self.fixture["hooks"]["claude"])
+        bash_hooks = [handler for group in self.fixture["hooks"]["claude"]["PreToolUse"]
+                      if group.get("matcher") == "Bash" for handler in group["hooks"]]
+        fetch_hooks = [handler for handler in bash_hooks
+                       if "nix-config-fetch-review-claude" in handler["command"]]
+        self.assertEqual(len(fetch_hooks), 1)
+        self.assertEqual(fetch_hooks[0]["type"], "command")
+        self.assertEqual(fetch_hooks[0]["onFailure"], "block")
+        self.assertTrue(all("onFailure" not in handler for handler in bash_hooks
+                            if handler not in fetch_hooks))
+        self.assertIn("nix-config-fetch-review-claude", self.fixture["hooks"]["commandMarkers"])
 
     def test_repository_stop_hooks_use_only_fast_checker(self):
         for client, event in (("codex", "Stop"), ("claude", "Stop"), ("copilot", "agentStop")):
