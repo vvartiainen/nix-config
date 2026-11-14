@@ -55,9 +55,13 @@ Pushes and forge writes ask. Claude and Codex run read-only `gh` and `fj`
 views without prompting, and Claude does the same for `git fetch` from a
 configured remote; fetches naming a URL, a local path or `--upload-pack` still
 ask, and Codex asks for every fetch. These rules match only standalone
-commands: with `cd`, pipes, `-C` or `-H` the command runs sandboxed and fails,
-or prompts. A Claude `allowed_domains` entry does not help: SSH bypasses the
-sandbox proxy. Use HTTPS for public fetches. Local `git rebase`, `reset` and
+commands: with `cd`, pipes, loops, `-C` or `-H` the command runs sandboxed and
+fails (`fj` reports `Operation not permitted` from its keychain), or prompts.
+`fj pr edit <n> body` and `fj issue edit <n> body` take the body only as an
+argument; `fj-edit-body pr|issue <n> <file>` passes a file's contents instead
+of `$(cat ...)` and asks like other forge writes. `fj pr create`,
+`fj pr comment`, `fj issue create` and `fj issue comment` take `--body-file`.
+A Claude `allowed_domains` entry does not help: SSH bypasses the sandbox proxy. Use HTTPS for public fetches. Local `git rebase`, `reset` and
 `clean` run in the sandbox; their destructive forms are denied. Sandboxed Git
 does not record a new branch's upstream, because `.git/config` is protected;
 the first push sets it.
@@ -170,7 +174,13 @@ retry still fails, report it rather than widening socket access.
 | `device not configured` on `/dev/tty` | Use non-interactive flags |
 
 Retry a confirmed sandbox failure once with escalation where supported; Pi
-cannot escalate. Explicit secret-file denies remain off-limits. Do not loop
+cannot escalate. Explicit secret-file denies remain off-limits.
+To store a secret handed over with T3's `request_secret` file delivery, run
+`op-item-from-secret --vault <vault> --title <title> [--category <category>] [--field <field>] <file>`.
+It asks, runs outside the sandbox, only accepts files under
+`~/.t3/userdata/secrets`, passes the value to `op` on stdin, prints only the
+item's id, title and vault, and deletes the file. Plain `op item create` with
+`$(cat <file>)` stays denied: the secret directory is a Read deny. Do not loop
 through variants, move credentials or disable TLS verification.
 
 Nixpkgs-built Go tools use the configured CA bundle; upstream binaries may still

@@ -59,6 +59,8 @@ class ShellReviewTests(unittest.TestCase):
             "git push origin main": "ask",
             "nix build .#system": "ask",
             "gh api repos/example/project": "ask",
+            "fj-edit-body pr 1 /tmp/body.md": "ask",
+            "op-item-from-secret --vault Synthetic --title Example /tmp/secret": "ask",
             "sh -c 'rex run -- id'": "ask",
             "env NAME=value rex run -- id": "ask",
             "echo $(rex ls)": "ask",
@@ -265,6 +267,9 @@ EOF
         self.assertFalse(claude["sandbox"]["network"]["allowAllUnixSockets"])
         self.assertEqual(claude["sandbox"]["network"]["allowUnixSockets"], [socket, *socket_dirs])
         self.assertEqual(claude["env"]["PLUGIN_UNIX_SOCKET_DIR"], socket_dirs[0])
+        for wrapper in ["fj-edit-body", "op-item-from-secret"]:
+            self.assertIn(f"{wrapper} *", claude["sandbox"]["excludedCommands"])
+            self.assertIn(f"Bash({wrapper}:*)", claude["permissions"]["ask"])
         self.assertEqual(claude["permissions"]["defaultMode"], "acceptEdits")
         self.assertIn("Bash(npm publish:*)", claude["permissions"]["ask"])
         for executable in self.fixture["commands"]["rexExecutables"]:
