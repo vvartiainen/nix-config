@@ -242,7 +242,10 @@ EOF
         self.assertFalse(network["dangerously_allow_all_unix_sockets"])
         self.assertEqual(
             network["unix_sockets"],
-            {self.fixture["paths"]["nixDaemonSocket"]: "allow"},
+            {
+                self.fixture["paths"]["nixDaemonSocket"]: "allow",
+                **{path: "allow" for path in self.fixture["socketDirs"]},
+            },
         )
 
     def settings_file(self, client, name):
@@ -251,12 +254,17 @@ EOF
         return json.loads(path.read_text())
 
     def test_sandbox_sockets_match_codex(self):
-        # Only the Nix daemon socket is reachable; Rex and localhost stay out.
+        # Only the Nix daemon socket and the agent plugin socket directory are
+        # reachable; Rex and localhost stay out.
         socket = self.fixture["paths"]["nixDaemonSocket"]
+        socket_dirs = self.fixture["socketDirs"]
+        self.assertTrue(socket_dirs)
+        self.assertTrue(all(path.endswith("-agent") for path in socket_dirs))
         claude = self.settings_file("claude", "claude-code-settings")
         self.assertTrue(claude["sandbox"]["enabled"])
         self.assertFalse(claude["sandbox"]["network"]["allowAllUnixSockets"])
-        self.assertEqual(claude["sandbox"]["network"]["allowUnixSockets"], [socket])
+        self.assertEqual(claude["sandbox"]["network"]["allowUnixSockets"], [socket, *socket_dirs])
+        self.assertEqual(claude["env"]["PLUGIN_UNIX_SOCKET_DIR"], socket_dirs[0])
         self.assertEqual(claude["permissions"]["defaultMode"], "acceptEdits")
         self.assertIn("Bash(npm publish:*)", claude["permissions"]["ask"])
         for executable in self.fixture["commands"]["rexExecutables"]:

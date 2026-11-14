@@ -37,6 +37,10 @@ upstream proxies and control sockets remain restricted. Claude, Cursor and
 Copilot use the package-download host policy; Pi's network limits are below.
 Nix build/run/develop/store operations require review because they delegate to
 the host daemon. Project checks and ordinary non-Nix builds stay sandboxed.
+Claude and Codex also allow Unix sockets in `~/.cache/tofu-agent`, where
+`PLUGIN_UNIX_SOCKET_DIR` puts Terraform and OpenTofu provider sockets, so
+`validate` with providers runs sandboxed. In T3, Codex's per-turn sandbox
+does not include this grant.
 
 Codex and Claude can read sibling projects under the directory containing this
 checkout, with secret-file restrictions. Claude may still ask before accessing
