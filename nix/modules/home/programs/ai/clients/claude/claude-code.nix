@@ -305,6 +305,7 @@ in
           {
             type = "command";
             command = "${fetchReview}";
+            onFailure = "block";
           }
         ];
       }

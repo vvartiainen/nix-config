@@ -42,6 +42,11 @@ class ClaudeFetchTests(unittest.TestCase):
             "git fetch --depth 1 origin", "git fetch --depth=1 origin",
             "git fetch 'origin' 'main:main'", "git fetch -- origin",
             "git fetch origin --prune", "git fetch --prune", "git status",
+            "git fetch --recurse-submodules origin",
+            "git fetch --no-recurse-submodules origin",
+            "git fetch --recurse-submodules=yes origin",
+            "git fetch --recurse-submodules=on-demand origin",
+            "git fetch --recurse-submodules=no origin",
         ]
         asks = [
             "git fetch example.invalid:repo.git", "git fetch repos/project.git",
@@ -65,6 +70,30 @@ class ClaudeFetchTests(unittest.TestCase):
             for command in commands:
                 with self.subTest(command=command):
                     self.assertEqual(fetch_review.needs_review(command, self.cwd), expected)
+
+    def test_tilde_remote_names_ask(self):
+        for remote in ("~", "~/x", "~user"):
+            subprocess.run(["git", "-C", self.cwd, "config",
+                            f"remote.{remote}.url", "https://example.invalid/repo.git"], check=True)
+            for prefix in ("git fetch ", "git fetch --\t", "git fetch --multiple origin "):
+                with self.subTest(command=prefix + remote):
+                    self.assertTrue(fetch_review.needs_review(prefix + remote, self.cwd))
+
+    def test_unusual_whitespace_asks(self):
+        for command in ("git\tfetch origin", "git fetch\torigin",
+                        "git  fetch origin", "git fetch  origin",
+                        "git fetch --\torigin", "git fetch\norigin"):
+            with self.subTest(command=command):
+                self.assertTrue(fetch_review.needs_review(command, self.cwd))
+
+    def test_remote_lookup_is_hardened(self):
+        with mock.patch.object(fetch_review.subprocess, "run",
+                               return_value=subprocess.CompletedProcess([], 0, "origin\n")) as run:
+            self.assertFalse(fetch_review.needs_review("git fetch origin", self.cwd, "/pinned/git"))
+        self.assertEqual(run.call_args.args[0],
+                         ["/pinned/git", "--no-optional-locks", "-c", "core.fsmonitor=", "remote"])
+        self.assertEqual(run.call_args.kwargs["env"]["GIT_CONFIG_NOSYSTEM"], "1")
+        self.assertFalse(run.call_args.kwargs.get("shell", False))
 
     def test_missing_cwd_and_remote_read_failures_ask(self):
         for cwd in (None, "", self.cwd + "/missing"):

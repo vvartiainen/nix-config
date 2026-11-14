@@ -5,6 +5,7 @@ permissions. Unknown syntax/options ask rather than guessing Git's grammar.
 """
 
 import json
+import os
 import re
 import shlex
 import subprocess
@@ -37,8 +38,11 @@ def needs_review(command, cwd, git="git"):
     if argv[:2] != ["git", "fetch"]:
         return True
     # shlex is a tokenizer, not a shell parser. Reject expansions, operators,
-    # comments, globs and escapes even inside quotes (conservative by design).
+    # comments, globs, tildes and escapes even inside quotes (conservative by design).
+    # Keep whitespace canonical too: permission patterns may only match one space.
     if re.search(r"[\n\r\x00$`;&|<>(){}*?\[\]#!\\]", command):
+        return True
+    if "~" in command or "  " in command or re.search(r"[^\S ]", command):
         return True
     if any(arg.startswith("--upload-pack") or arg.startswith("-u") for arg in argv[2:]):
         return True
@@ -72,7 +76,9 @@ def needs_review(command, cwd, git="git"):
         return True
     try:
         result = subprocess.run(
-            [git, "remote"], cwd=cwd, check=True, capture_output=True,
+            [git, "--no-optional-locks", "-c", "core.fsmonitor=", "remote"],
+            env={**os.environ, "GIT_CONFIG_NOSYSTEM": "1"},
+            cwd=cwd, check=True, capture_output=True,
             text=True, timeout=5,
         )
     except (OSError, subprocess.SubprocessError, UnicodeError):

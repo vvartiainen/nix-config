@@ -65,9 +65,14 @@ views without prompting, and Claude does the same for `git fetch` from a
 configured remote. A Claude `PreToolUse` hook reads `git remote` in the command's
 `cwd` without writing config. It defers for standalone `git fetch` with only
 known option flags, configured remote names followed by refspecs, `--all`,
-and `--multiple`/`--prefetch` with only configured remotes. URLs, scp-style
-addresses, paths, unknown names, `--upload-pack`/`-u`, unknown options,
-unclassified shell syntax and remote-read failures return `ask`. The existing
+and `--multiple`/`--prefetch` with only configured remotes. Configured remotes
+remain trusted, including file URLs, `insteadOf` rewrites and `ext::`/transport
+commands configured in Git config. Explicit URLs, scp-style addresses, paths,
+unknown names, `--upload-pack`/`-u`, unknown options,
+tilde syntax (even quoted), noncanonical whitespace, unclassified shell syntax
+and remote-read failures return `ask`. The fetch handler requires Claude Code
+2.1.295 or later: [`onFailure: "block"`](https://code.claude.com/docs/en/hooks#block-the-action-when-a-hook-fails)
+blocks the action if the hook crashes, cannot start or times out. The existing
 fetch ask patterns remain as defence in depth. Per Claude's
 [hook decision documentation](https://code.claude.com/docs/en/hooks#pretooluse-decision-control),
 `ask` prompts even when an allow rule matches; hooks run before every tool call.

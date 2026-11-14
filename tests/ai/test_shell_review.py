@@ -359,6 +359,9 @@ EOF
                        if "nix-config-fetch-review-claude" in handler["command"]]
         self.assertEqual(len(fetch_hooks), 1)
         self.assertEqual(fetch_hooks[0]["type"], "command")
+        self.assertEqual(fetch_hooks[0]["onFailure"], "block")
+        self.assertTrue(all("onFailure" not in handler for handler in bash_hooks
+                            if handler not in fetch_hooks))
         self.assertIn("nix-config-fetch-review-claude", self.fixture["hooks"]["commandMarkers"])
 
     def test_repository_stop_hooks_use_only_fast_checker(self):
