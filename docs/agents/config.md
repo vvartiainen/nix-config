@@ -55,8 +55,9 @@ Custom CLI homes and administrator-managed tools are outside cleanup coverage.
 
 ## T3 Code settings
 
-The Homebrew cask provides the app; Nix supplies only these server settings,
-merged into `~/.t3/userdata/settings.json` on every switch:
+The Homebrew cask provides the app. Nix merges provider paths, the default
+[permission mode](permissions.md#t3-code-permission-modes) and these cleanup
+settings into `~/.t3/userdata/settings.json` on every switch:
 
 | Setting | Value | Effect |
 | --- | --- | --- |
