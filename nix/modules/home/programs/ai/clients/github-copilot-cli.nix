@@ -98,9 +98,7 @@ let
         # allowDevToolAccess grants a moved cache instead of its default
         # location, but only to its own ecosystem; mise has none.
         ++ caches.writePaths
-        ++ paths.tmp
-        # The backlog MCP servers (`bl <project> mcp start`) edit tasks there.
-        ++ lib.optional (config.backlog.projects != [ ]) config.backlog.vault;
+        ++ paths.tmp;
         deniedPaths = paths.denied ++ paths.workspaceSecrets;
         clearPolicyOnExit = true;
       };

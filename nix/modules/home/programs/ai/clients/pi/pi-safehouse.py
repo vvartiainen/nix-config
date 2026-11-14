@@ -21,7 +21,7 @@ def resolved_path(value):
     """Rewrite PATH entries to the real directories they link to.
 
     Safehouse grants the Nix store, not the profile symlinks that PATH names, so
-    resolving `mcp-nixos`, `bl` or `statix` through `~/.nix-profile/bin` or
+    resolving `mcp-nixos` or `statix` through `~/.nix-profile/bin` or
     `/etc/profiles/per-user/<user>/bin` fails with EPERM. Resolving here, outside
     the sandbox, keeps tools reachable under the names projects configure.
     """

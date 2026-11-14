@@ -73,9 +73,6 @@ Machine identity and private configuration stay outside this repo in
   homeModules = [
     ./zen-work.nix # optional private module; remove if unused
     {
-      # Backlog.md folders under this vault; each gets an agent MCP server.
-      backlog.vault = "/Users/your-user/backlogs";
-      backlog.projects = [ "nix-config" ];
       # SFTP hosts for yazi (`yy sftp://my-server`); auth via SSH_AUTH_SOCK.
       programs.yazi.vfs.sftp.my-server = {
         host = "203.0.113.10";

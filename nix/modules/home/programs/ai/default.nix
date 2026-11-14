@@ -6,7 +6,6 @@ in
   imports = [
     ./hooks/agent-hooks.nix
     ./shared/agents-catalog.nix
-    ./shared/backlog.nix
     ./clients/claude/claude.nix
     ./clients/claude/claude-code.nix
     ./shared/cleanup-agent-config.nix

@@ -15,32 +15,10 @@ ct agents sync --dry-run
 ct agents sync
 ```
 
-The catalog includes `nixos` and a `backlog-<name>` server for each configured
-backlog. Backlog servers only work on machines where `bl` knows that backlog;
-keep those registrations in your own projects. Codex and Pi load project
-servers after project trust. Catalog server tools have configured permission
-allowances. See the cli-toolbox
+The catalog includes the `nixos` server. Codex and Pi load project servers
+after project trust. Catalog server tools have configured permission allowances.
+See the cli-toolbox
 [agent tools guide](https://github.com/vvartiainen/cli-toolbox/blob/main/docs/agent-tools.md).
-
-## Backlog shortcuts
-
-Tasks and implementation documents live outside the repo. In a configured
-project, including subdirectories and worktrees:
-
-```sh
-bl                        # tasks
-bl review                 # needs-review queue
-bl handoffs               # handoff + needs-review queue
-bl board
-bl browser
-bl task TASK-73
-```
-
-Elsewhere, use an explicit project, such as `bl nix-config review`.
-Selection prefers an explicit project, then detected repository/directory, then
-`BACKLOG_PROJECT`. Repositories with different backlog names need an explicit
-selection. `bl --help` shows wrapper help; `bl <project> --help` shows Backlog help.
-The user accepts and completes review tickets; agents leave them open.
 
 ## Skill library
 
@@ -59,10 +37,9 @@ ct agents sync
 ```
 
 Start a new agent session to use it. Available workflow skills include
-`agent-planning`, `backlog-task`, `work-on-task`, `rebase-main`,
-`review-before-push`, `handoff` and `mac-disk-cleanup`; read their SKILL.md for scope. For an existing ticket,
-invoke `work-on-task TASK-123`; `work-on-task prepare TASK-123` produces a brief
-without starting implementation. Invoke `agent-planning <your goal or handoff>`
+`agent-planning`, `rebase-main`, `review-before-push`, `handoff` and
+`mac-disk-cleanup`; read their SKILL.md for scope.
+Invoke `agent-planning <your goal or handoff>`
 to prepare task briefs, temporary workspace and note conventions, and a
 continuation prompt; implementation starts only when requested. Skills do not
 grant permissions. Skill files enter the Nix store and project files, so keep

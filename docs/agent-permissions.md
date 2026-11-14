@@ -100,7 +100,7 @@ The sandbox also denies writes to extension code under Pi state (except the
 permission extension's review log) and to the user-level `mcp.json`, so a session
 cannot persist code or servers for a later one. The wrapper resolves PATH entries
 to the directories they link to before launch, so Home Manager tools such as
-`statix` and `bl`, and MCP servers configured by name such as `mcp-nixos`, start
+`statix`, and MCP servers configured by name such as `mcp-nixos`, start
 inside Pi; the profile symlinks themselves stay outside the read grants.
 
 Safehouse permits public IP networking for research and provider APIs. The
@@ -125,8 +125,8 @@ and otherwise sanitizes the environment, and existing stored provider logins
 remain usable. The installed npm package directory stays writable: a blocked
 write makes Pi skip a package instead of failing, so vendoring the pinned
 packages is open work. MCP servers started by Pi inherit these limits too;
-servers using data outside the granted paths, including an external Backlog
-vault, need a separately reviewed grant before they can work.
+servers using data outside the granted paths need a separately reviewed grant
+before they can work.
 
 ## Working in the sandboxes
 
