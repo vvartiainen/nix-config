@@ -2,7 +2,6 @@
 
 import importlib.util
 import json
-import os
 from pathlib import Path
 import tempfile
 from types import SimpleNamespace
@@ -34,9 +33,6 @@ class T3ConfigTests(unittest.TestCase):
             name: {"environment": environment}
             for name in providers
         }}
-        # Also run against the realized fixture's t3-code.json after a build.
-        if settings := os.environ.get("T3_CONFIG_SETTINGS"):
-            managed = json.loads(Path(settings).read_text())
         with tempfile.TemporaryDirectory() as scratch:
             root = Path(scratch)
             destination = root / "settings.json"

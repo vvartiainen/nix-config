@@ -38,6 +38,7 @@ in
   opencode = config.programs.opencode.settings.permissions;
   hooks = config.agentHooks;
   launch = config.programs.zsh.initContent;
+  t3 = config.home.activation.t3CodeConfig.data;
   codex = config.home.activation.codexMutableConfig.data;
   claude = config.home.activation.claudeCodeConfig.data;
   cursor = config.home.activation.cursorCliConfig.data;
