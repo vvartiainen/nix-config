@@ -255,6 +255,13 @@ EOF
         self.assertTrue(path.exists(), "build the fixture system before settings tests")
         return json.loads(path.read_text())
 
+    def test_claude_generated_rules_do_not_mix_globs_and_prefix_syntax(self):
+        permissions = self.settings_file("claude", "claude-code-settings")["permissions"]
+        for action in ("allow", "ask", "deny"):
+            for rule in permissions[action]:
+                with self.subTest(action=action, rule=rule):
+                    self.assertIsNone(re.search(r"\*.*:\*\)$", rule))
+
     def test_sandbox_sockets_match_codex(self):
         # Only the Nix daemon socket and the agent plugin socket directory are
         # reachable; Rex and localhost stay out.

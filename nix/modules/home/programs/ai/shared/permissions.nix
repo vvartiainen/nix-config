@@ -271,8 +271,9 @@ let
     fetchReviewPatterns = [
       "git fetch*--upload-pack*"
       "git fetch*://*"
-      "git fetch*@*:*"
-      "git fetch*file:*"
+      # Claude treats a trailing :* as prefix syntax, disabling earlier globs.
+      "git fetch*@*"
+      "git fetch*file*"
       "git fetch* /*"
       "git fetch* ~*"
       "git fetch* .*"
