@@ -104,10 +104,11 @@ Read deny.
 
 ## T3 Code permission modes
 
-New threads default to **Auto-accept edits** to keep sandbox escapes reviewed
-by you. Project overrides and existing threads retain their selected modes;
-change those separately in T3. **Auto** uses automatic
-review; **Full access** removes the ordinary approval boundary. T3 injects its
+New threads default to **Auto**, where the provider's automatic review
+evaluates approvals and asks you only about the rest. Project overrides and
+existing threads retain their selected modes; change those separately in T3.
+**Auto-accept edits** leaves every sandbox escape for you to review; **Full
+access** removes the ordinary approval boundary. T3 injects its
 own MCP endpoint and allows its Claude tool namespace; Codex tool-specific
 prompts remain separate from shell approvals. See [T3 permission modes](https://github.com/pingdotgg/t3code/blob/main/docs/user/permission-modes.md).
 The default Codex, Claude and Pi provider paths and new-thread permission mode
