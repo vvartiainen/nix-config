@@ -105,26 +105,30 @@ command = "other"
         job = self.run_cleanup()
         data = tomlkit.parse(codex.read_text())
         self.assertNotIn("mcp_servers", data)
-        self.assertEqual(len(data["skills"]["config"]), 1)
-        self.assertFalse(data["skills"]["config"][0]["enabled"])
+        self.assertEqual(len(data["skills"]["config"]), 2)
+        self.assertTrue(data["skills"]["config"][0]["enabled"])
+        self.assertTrue(data["skills"]["config"][1]["enabled"])
         self.assertNotIn("mcp_servers", data["profiles"]["work"])
-        self.assertFalse(data["plugins"]["extra@market"]["enabled"])
+        self.assertTrue(data["plugins"]["extra@market"]["enabled"])
         self.assertEqual(data["projects"]["/project"]["trust_level"], "trusted")
         self.assertIn("# keep comment", codex.read_text())
-        self.assertFalse(json.loads(claude.read_text())["enabledPlugins"][
+        self.assertTrue(json.loads(claude.read_text())["enabledPlugins"][
             "extra@market"
         ])
         data = json.loads(copilot.read_text())
-        self.assertEqual(data["installedPlugins"], [])
+        self.assertEqual(data["installedPlugins"], [{"name": "extra", "enabled": True}])
         self.assertEqual(data["loggedInUsers"], ["keep"])
         self.assertEqual(data["trustedFolders"], ["keep"])
-        self.assertEqual(json.loads(opencode.read_text()), {"model": "test/keep"})
+        self.assertEqual(json.loads(opencode.read_text()), {
+            "plugin": ["extra"], "skills": {"paths": ["/extra"]},
+            "model": "test/keep",
+        })
         for path in mcp_files:
             self.assertEqual(json.loads(path.read_text()), {"keep": True})
         for path in [project, auth, history, system, *herdr]:
             self.assertEqual(path.read_text(), "keep")
-        self.assertFalse(skill.exists())
-        self.assertFalse(plugin.exists())
+        self.assertTrue(skill.exists())
+        self.assertTrue(plugin.exists())
         backup = job.backup / str(codex).lstrip("/")
         self.assertEqual(backup.read_text(), original)
         self.assertEqual(backup.stat().st_mode & 0o777, 0o600)
@@ -132,7 +136,7 @@ command = "other"
         self.assertTrue(backup.exists())
 
         # A later change replaces the previous backup.
-        self.write(self.home / ".claude/skills/new/SKILL.md", "new")
+        self.write(self.home / ".claude.json", '{"mcpServers":{"new":{}}}')
         self.assertEqual(self.run_cleanup().backup, job.backup)
         self.assertFalse(backup.exists())
 
@@ -157,8 +161,8 @@ command = "other"
         self.assertFalse(link.is_symlink())
         self.assertEqual(target.read_text(), "mcp_servers={}")
         self.assertEqual(skill.read_text(), "keep")
-        self.assertFalse(skill_link.exists())
-        self.assertTrue((job.backup / str(skill_link).lstrip("/")).is_symlink())
+        self.assertTrue(skill_link.is_symlink())
+        self.assertFalse((job.backup / str(skill_link).lstrip("/")).exists())
 
 
 if __name__ == "__main__":

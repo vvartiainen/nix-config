@@ -33,7 +33,6 @@ in
     packages = [ zshCompletion ];
 
     # Codex, OpenCode and Pi share .agents/skills; Claude uses its own directory.
-    # Cleanup archives the previous copies before linkGeneration restores these.
     file = lib.genAttrs [ ".agents/skills/rex" ".claude/skills/rex" ] (_: {
       source = skill;
       force = true;

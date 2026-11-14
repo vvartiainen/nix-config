@@ -355,8 +355,10 @@ let
     # The rest of the home directory is denied apart from the workspace;
     # reading it needs an approved command outside the sandbox.
     homeReadable = [
-      # Shared agent skills.
+      # Shared skills and installed native marketplace skill helpers.
       ".agents"
+      ".claude/plugins/cache"
+      ".codex/plugins/cache"
       ".config"
       ".local/share"
       ".local/state"

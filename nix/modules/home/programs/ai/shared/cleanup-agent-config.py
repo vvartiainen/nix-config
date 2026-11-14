@@ -1,4 +1,4 @@
-"""Reset global agent tools; projects opt into tools through ct agents."""
+"""Reset global MCP registrations; preserve user-managed skills and plugins."""
 
 import argparse
 import copy
@@ -19,44 +19,14 @@ def clear_keys(data, keys):
         data.pop(key, None)
 
 
-def disable_plugins(data, key):
-    for name, value in data.get(key, {}).items():
-        if isinstance(value, bool):
-            data[key][name] = False
-        elif isinstance(value, dict):
-            value["enabled"] = False
-
-
 def codex_tools(data):
     clear_keys(data, ["mcp_servers"])
-    disable_plugins(data, "plugins")
-    # Reset /skills toggles too. Keep disabled entries (including the paths
-    # declared by Nix); remove global enable overrides for project skills.
-    skills = data.get("skills", {})
-    if "config" in skills:
-        entries = []
-        for entry in skills["config"]:
-            path = Path(entry.get("path", ""))
-            if ".system" in path.parts:
-                entry["enabled"] = False
-            if entry.get("enabled") is False:
-                entries.append(entry)
-        skills["config"] = entries
     for profile in data.get("profiles", {}).values():
         codex_tools(profile)
 
 
-def claude_tools(data):
-    disable_plugins(data, "enabledPlugins")
-
-
-def copilot_tools(data):
-    if "installedPlugins" in data:
-        data["installedPlugins"] = []
-
-
 def opencode_tools(data):
-    clear_keys(data, ["mcp", "plugin", "skills"])
+    clear_keys(data, ["mcp"])
 
 
 class Cleanup:
@@ -117,23 +87,6 @@ class Cleanup:
             if os.path.exists(tmp):
                 os.unlink(tmp)
 
-    def archive_skills(self, path, keep_system=False):
-        if not path.exists() and not path.is_symlink():
-            return
-        # Move the link itself; never change its target (possibly a project).
-        entries = [path] if path.is_symlink() else sorted(path.iterdir())
-        for entry in entries:
-            if keep_system and entry.name == ".system":
-                continue
-            # Herdr's state reporting (`herdr integration install`), not a
-            # tool for the agent.
-            if entry.name.startswith("herdr-agent-state."):
-                continue
-            action = "would archive" if self.dry_run else "archiving"
-            print(f"{action} {entry}")
-            if not self.dry_run:
-                shutil.move(str(entry), self.backup_path(entry))
-
     def run(self):
         home, xdg = self.home, self.config_home
         edits = [
@@ -141,9 +94,6 @@ class Cleanup:
             (home / ".claude.json", lambda d: clear_keys(d, ["mcpServers"])),
             (home / ".claude/.claude.json",
              lambda d: clear_keys(d, ["mcpServers"])),
-            (home / ".claude/settings.json", claude_tools),
-            (home / ".copilot/settings.json", claude_tools),
-            (home / ".copilot/config.json", copilot_tools),
             (xdg / "opencode/opencode.json", opencode_tools),
             (xdg / "opencode/opencode.jsonc", opencode_tools),
         ]
@@ -161,15 +111,6 @@ class Cleanup:
         for path, transform in edits:
             self.edit(path, transform)
 
-        for relative in [
-            ".agents/skills", ".claude/skills", ".claude/commands",
-            ".copilot/skills", ".cursor/skills", ".pi/agent/skills",
-            ".pi/agent/extensions",
-        ]:
-            self.archive_skills(home / relative)
-        self.archive_skills(xdg / "opencode/skills")
-        self.archive_skills(xdg / "opencode/plugins")
-        self.archive_skills(home / ".codex/skills", keep_system=True)
         if self.backup:
             print(f"Backups: {self.backup}")
 

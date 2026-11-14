@@ -138,7 +138,7 @@ let
     features.mentions_v2 = false;
     # MCP servers come from the projects (`ct agents`), not ChatGPT apps.
     features.apps = false;
-    # Skills come from the projects too, not the bundled system skills.
+    # Custom skills are managed outside Nix; keep bundled system skills off.
     skills.bundled.enabled = false;
     # Also record the individual choices shown by /skills. Use paths so a
     # project's skill with the same name is still available.
@@ -152,8 +152,7 @@ let
       "openai-docs"
       "imagegen"
     ];
-    # Bundled plugins start off. The cleanup step resets global plugin choices
-    # on switch; projects can still declare their own plugins.
+    # Keep these bundled plugins off; private marketplace choices stay mutable.
     plugins = lib.genAttrs [
       "codex-app-tools@openai-bundled"
       "browser@openai-bundled"

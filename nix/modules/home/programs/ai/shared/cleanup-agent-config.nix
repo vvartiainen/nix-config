@@ -15,8 +15,8 @@ in
 {
   home.packages = [ cleanup ];
 
-  # Clear global tools before Home Manager restores Nix-declared skills and
-  # each CLI merges its settings. Force-owned skills pass checkLinkTargets.
+  # Clear global MCP registrations before each CLI merges its settings.
+  # User-managed skills and marketplace plugins survive activation.
   home.activation.agentToolsCleanup =
     lib.hm.dag.entryBetween
       [

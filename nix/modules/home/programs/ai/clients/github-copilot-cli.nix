@@ -122,7 +122,7 @@ let
     };
     includeCoAuthoredBy = false;
     allowedUrls = network.fetch;
-    # Skills come from the projects (`ct agents`), not the built-in ones.
+    # Keep built-in skills off; custom skills are managed outside Nix.
     disabledSkills = [
       "customize-cloud-agent"
       "github-pr-media"

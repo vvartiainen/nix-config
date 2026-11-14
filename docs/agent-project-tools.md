@@ -2,7 +2,7 @@
 
 ## Select project tools
 
-Nix supplies a catalog; `ct agents` selects agents, MCP servers and skills and
+Nix supplies an MCP catalog; `ct agents` selects agents and MCP servers and
 writes their project files. In this repository, generated agent configuration,
 MCP registrations and skill copies are local and ignored by Git. Review generated
 files before use; other projects can choose whether to commit their setup.
@@ -20,30 +20,16 @@ after project trust. Catalog server tools have configured permission allowances.
 See the cli-toolbox
 [agent tools guide](https://github.com/vvartiainen/cli-toolbox/blob/main/docs/agent-tools.md).
 
-## Skill library
+## Skills and plugins
 
-- Reusable skills: `nix/modules/home/programs/ai/shared/skills/<name>/SKILL.md`.
-- Private host guides: `agents.localSkills.<name> = <dir>;` in a private
-  Home Manager module. Keep workstation-specific inventories there.
-- Remote skills: `agents.skillSources`, then `ct agents library install` after
-  rebuilding the catalog.
+Authored skills live in the private `agent-skills` repository and are installed
+through Claude Code or Codex's native marketplace commands. Its README covers
+installation, updates and development. Nix does not copy skills into the store,
+register skill sources or reset marketplace choices on activation. Sandboxed
+commands can read the clients' plugin caches to run packaged skill helpers.
 
-Enable a skill per project and review the generated files:
-
-```sh
-ct agents set skills review-before-push enable
-ct agents sync --dry-run
-ct agents sync
-```
-
-Start a new agent session to use it. Available workflow skills include
-`agent-planning`, `rebase-main`, `review-before-push`, `handoff` and
-`mac-disk-cleanup`; read their SKILL.md for scope.
-Invoke `agent-planning <your goal or handoff>`
-to prepare task briefs, temporary workspace and note conventions, and a
-continuation prompt; implementation starts only when requested. Skills do not
-grant permissions. Skill files enter the Nix store and project files, so keep
-credentials out.
+Rex's vendor bootstrap skill and hooks remain managed with its pinned CLI.
+Skills and plugins do not grant permissions; the active session policy applies.
 
 ## Global cleanup
 
@@ -71,19 +57,17 @@ reboot before testing GUI apps. Removing the Nix options does not clear values
 already set in the running launchd session. Confirm provider discovery and
 Claude's config directory again after reboot.
 
-Every switch removes global MCP registrations and undeclared global skills/
-plugins, then restores declared Rex and Herdr integrations. Project tools,
-authentication, session history and catalog/library remain in place.
-Prefer project selection for other tools; manually enabled global tools are
-removed again on the next switch.
+Every switch removes global MCP registrations, then restores declared Rex and
+Herdr integrations. Skills, plugins, marketplace choices, project tools,
+authentication and session history remain in place. Select MCP servers per
+project; manually enabled global MCP servers are removed on the next switch.
 
 ```sh
 just cleanup-agent-config --dry-run
 just cleanup-agent-config
 ```
 
-Review the dry run first. Manual cleanup also archives declared skills; switch
-again to restore them. Changed files/directories are backed up under
+Review the dry run first. Changed configuration files are backed up under
 `~/.local/state/nix-config/agent-config-backup/`; only the latest run that
 changed something is retained. Inspect that private backup before recovery.
 Custom CLI homes and administrator-managed tools are outside cleanup coverage.

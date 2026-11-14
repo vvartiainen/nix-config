@@ -165,8 +165,8 @@ let
     };
     # MCP servers come from the projects (`ct agents`), not claude.ai.
     disableClaudeAiConnectors = true;
-    # Skills and plugins come from the projects too: nothing syncs from
-    # claude.ai, and bundled skills stay out of context but typable with `/`.
+    # Manage private marketplace skills/plugins in the CLI. Nothing syncs from
+    # claude.ai; bundled skills stay out of context but typable with `/`.
     # disableBundledSkills would also drop the artifact skills, which stay on.
     syncClaudeAiPlugins = false;
     syncClaudeAiSkills = false;
