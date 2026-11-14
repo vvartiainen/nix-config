@@ -75,6 +75,38 @@ metadata and need an approved run outside the sandbox.
 
 For this repository's validation rules, use [AGENTS.md](../../AGENTS.md).
 
+## Flake update previews
+
+From this repository's root, agents preview newer pins with:
+
+```sh
+flake-update-preview
+flake-update-preview nixpkgs home-manager
+```
+
+The installed wrapper accepts only plain input names (excluding `host`), pins
+the Nix executable, overrides `host` with `nix/fixtures/host`, and writes only
+`/private/tmp/flake-update-review/flake.lock.new`. It resolves into a private
+temporary directory before replacing that file; the scratch directory must be
+owned by you with mode 0700 and cannot be a symlink. It never updates the
+repository lock, builds or applies. Diff against the repository lock ignoring
+the synthetic `host` node. Run it only on trusted flakes: resolution contacts
+input URLs outside the sandbox and adds fetched sources to the Nix store.
+
+The shared inspection policy allows this fixed wrapper. Claude excludes it
+from the sandbox and allows it without prompting; terminal Codex also allows
+it outside the sandbox. Cursor and Copilot retain their sandbox and need an
+approved retry for GitHub downloads. OpenCode allows it without OS isolation;
+Pi cannot reach the Nix daemon. T3's Codex sandbox override can still ask.
+Raw `nix flake update` stays reviewed. GitHub is not added to sandboxed Bash.
+
+The package download allowlist includes `pkgs.superlogical.com` and its exact
+Rex tarball redirect host, `wthziax2yejsqc4k.public.blob.vercel-storage.com`.
+Claude, Cursor and Copilot render this shared list; Codex and Pi already allow
+ordinary internet access. No Vercel wildcard is granted. Like any host grant,
+the exact host can receive requests from sandboxed commands, so it is limited
+to the known download endpoint.
+
 ## Secrets
 
 Agents never see secret values; the tool that needs a credential fetches it

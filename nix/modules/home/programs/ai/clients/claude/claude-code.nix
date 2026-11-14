@@ -31,6 +31,8 @@ let
   unsandboxedPrograms = [
     "gh"
     "fj"
+    # Fixed scratch lock output; allow via shared inspection rules.
+    "flake-update-preview"
     # Need fj's keychain token and the 1Password app; both stay reviewed.
     "fj-edit-body"
     "op-item-from-secret"

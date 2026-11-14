@@ -14,6 +14,7 @@ in
     ./clients/cursor-cli.nix
     ./clients/github-copilot-cli.nix
     ./shared/mcp.nix
+    ./shared/flake-update-preview.nix
     ./shared/op-item-from-secret.nix
     ./clients/opencode.nix
     ./clients/pi/pi-coding-agent.nix

@@ -32,6 +32,9 @@ class ShellReviewTests(unittest.TestCase):
     def test_decision_matrix(self):
         cases = {
             "git status && rg -n TODO .": "allow",
+            "flake-update-preview": "allow",
+            "flake-update-preview nixpkgs": "allow",
+            "nix flake update": "ask",
             "git status\n": "allow",
             "python3 -m unittest discover": "allow",
             "go test ./...": "allow",
@@ -88,6 +91,9 @@ class ShellReviewTests(unittest.TestCase):
     def test_lenient_decision_matrix(self):
         # Claude mode: "allow" defers to native rules and the sandbox.
         cases = {
+            "flake-update-preview": "allow",
+            "flake-update-preview nixpkgs": "allow",
+            "nix flake update": "ask",
             "ls 2>/dev/null": "allow",
             "make test 2>&1 | tail -20": "allow",
             "grep -n TODO . > /tmp/out.txt": "allow",
@@ -196,6 +202,8 @@ EOF
         rules = re.search(r"install -m 0644 (/nix/store/[^ ]+)", self.fixture["codex"]).group(1)
         self.assertTrue(Path(rules).exists(), "build the fixture system before native policy tests")
         for argv, expected in [
+            (["flake-update-preview", "nixpkgs"], "allow"),
+            (["nix", "flake", "update"], "prompt"),
             (["git", "status"], None),
             (["git", "rebase", "main"], None),
             (["git", "reset", "--soft", "HEAD~1"], None),
@@ -296,9 +304,19 @@ EOF
         xdg_cache = claude["env"]["XDG_CACHE_HOME"]
         self.assertTrue(xdg_cache.endswith("/.cache/xdg-agent"))
         self.assertIn(xdg_cache, claude["sandbox"]["filesystem"]["allowWrite"])
+        self.assertIn("flake-update-preview *", claude["sandbox"]["excludedCommands"])
+        self.assertIn("Bash(flake-update-preview:*)", claude["permissions"]["allow"])
+        self.assertNotIn("Bash(flake-update-preview:*)", claude["permissions"]["ask"])
+        hosts = claude["sandbox"]["network"]["allowedDomains"]
+        self.assertIn("wthziax2yejsqc4k.public.blob.vercel-storage.com", hosts)
+        for host in ["github.com", "api.github.com", "codeload.github.com", "*.vercel-storage.com"]:
+            self.assertNotIn(host, hosts)
+        cursor = self.settings_file("cursor", "cursor-cli-config")
+        self.assertEqual(cursor["sandbox"]["networkAllowlist"], hosts)
         copilot = self.settings_file("copilot", "github-copilot-cli-settings")
         policy = copilot["sandbox"]["userPolicy"]
         self.assertTrue(copilot["sandbox"]["enabled"])
+        self.assertEqual(policy["network"]["allowedHosts"], hosts)
         self.assertFalse(policy["network"]["allowLocalNetwork"])
         self.assertFalse([p for p in policy["filesystem"]["readwritePaths"] if "rex" in p.lower()])
         self.assertIn(socket, policy["filesystem"]["readwritePaths"])

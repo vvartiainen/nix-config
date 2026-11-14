@@ -92,6 +92,9 @@ For T3 mode selection and approval behavior, follow the
   Use `/tmp` for scratch files.
   Nix refuses `--output-lock-file` and `--reference-lock-file` paths through
   the `/tmp` symlink; pass `/private/tmp/...` instead.
+- Flake update previews: use the fixed `flake-update-preview [input ...]` wrapper
+  from the repository root; see [permissions](docs/agents/permissions.md#flake-update-previews).
+  Raw `nix flake update` remains reviewed.
 - Network: Codex allows ordinary internet access; other clients may restrict
   access to package download hosts and require approval for other domains.
 - `nix build`, `nix eval` and `nix fmt` run through the daemon outside the agent

@@ -93,6 +93,9 @@ just rollback-to <GENERATION>
 just clean                     # remove generations older than 7 days and GC
 ```
 
+Agents use [the scratch-lock preview wrapper](agents/permissions.md#flake-update-previews)
+to review updates before changing the repository lock.
+
 Review `flake.lock` and `just build` before switching. The main `nixpkgs` input
 tracks unstable. Some inputs have their own update steps:
 [Rosetta image](programs/linux-builders.md#update-the-rosetta-image),
