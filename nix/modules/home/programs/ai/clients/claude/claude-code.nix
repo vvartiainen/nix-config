@@ -31,6 +31,9 @@ let
   unsandboxedPrograms = [
     "gh"
     "fj"
+    # Need fj's keychain token and the 1Password app; both stay reviewed.
+    "fj-edit-body"
+    "op-item-from-secret"
   ];
 
   # Fetches from configured remotes run outside the sandbox without a prompt;
@@ -302,9 +305,15 @@ in
       - For temporary files, use literal paths under `/tmp` instead of
         `$TMPDIR`; `/tmp` is writable in the sandbox.
       - Run `gh`, `fj` and `git fetch` as standalone commands from the
-        repository, without `cd`, pipes, `-C` or `-H`. Only then do they run
-        outside the sandbox and match the read-only allow rules; otherwise
-        they fail in the sandbox or prompt.
+        repository, without `cd`, pipes, loops, `-C` or `-H`. Only then do
+        they run outside the sandbox and match the read-only allow rules;
+        otherwise they fail in the sandbox or prompt. Run one command per
+        call instead of a loop.
+      - Set a Forgejo PR or issue body from a file with
+        `fj-edit-body pr|issue <number> <file>`.
+      - Save a T3 `request_secret` file to 1Password with
+        `op-item-from-secret --vault <vault> --title <title> <file>`; it
+        deletes the file. Never pass a secret through `$(cat ...)`.
     '';
   };
 

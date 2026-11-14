@@ -247,6 +247,10 @@ let
       "fj repo delete"
       "fj repo edit"
       "fj release"
+      # Wrappers for forge and 1Password writes that read a file argument
+      # instead of shell command substitution.
+      "fj-edit-body"
+      "op-item-from-secret"
       "terraform apply"
       "terraform destroy"
       "tofu apply"
