@@ -128,7 +128,7 @@ class RepositoryChecksTest(unittest.TestCase):
         self.commit()
         with patch.object(checks, "check", return_value="") as check:
             self.assertEqual(self.hook("stop"), {})
-            check.assert_called_once_with(self.root, base=before)
+            check.assert_called_once_with(self.root, base=before, tests=True)
         self.assertEqual(checks.selected_files(self.root, base=before), ["./tracked.py"])
         self.hook("end")
         self.assertFalse(self.state.exists())
@@ -189,6 +189,38 @@ class RepositoryChecksTest(unittest.TestCase):
     def test_clean_untracked_file_passes_whitespace_check(self):
         self.write("new.md", "clean\n")
         self.assertEqual(checks.check(self.root), "")
+
+    def test_syntax_checks_reject_invalid_data_lua_and_javascript(self):
+        for name, source in {
+            "broken.json": '{"missing":}',
+            "broken.toml": 'key = [',
+            "broken.lua": 'local =',
+            "broken.mjs": 'const =',
+        }.items():
+            self.write(name, source)
+        failure = checks.check(self.root)
+        for name in ("broken.json", "broken.toml", "broken.lua", "broken.mjs"):
+            self.assertIn(name, failure)
+
+    def test_behavior_tests_run_for_code_changes_but_not_documentation(self):
+        success = subprocess.CompletedProcess([], 0, stdout="")
+        for files, expected in [(["./nix/module.nix"], True), (["./flake.nix"], True),
+                                (["./justfile"], True), (["./docs/usage.md"], False)]:
+            with (
+                patch.object(checks, "selected_files", return_value=files),
+                patch.object(checks, "commands", return_value=iter([])),
+                patch.object(checks.subprocess, "run", return_value=success) as run,
+            ):
+                self.assertEqual(checks.check(self.root, tests=True), "")
+                self.assertEqual(run.called, expected)
+
+    def test_behavior_failure_blocks_stop_and_has_reproducible_command(self):
+        self.hook("prompt")
+        base = self.state.read_text().strip()
+        with patch.object(checks, "check", return_value="behavior test failed"):
+            result = self.hook("stop")
+        self.assertEqual(result["decision"], "block")
+        self.assertIn(f"just lint --tests --base {base}", result["reason"])
 
     def test_check_is_read_only_and_reports_real_shell_syntax_error(self):
         path = self.write("broken.zsh", "if then\n")

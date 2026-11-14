@@ -89,10 +89,19 @@
       };
     in
     {
-      packages.aarch64-darwin.validate-agent-config =
-        (import ./nix/validation/agent-config-validation.nix {
+      packages.aarch64-darwin = {
+        validate-agent-config =
+          (import ./nix/validation/agent-config-validation.nix {
+            pkgs = nixpkgs.legacyPackages.aarch64-darwin;
+          }).validator;
+        test-repository = import ./nix/validation/repository-tests.nix {
           pkgs = nixpkgs.legacyPackages.aarch64-darwin;
-        }).validator;
+          darwin = self.darwinConfigurations.${hostName};
+        };
+        check-repository = import ./nix/validation/repository-checks.nix {
+          pkgs = nixpkgs.legacyPackages.aarch64-darwin;
+        };
+      };
 
       darwinConfigurations.${hostName} = nix-darwin.lib.darwinSystem {
         modules = [

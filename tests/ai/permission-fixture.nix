@@ -31,6 +31,9 @@ in
   inherit (policy) commands paths;
   pi = builtins.fromJSON piPolicy;
   piCheck = piCheck.drvPath;
+  # Referencing this output makes the packaged full runner build the native
+  # extension loader/schema/policy check before it can run the Python suites.
+  piCheckResult = piCheck;
   opencode = config.programs.opencode.settings.permissions;
   hooks = config.agentHooks;
   launch = config.programs.zsh.initContent;

@@ -84,8 +84,21 @@ def commands(root, files, formatting=False, base=None):
         if formatting:
             yield ["ruff", "format", "--no-cache", "--check", *python]
     lua = [f for f in files if f.endswith(".lua")]
+    for path in lua:
+        yield ["luajit", "-b", path, os.devnull]
     if lua and formatting:
         yield ["stylua", "--check", "--search-parent-directories", *lua]
+    for path in files:
+        if path.endswith((".js", ".mjs")):
+            yield ["node", "--check", path]
+        elif path.endswith(".json"):
+            yield [sys.executable, "-B", "-m", "json.tool", path, os.devnull]
+        elif path.endswith(".toml"):
+            yield [sys.executable, "-B", "-c",
+                   "import pathlib, sys, tomllib; tomllib.loads(pathlib.Path(sys.argv[1]).read_text())",
+                   path]
+        elif path.endswith((".yaml", ".yml")):
+            yield ["yamllint", "-d", "{rules: {key-duplicates: enable}}", path]
     for path in files:
         kind = shell_kind(root / path)
         if kind == "zsh":
@@ -97,11 +110,18 @@ def commands(root, files, formatting=False, base=None):
                 yield ["shfmt", "-i", "2", "-d", path]
 
 
-def check(root, *, base=None, all_files=False, formatting=False):
+def check(root, *, base=None, all_files=False, formatting=False, tests=False):
     files = selected_files(root, base, all_files)
     failures = []
     deadline = time.monotonic() + 45
-    for command in commands(root, files, formatting, base):
+    selected = list(commands(root, files, formatting, base))
+    if tests and any(
+        path.startswith(("./nix/", "./dotfiles/", "./tests/"))
+        or path in {"./flake.nix", "./flake.lock", "./justfile", "./ruff.toml"}
+        for path in files
+    ):
+        selected.append([sys.executable, "-B", "nix/validation/test-repository.py"])
+    for command in selected:
         try:
             result = subprocess.run(
                 command,
@@ -171,13 +191,13 @@ def hook(event, configured_repository):
         state.write_bytes(git(root, "rev-parse", "HEAD"))
         return {}
     base = state.read_text().strip() if state.exists() else None
-    failure = check(root, base=base)
+    failure = check(root, base=base, tests=True)
     if failure:
         return {
             "decision": "block",
             "reason": (
                 "Repository checks failed. Fix issues caused by your changes and rerun "
-                f"just lint --base {base or 'HEAD'}. Report pre-existing or unavailable checks without modifying "
+                f"just lint --tests --base {base or 'HEAD'}. Report pre-existing or unavailable checks without modifying "
                 "unrelated files. Do not apply the system or run builds from this hook.\n"
                 + failure[:12000]
             ),
@@ -194,6 +214,7 @@ def main():
         "--format", action="store_true", help="also check formatting; never write files"
     )
     parser.add_argument("--hook", choices=["prompt", "stop", "end"])
+    parser.add_argument("--tests", action="store_true", help="also run fast behavior tests for code changes")
     parser.add_argument(
         "--repository", type=Path, help="restrict hooks to this repository and its worktrees"
     )
@@ -212,7 +233,8 @@ def main():
         return 0
     try:
         failure = check(
-            repository(Path.cwd()), base=args.base, all_files=args.all, formatting=args.format
+            repository(Path.cwd()), base=args.base, all_files=args.all, formatting=args.format,
+            tests=args.tests,
         )
     except (OSError, subprocess.SubprocessError) as error:
         failure = str(error)

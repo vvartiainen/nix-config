@@ -12,6 +12,10 @@ Choose validation according to the change:
   files. Use `just lint --base <revision>` to include committed changes, or
   `just lint --all` to audit all owned files. Add `--format` for formatting
   checks; formatting is opt-in until the existing files have a consistent baseline.
+- Run `just lint --tests` to include fast behavior suites for code changes,
+  or `just test-fast` to run those suites regardless of changed files.
+  Full dependency-backed and macOS runtime suites are separate; see
+  [maintenance](docs/maintenance.md#repository-checks). They never apply the system.
 - Documentation: review the diff and run `git diff --check`.
 - Directly linked dotfiles and helper scripts: run relevant syntax or behavior
   checks and `git diff --check`; no system build is needed.
@@ -20,8 +24,9 @@ Choose validation according to the change:
   build. Build whenever evaluation leaves a concrete concern unresolved.
 
 Codex, Claude and Copilot stop hooks run the same fast checks in this repository
-and its worktrees after the user applies the hook configuration. They include
-commits made since the current prompt, skip vendored code and never fix files,
+and its worktrees after the user applies the hook configuration, including fast
+behavior suites after code changes. They include commits made since the current
+prompt, skip vendored code and never fix files,
 evaluate Nix, build or apply. A failure asks the agent to address its changes
 once; pre-existing issues and missing tools must be reported without changing
 unrelated files. Hooks do not replace the scoped validation below or relevant
@@ -93,6 +98,9 @@ Commands run in an OS sandbox (see
 - Git over SSH, `fj`, and worktree add/move/remove outside the session's own
   worktree run outside the sandbox with approval; `allowed_domains` does not
   cover SSH. Add sibling repositories to the session before writing to them.
+- Linked worktrees can also need approval for `git add` or `git commit` when
+  their index/shared Git metadata is outside the writable roots. Escalate the
+  exact Git command after a denial; do not change metadata permissions.
 - Credentials (`~/.ssh`, `~/.aws`, `.env`, keys) and tool installs
   (`mise install`) are off-limits; ask the user.
 - Avoid interactive commands; pass non-interactive flags.

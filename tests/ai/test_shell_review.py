@@ -283,6 +283,16 @@ EOF
         self.assertIn("beforeShellExecution", self.fixture["hooks"]["cursor"])
         self.assertIn("PreToolUse", self.fixture["hooks"]["claude"])
 
+    def test_repository_stop_hooks_use_only_fast_checker(self):
+        for client, event in (("codex", "Stop"), ("claude", "Stop"), ("copilot", "agentStop")):
+            groups = self.fixture["hooks"][client][event]
+            handlers = [handler for group in groups for handler in group.get("hooks", [group])]
+            checks = [handler for handler in handlers if "/bin/nix-config-check --hook stop "
+                      in handler.get("command", "")]
+            self.assertEqual(len(checks), 1, client)
+            self.assertNotIn("--full", checks[0]["command"])
+            self.assertNotIn("nix build", checks[0]["command"])
+
 
 if __name__ == "__main__":
     unittest.main()
