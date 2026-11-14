@@ -658,6 +658,10 @@ let
         SSL_CERT_FILE = "/etc/ssl/certs/ca-certificates.crt";
         # Skip Terraform's version check, an unlisted host.
         CHECKPOINT_DISABLE = "1";
+        # treefmt keeps its cache under XDG_CACHE_HOME, the user's normal
+        # cache, which sandboxed runs can't write. Skip it; formatting is
+        # unchanged.
+        TREEFMT_NO_CACHE = "1";
         # Terraform and OpenTofu providers talk to the CLI over a Unix
         # socket; keep them in the one directory the sandboxes allow.
         PLUGIN_UNIX_SOCKET_DIR = dir "tofu";

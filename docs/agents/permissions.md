@@ -22,6 +22,8 @@ hook and sandbox checks.
 Write in the workspace, `$TMPDIR`, `/tmp` or `~/.cache/<tool>-agent`. Preserve
 the configured cache variables. Normal caches and tool installations remain
 read-only; install workstation tools manually outside the agent session.
+`TREEFMT_NO_CACHE` makes treefmt and `nix fmt` skip their cache in
+`~/.cache/treefmt`.
 Credentials, shell history, browser profiles, private host data, keys and
 environment files are restricted. Approved unrestricted commands and host
 daemons can reach beyond these restrictions; review them accordingly.
