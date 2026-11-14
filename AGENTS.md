@@ -134,12 +134,13 @@ Commands run in an OS sandbox (see
 - Only update `flake.lock` when dependency updates are intentional
 - `git commit` the changes you have made, but let user manually handle the push of the changes
   - use existing project commit style (conventional commits, short message, no long descriptions, no trailers such as Co-Authored-By or Claude-Session)
-- At the end of implementation tasks summarize the changes:
-  - What did you change
-  - Was existing functionality affected
-  - How the feature works on a higher level
-  - If external dependencies were added or needed
-  - If you deviated from some of our earlier decisions
+- At the end of implementation tasks summarize the changes in the final
+  response with the same sections as
+  [the PR template](.forgejo/pull_request_template.md).
+- Write pull request bodies with the sections of the PR template, keeping its
+  headings and order. Forgejo fills it in only in the web UI;
+  `fj pr create --body-file` does not apply it. Write "None" for sections
+  that do not apply instead of dropping them.
 - Also inform if you ran into some permission issues that could be fixed
 - Clearly list any commands the user must run manually in the final response,
   using copyable code blocks with the required working directory and purpose.
