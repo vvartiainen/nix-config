@@ -74,6 +74,30 @@ Alt+Left/Right is built in and cannot be remapped; with text in the prompt it
 moves by word. In Codex approval prompts from another thread, O opens that
 thread. Claude has no next/previous agent binding.
 
+## T3 Code
+
+Nix manages these shortcuts in `~/.t3/userdata/keybindings.json`:
+
+| Action | Binding |
+| --- | --- |
+| Next / previous thread | Ctrl+Shift+J / K |
+| Model picker | Option+P |
+| Increase / decrease effort | Option+T / Option+Shift+T |
+| Stop current turn | Ctrl+Shift+X |
+
+These shortcuts leave embedded terminals and browser previews alone. Both Option
+keys work in T3; the terminal-only Right Option convention above does not apply.
+Effort stepping wraps at the highest and lowest levels.
+
+Other actions retain T3's defaults: Cmd+1–9 jumps to threads, Cmd+K opens the
+command palette, Cmd+J toggles the terminal, Cmd+D toggles the diff,
+Cmd+Shift+N starts a thread in the current project, Cmd+Shift+S settles or
+restores the thread, and Cmd+Shift+P pins it.
+
+Numbered question choices use T3's built-in 1–9 controls, which do not run while
+a text field has focus. Tab to a choice and use Space to activate it if typing
+numbers goes to the composer. Command approval controls remain app-managed.
+
 ## Reload changes
 
 Restart Codex after changing settings. Claude reloads keybindings automatically;
