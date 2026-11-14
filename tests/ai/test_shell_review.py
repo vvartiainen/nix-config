@@ -229,6 +229,9 @@ EOF
         self.assertFalse(config["features"]["apps"])
         self.assertFalse(config["features"]["mentions_v2"])
         network = config["permissions"]["workspace-only"]["network"]
+        self.assertEqual(network["domains"], {"*": "allow"})
+        self.assertEqual(config["approval_policy"], "on-request")
+        self.assertEqual(config["approvals_reviewer"], "user")
         self.assertFalse(network["dangerously_allow_all_unix_sockets"])
         self.assertEqual(
             network["unix_sockets"],
@@ -249,7 +252,10 @@ EOF
         self.assertEqual(claude["sandbox"]["network"]["allowUnixSockets"], [socket])
         self.assertEqual(claude["permissions"]["defaultMode"], "acceptEdits")
         self.assertIn("Bash(npm publish:*)", claude["permissions"]["ask"])
-        self.assertFalse([rule for rule in claude["permissions"]["allow"] if rule.startswith("Bash(rex run")])
+        for executable in self.fixture["commands"]["rexExecutables"]:
+            self.assertIn(f"{executable} *", claude["sandbox"]["excludedCommands"])
+            self.assertIn(f"Bash({executable} *)", claude["permissions"]["ask"])
+        self.assertFalse([rule for rule in claude["permissions"]["allow"] if rule.startswith("Bash(rex")])
         copilot = self.settings_file("copilot", "github-copilot-cli-settings")
         policy = copilot["sandbox"]["userPolicy"]
         self.assertTrue(copilot["sandbox"]["enabled"])

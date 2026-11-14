@@ -32,6 +32,7 @@ let
   # exact allowance with a wider prefix.
   argv = map (lib.splitString " ");
   commands = {
+    inherit rexExecutables;
     inspection = argv [
       "git status"
       "git diff"

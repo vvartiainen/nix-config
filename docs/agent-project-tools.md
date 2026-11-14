@@ -52,6 +52,21 @@ Expand `~` and replace `<user>` with your local home/user name. Use
 access without Safehouse; T3's approval prompts are then the boundary.
 See [T3's Pi setup](https://github.com/pingdotgg/t3code/blob/main/docs/user/providers-pi.md).
 
+For Codex and Claude in T3 Code, choose **Auto-accept edits** to allow routine
+workspace work while keeping sandbox escapes reviewed by you. Set the default
+under **Settings → Threads → New threads → Permissions**, and change existing
+threads separately. **Auto** uses automatic review; **Full access** removes the
+ordinary approval boundary. T3 injects its own MCP endpoint and allows its Claude
+tool namespace; do not register a global endpoint or grant shell access to its
+local port to make those tools work. Tool-specific prompts in Codex remain
+separate from shell approvals. See [T3 permission modes](https://github.com/pingdotgg/t3code/blob/main/docs/user/permission-modes.md).
+
+Pi's approval extension runs inside Safehouse. Approving a tool cannot remove
+that process's sandbox. A similar escape workflow would require an external
+approval broker that launches only the approved command; it is not provided by
+the current wrapper. Keep using Codex or Claude for approved escapes rather than
+launching Pi without Safehouse for ordinary work.
+
 After first applying the removal of the old launchd environment settings,
 reboot before testing GUI apps. Removing the Nix options does not clear values
 already set in the running launchd session. Confirm provider discovery and

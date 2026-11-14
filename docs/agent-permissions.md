@@ -9,7 +9,7 @@ grant filesystem or command access.
 | CLI | Routine work | Approval boundary |
 | --- | --- | --- |
 | Codex | Workspace commands run sandboxed | Explicit ask rules and sandbox escapes; all Rex/Kitty/Incus calls prompt because prefix rules cannot carve out safe exceptions |
-| Claude Code | Workspace edits and commands run sandboxed | Native ask rules plus a shell hook for host control; scoped `gh` inspection runs outside the sandbox |
+| Claude Code | Workspace edits and commands run sandboxed | Native ask rules plus a shell hook for host control; Rex runs unsandboxed with approval; scoped `gh` inspection runs outside the sandbox |
 | Cursor | Workspace commands run sandboxed in Allowlist mode | Shell hook asks for risky operations and unsandboxed retries; narrow host metadata allowances remain available |
 | Copilot | Inspection, scoped development runners and file edits are approved | Unlisted commands and sandbox bypasses ask; `just lint` is scoped, other `just` recipes ask |
 | OpenCode | Inspection allowlist and workspace file tools | No OS sandbox: project runners, cleanup commands and unknown shell commands ask |
@@ -186,6 +186,12 @@ Keep control endpoints out of sandbox socket/network allowlists. A metadata
 command may still need approval to reach its service; Pi cannot escape
 Safehouse after approval. Codex prompts for every invocation in these command
 families because a broad prompt prefix overrides narrower allowances.
+
+Claude excludes Rex from its Bash sandbox and asks for each invocation, including
+help and listings. Exclusion selects unsandboxed execution; it does not grant
+approval. Codex uses its native approved unsandboxed retry. Do not save a blanket
+Rex approval. If the host still blocks an approved retry, report the failure
+rather than granting the control socket inside the sandbox.
 
 Secret-file denies apply to file tools and sandboxed commands where supported.
 They cannot contain an approved unrestricted command or a host daemon acting

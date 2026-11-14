@@ -42,14 +42,20 @@ let
       ++ map (cmd: "Bash(${commandString cmd})") (
         lib.filter (cmd: lib.elem (lib.head cmd) unsandboxedPrograms) commands.exact
       )
-      ++ map (cmd: "Bash(${commandString cmd}:*)") commands.hostInspection
-      ++ map (cmd: "Bash(${commandString cmd})") commands.hostExact
+      ++ map (cmd: "Bash(${commandString cmd}:*)") (
+        lib.filter (cmd: lib.head cmd != "rex") commands.hostInspection
+      )
+      ++ map (cmd: "Bash(${commandString cmd})") (
+        lib.filter (cmd: lib.head cmd != "rex") commands.hostExact
+      )
       ++ [ "Read(//nix/store/**)" ]
       # WebFetch allows also widen the Bash sandbox's network allowlist.
       ++ map (domain: "WebFetch(domain:${domain})") network.sandbox
       # Projects list these in .mcp.json (`ct agents sync`).
       ++ map (name: "mcp__${name}__*") permissions.mcpServers;
-    ask = map (cmd: "Bash(${commandString cmd}:*)") commands.review;
+    ask =
+      map (cmd: "Bash(${commandString cmd}:*)") commands.review
+      ++ map (exe: "Bash(${exe} *)") commands.rexExecutables;
     deny =
       map (cmd: "Bash(${commandString cmd}:*)") commands.denied
       ++ map (pattern: "Bash(${pattern})") commands.deniedPatterns
@@ -195,7 +201,9 @@ let
       # else asks. Terraform and Go run sandboxed; upstream Go binaries such
       # as Terraform's provider downloads still fail TLS there and need an
       # approved retry.
-      excludedCommands = [ "gh *" ];
+      # Rex delegates to the host terminal server. Excluding it only selects
+      # unsandboxed execution; the explicit ask rules above require approval.
+      excludedCommands = [ "gh *" ] ++ map (exe: "${exe} *") commands.rexExecutables;
       # Would let Go tools reach trustd inside the sandbox, at the cost of a
       # possible exfiltration channel through it.
       enableWeakerNetworkIsolation = false;

@@ -53,6 +53,7 @@ let
         # Ordinary internet access is allowed. Keep filesystem restrictions
         # and command review; "limited" also blocks non-GET methods.
         mode = "full";
+        domains."*" = "allow";
         allow_local_binding = false;
         allow_upstream_proxy = false;
         # Keep Rex and other user-session control sockets out of the sandbox.
