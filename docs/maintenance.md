@@ -26,21 +26,60 @@ just lint                      # staged, unstaged and untracked files
 just lint --base HEAD~1         # also include changes in the last commit
 just lint --all                 # audit all owned files
 just lint --format              # also check formatting without writing files
+just lint --tests               # also run fast behavior tests after code changes
+just test-fast                  # all fast behavior tests, without Nix
+just test                       # full behavior suite with pinned dependencies/fixtures
+just check-fixture              # Statix and public fixture evaluation, no build
+just build-fixture              # public fixture system build, no apply
 ```
 
 Checks use ShellCheck and shell syntax checks, Statix, Deadnix, Ruff and
-`git diff --check`. Zsh uses `zsh -n` instead of ShellCheck. ShellCheck skips
+`git diff --check`, LuaJIT compilation, Node syntax checks, JSON/TOML parsing,
+and YAML syntax/duplicate-key checks with yamllint.
+Zsh uses `zsh -n` instead of ShellCheck. ShellCheck skips
 runtime-resolved sources; their files are checked separately. Formatting checks
 use Ruff, nixfmt, shfmt and StyLua, respecting Neovim's existing StyLua config.
 Formatting is opt-in while existing files have mixed styles. Vendored Yazi
 plugins/flavors and symlinks are excluded. Missing tools fail the check;
 apply the configuration manually to install the tool set and `nix-config-check`,
 which runs the same checker with its Nix-provided tools.
+Before applying, run the packaged checker from the repository root:
+
+```sh
+nix run .#check-repository --override-input host "path:$PWD/nix/fixtures/host" -- --all --tests
+```
+
+`just test` uses the public fixture and supplies the validator's Python
+dependencies, bundled schemas and generated permission policy. Building its
+runner also checks Pi's pinned native extension loader and policy. The suite
+uses the configured Kitty on `PATH` for its runtime tests; it does not launch
+or close terminal windows. A missing prerequisite fails rather than skipping a
+suite. None of these commands applies configuration.
+
+Runtime integration tests run separately on macOS. From the repository root,
+provide an existing disposable directory outside `/tmp` (Safehouse grants
+`/tmp` itself, which would invalidate denial tests) and an existing Neovim
+plugin directory containing lazy.nvim, LazyVim, mason.nvim and conform.nvim:
+
+```sh
+PI_SANDBOX_TEST_ROOT=/absolute/path/to/disposable-test-root \
+NVIM_TEST_PLUGINS=/absolute/path/to/existing/lazy/plugins just test-integration
+```
+
+This supplies the pinned Safehouse executable, uses synthetic identity and
+credentials, and never installs Neovim plugins. Safehouse tests need permission
+to start a macOS sandbox and bind local test sockets; run outside the agent
+sandbox if it blocks those operations. Public fixture evaluation/build commands
+are in [AGENTS.md](../AGENTS.md#validation-commands-no-apply); full behavior tests
+do not replace them or manual private-host validation.
 
 After applying, start fresh Codex, Claude and Copilot sessions to load the
 repository validation hooks; approve them in the agent UI if requested.
-They run the fast checks before the agent finishes, including commits made
-since the current prompt. Agent validation, hook scope and failure handling
+They run the linters, syntax checks and fast behavior suites before the agent
+finishes after code changes, including commits made since the current prompt.
+Documentation-only edits skip behavior suites. Hooks never evaluate or build
+Nix, run macOS integration tests, or apply configuration.
+Agent validation, hook scope and failure handling
 are defined in [AGENTS.md](../AGENTS.md#validation-commands-no-apply); agents
 never use private host data or apply a system configuration.
 

@@ -49,7 +49,10 @@ class SafehouseTests(unittest.TestCase):
         cls.spec = cls.root / "spec.json"
         cls.spec.write_text(json.dumps({
             "agentDir": str(cls.agent),
-            "readable": [str(Path(sys.executable).resolve().parent.parent)],
+            # Match the production read-only toolchain grant. A Nix Python
+            # environment wraps an interpreter whose dylibs live in other
+            # store paths, so granting only its bin parent is insufficient.
+            "readable": ["/nix/store", str(Path(sys.executable).resolve().parent.parent)],
             "writable": [str(cls.agent), str(cls.cache)],
             "denied": [str(cls.home / ".aws")],
             "protected": [str(cls.policy)],
@@ -142,8 +145,12 @@ class SafehouseTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_host_unix_socket_is_blocked(self):
-        path = str(self.work / "host-service.sock")
-        with socket.socket(socket.AF_UNIX) as server:
+        # macOS limits Unix socket paths to roughly 100 bytes; worktree paths
+        # can exceed that before the socket name. File access to /tmp is
+        # intentionally allowed, while the Unix socket network denial applies.
+        with tempfile.TemporaryDirectory(prefix="pi-socket-", dir="/tmp") as scratch, \
+                socket.socket(socket.AF_UNIX) as server:
+            path = str(Path(scratch) / "service.sock")
             server.bind(path)
             server.listen(1)
             result = self.run_probe(

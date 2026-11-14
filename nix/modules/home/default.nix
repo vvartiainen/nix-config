@@ -39,12 +39,15 @@ in
       forgejo-cli
       gdu
       lnav
+      luajit
       nh
       nixfmt
+      ruff
       shellcheck
       shfmt
       statix
       stylua
+      yamllint
       yq-go
     ];
   };

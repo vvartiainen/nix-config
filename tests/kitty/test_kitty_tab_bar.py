@@ -14,7 +14,10 @@ from unittest.mock import Mock, patch
 SCRIPT = Path(__file__).resolve().parents[2] / "dotfiles/kitty/tab_bar.py"
 spec = importlib.util.spec_from_file_location("tab_bar", SCRIPT)
 tab_bar = importlib.util.module_from_spec(spec)
-with patch.dict(sys.modules, {"kitty": Mock(), "kitty.fast_data_types": Mock()}):
+with patch.dict(sys.modules, {
+    "kittens": Mock(), "kittens.ssh": Mock(), "kittens.ssh.utils": Mock(),
+    "kitty": Mock(), "kitty.fast_data_types": Mock(), "kitty.utils": Mock(),
+}):
     spec.loader.exec_module(tab_bar)
 
 

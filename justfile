@@ -51,6 +51,27 @@ bootstrap host=host: (init-host host)
 lint *args:
     python3 nix/validation/check-repository.py {{ args }}
 
+# Fast behavior tests, also run by repository stop hooks after code changes.
+test-fast:
+    python3 -B nix/validation/test-repository.py
+
+# Full behavior checks with pinned schemas, dependencies and synthetic policy.
+test:
+    nix run '.#test-repository' --override-input host 'path:{{ justfile_directory() }}/nix/fixtures/host' -- --full
+
+# Host runtime tests; see maintenance for the synthetic root/plugin prerequisites.
+test-integration:
+    nix run '.#test-repository' --override-input host 'path:{{ justfile_directory() }}/nix/fixtures/host' -- --integration
+
+# Evaluate public modules using synthetic host data, without building/applying.
+check-fixture:
+    statix check .
+    nix eval --raw '.#darwinConfigurations.agent-fixture.system.drvPath' --override-input host 'path:{{ justfile_directory() }}/nix/fixtures/host'
+
+# Build the public fixture without applying it or creating a result symlink.
+build-fixture:
+    nix build --no-link '.#darwinConfigurations.agent-fixture.system' --override-input host 'path:{{ justfile_directory() }}/nix/fixtures/host'
+
 # Lint nix files and evaluate the darwin system derivation.
 check host=host: require-host
     statix check .
