@@ -75,7 +75,7 @@ Do not run apply commands (for example `just switch <hostName>` or
 ## Agent sandbox
 
 Commands run in an OS sandbox (see
-[sandbox usage](docs/agent-permissions.md#working-in-the-sandboxes)).
+[sandbox usage](docs/agents/permissions.md#working-in-the-sandboxes)).
 
 - Writable: the workspace, `$TMPDIR`, `/tmp`, and `~/.cache/<tool>-agent`;
   package caches already point there. Use `/tmp` for scratch files.

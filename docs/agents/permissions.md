@@ -15,7 +15,7 @@
 
 Active session policy is authoritative. Apply configuration changes manually
 and start fresh sessions. In T3 Code, use **Auto-accept edits** for Codex and
-Claude when escapes should come to you; see [provider setup](agent-project-tools.md#gui-providers).
+Claude when escapes should come to you; see [provider setup](config.md#gui-providers).
 
 ## Client behavior
 
@@ -56,7 +56,7 @@ T3 Code's caches, attachments, browser artifacts and worktrees are readable;
 its database, provider secrets, sign-in cache, provider registry and service
 environment stay denied. A host can also pass content directly to the model.
 
-For this repository's validation rules, use [AGENTS.md](../AGENTS.md).
+For this repository's validation rules, use [AGENTS.md](../../AGENTS.md).
 
 ## Worktrees
 
@@ -133,5 +133,5 @@ it through `NODE_EXTRA_CA_CERTS` and sets `NODE_USE_SYSTEM_CA=0`; an explicit
 `--use-system-ca` flag can still trigger sandbox warnings. Private CA overrides
 must preserve the required public roots.
 
-Shared policy lives in [permissions.nix](../nix/modules/home/programs/ai/shared/permissions.nix);
+Shared policy lives in [permissions.nix](../../nix/modules/home/programs/ai/shared/permissions.nix);
 each client module renders its own adapter.

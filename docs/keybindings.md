@@ -1,7 +1,7 @@
 # Desktop, browser and terminal keybindings
 
 In Kitty and Rex, **Alt means Right Option**; Left Option keeps keyboard-layout
-characters. Agent prompt controls are in [agent CLI keybindings](agent-keybindings.md).
+characters. Agent prompt controls are in [agent CLI keybindings](agents/keybindings.md).
 
 **Cmd+´** toggles Zen's sidebar and Kitty's tab bar; **Cmd+S** remains available
 in both apps. Use the Finnish **´** key without Shift (the ANSI Equal position,

@@ -3,7 +3,7 @@
 These controls are configured inside the agent CLIs. In Kitty and Rex,
 **Alt means Right Option**; Left Option keeps keyboard-layout characters.
 Desktop, browser, terminal and Herdr navigation are in
-[general keybindings](keybindings.md).
+[general keybindings](../keybindings.md).
 
 ## Prompt and output
 

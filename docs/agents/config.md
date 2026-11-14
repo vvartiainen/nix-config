@@ -1,4 +1,4 @@
-# Per-project MCP servers and skills
+# Agent configuration
 
 ## Select project tools
 
@@ -49,7 +49,7 @@ own MCP endpoint and allows its Claude tool namespace; Codex tool-specific
 prompts remain separate from shell approvals. See [T3 permission modes](https://github.com/pingdotgg/t3code/blob/main/docs/user/permission-modes.md).
 
 Sandboxed Pi cannot reach T3's local MCP endpoint or escape after approval.
-Run blocked operations manually or use Codex/Claude; see [Pi's limits](agent-permissions.md#pi).
+Run blocked operations manually or use Codex/Claude; see [Pi's limits](permissions.md#pi).
 
 ## Global cleanup
 

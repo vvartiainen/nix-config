@@ -12,7 +12,7 @@ just switch <HOSTNAME> 1   # apply without Homebrew bundle
 ```
 
 See [setup](setup.md#host-data) for host selection and
-[agent configuration validation](agent-project-tools.md#configuration-validation)
+[agent configuration validation](agents/config.md#configuration-validation)
 for coverage. The package diff includes all pending Nix changes; it excludes
 Homebrew and mise updates.
 
