@@ -113,13 +113,23 @@ Commands run in an OS sandbox (see
 
 ## Working conventions
 
+- Prefer declarative configuration for everything
 - Check existing documentation, also using MCP if such exists
-- Keep module boundaries clear: when creating program specific zsh config for example, add it to the program module instead of the generic zsh.nix
+- Keep module boundaries clear: one service per file in
+  `nix/modules/nixos/services/`; host files only compose and set host facts.
 - Keep changes minimal and easy to review
 - Prefer updating existing modules/files over adding new abstractions
 - Only update `flake.lock` when dependency updates are intentional
 - `git commit` the changes you have made, but let user manually handle the push of the changes
   - use existing project commit style (conventional commits, short message, no long descriptions, no trailers such as Co-Authored-By or Claude-Session)
+- At the end of implementation tasks summarize the changes:
+  - What did you change
+  - Was existing functionality affected
+  - How the feature works on a higher level
+  - If external dependencies were added or needed
+  - If you deviated from some of our earlier decisions
+- Also inform if you ran into some permission issues that could be fixed
+- Propose AGENTS.md improvements if you ran into permission issues and had to workaround them
 
 ## Documentation
 
