@@ -54,8 +54,11 @@ let
     '';
   };
 
+  # Apple's ssh: macOS Local Network privacy blocks LAN connections from
+  # unsigned binaries such as Nix's openssh in launchd jobs ("No route to
+  # host"), while platform binaries are exempt.
   uploadSsh = pkgs.writeShellScript "agent-transcripts-ssh" ''
-    exec ${lib.getExe pkgs.openssh} -p 2223 \
+    exec /usr/bin/ssh -p 2223 \
       -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
       -o ConnectTimeout=10 -o ServerAliveInterval=30 -o ServerAliveCountMax=2 \
       -i ${lib.escapeShellArg "${home}/.ssh/agent-transcripts"} "$@"
