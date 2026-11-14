@@ -13,7 +13,7 @@ grant filesystem or command access.
 | Cursor | Workspace commands run sandboxed in Allowlist mode | Shell hook asks for risky operations and unsandboxed retries; narrow host metadata allowances remain available |
 | Copilot | Inspection, scoped development runners and file edits are approved | Unlisted commands and sandbox bypasses ask; `just lint` is scoped, other `just` recipes ask |
 | OpenCode | Inspection allowlist and workspace file tools | No OS sandbox: project runners, cleanup commands and unknown shell commands ask |
-| Pi | Whole process runs in Safehouse | Permission extension asks for risky commands and external tools; approved calls remain inside Safehouse |
+| Pi | Whole process runs in Safehouse; file tools, bash and named web research tools run without prompts | Risky commands and unknown/MCP tools ask; approvals remain inside Safehouse |
 
 The shared policy distinguishes inspection, sandboxed development, reviewed
 operations and hard denies. Project runners and tools with execution options
@@ -67,7 +67,8 @@ child commands in [Safehouse](https://agent-safehouse.dev/). Writes are limited
 to the invocation directory, scratch space, Pi state and shared agent caches;
 unrelated home files and the shared secret paths remain restricted. Project
 `.pi` files, Git hooks/config and the global permission settings are protected
-from writes. Launching from home or `/` is refused. Launch from a repository
+from writes. Launching from home or `/` uses an empty workspace grant instead
+of granting that directory. Launch from a repository
 root when the task needs the whole repository. Safehouse's clipboard
 integration is enabled, so `pbcopy`/`pbpaste` and Pi's copy/paste work without
 widening file access.
@@ -76,14 +77,24 @@ The pinned `@gotgenes/pi-permission-system` package installs on first launch,
 like the other Pi packages. Confirm it loads without extension errors; use
 `/permission-system show` to inspect its rules. Routine file tools and bash run
 without prompts because Safehouse is the boundary and path rules still deny
-secrets. The extension asks for installs, publishing, remote writes, host control
+secrets. The pinned web extension's `web_enable`, `web_search`, `source_check`,
+`fetch_content` and `get_search_content` tools are also allowed by name. Unknown
+extension tools and MCP tools still ask; there is no global tool allowance or
+YOLO mode. The extension asks for installs, publishing, remote writes, host control
 and Nix daemon operations, for shell wrappers such as `sh -c`, `eval`, `sudo`,
-`xargs` and `find -exec`, and for unparseable input. MCP and other extension tools
-ask too. Credential extraction and destructive-command denies still apply.
+`xargs` and `find -exec`, and for unparseable input. Credential extraction and
+destructive-command denies still apply.
 Narrow host metadata and help rules are allowed, though socket access may still
 fail inside Safehouse. Permissions are an approval layer, not a security boundary: trusted project configuration and extensions
 can affect their behavior. Do not load untrusted extensions or disable the
 permission package.
+
+Web search defaults to raw results (`workflow = "none"`), with automatic browser
+launches and browser-cookie extraction disabled. Activation merges these defaults
+into `web-search.json`, preserving provider keys and unrelated user settings.
+The curator is a separate review UI, not a permission boundary; `/curator off`
+disables it again if enabled interactively. Apply the configuration manually and
+start a fresh Pi session to pick up these changes.
 
 The sandbox also denies writes to extension code under Pi state (except the
 permission extension's review log) and to the user-level `mcp.json`, so a session
@@ -92,11 +103,20 @@ to the directories they link to before launch, so Home Manager tools such as
 `statix` and `bl`, and MCP servers configured by name such as `mcp-nixos`, start
 inside Pi; the profile symlinks themselves stay outside the read grants.
 
-Safehouse leaves IP networking open, including local TCP services; it does not
-provide the domain allowlist used by Codex and Claude or prevent exfiltration
-of readable data. UNIX-socket connections to host daemons are blocked. An
-approval does not escape Safehouse: run blocked Nix builds and host-service
-operations manually outside Pi. Pi must read its own stored credentials;
+Safehouse permits public IP networking for research and provider APIs. The
+wrapper denies outbound connections to host-local IP services (TCP and UDP,
+IPv4 and IPv6) and UNIX sockets, except the system DNS resolver socket. These
+denials apply to Pi, extensions, MCP servers and child commands. Seatbelt's
+`localhost` selector cannot filter arbitrary private-network ranges: other LAN
+hosts remain reachable. Enforcing public-only destinations would need a separate
+filtering proxy and a sandbox rule forcing all traffic through it. There is no
+domain allowlist or prevention of exfiltration of readable data.
+
+An approval does not escape Safehouse or grant a socket. Run blocked Nix builds
+and host-service operations manually outside Pi; do not retry through Rex,
+`pi-unsandboxed`, another interpreter or a newly allowed socket. This also blocks
+local development-server clients and local MCP endpoints, including T3's local
+MCP endpoint in sandboxed sessions. Pi must read its own stored credentials;
 tool-level rules deny `auth.json`, but extensions share Pi's process access and
 the path deny is exact, so a recursive read of the agent directory or a program
 that computes the path still reaches it. Prefer provider keys passed through the

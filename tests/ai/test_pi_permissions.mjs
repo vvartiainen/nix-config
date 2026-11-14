@@ -80,6 +80,9 @@ try {
   }
   assert.equal(manager.getToolPermission("mcp__rex__run"), "ask");
   assert.equal(manager.getToolPermission("unknown_extension_tool"), "ask");
+  for (const tool of ["web_enable", "web_search", "source_check", "fetch_content", "get_search_content"]) {
+    assert.equal(manager.getToolPermission(tool), "allow", tool);
+  }
   assert.equal(manager.getToolPermission("read"), "allow");
   for (const path of ["/project/.env", "/project/private.pem", "/Users/agent/.pi/agent/auth.json"]) {
     for (const surface of ["path_read", "path_write"]) {

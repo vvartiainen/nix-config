@@ -85,6 +85,10 @@ def make_profile(spec, workdir, tmpdir):
         # through UNIX sockets. DNS uses Safehouse's separate resolver grant.
         '(deny network-outbound (require-all (remote unix-socket) '
         '(require-not (literal "/private/var/run/mDNSResponder"))))',
+        # Seatbelt's localhost selector covers host addresses (IPv4 and IPv6),
+        # not arbitrary LAN CIDRs. Keep host TCP/UDP services unreachable even
+        # through bash or an extension; DNS still uses mDNSResponder above.
+        '(deny network-outbound (remote ip "localhost:*"))',
     ])
     return "\n".join(profile) + "\n"
 

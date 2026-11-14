@@ -1,4 +1,12 @@
-{ pkgs, ... }:
+{
+  lib,
+  pkgs,
+  config,
+  ...
+}:
+let
+  mergeConfig = import ../../../../merge-config.nix { inherit lib pkgs config; };
+in
 {
   imports = [ ./pi-sandbox.nix ];
 
@@ -42,6 +50,18 @@
       "app.thinking.cycle" = "alt+t";
     };
   };
+
+  # Preserve provider keys and other user settings in the extension's mutable
+  # config, while avoiding a second review UI and automatic browser launches.
+  home.activation.piWebSearchConfig = lib.hm.dag.entryAfter [ "linkGeneration" ] (mergeConfig {
+    name = "pi-web-search";
+    path = "${config.programs.pi-coding-agent.configDir}/web-search.json";
+    settings = {
+      workflow = "none";
+      autoOpenBrowser = false;
+      allowBrowserCookies = false;
+    };
+  });
 
   home.file.".pi/agent/themes/catppuccin-mocha.json".source =
     ../../../../../../../dotfiles/pi/themes/catppuccin-mocha.json;

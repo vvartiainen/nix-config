@@ -155,6 +155,37 @@ class SafehouseTests(unittest.TestCase):
             )
             self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_host_ip_services_are_blocked(self):
+        # Exercise IPv4/IPv6, TCP/UDP and a non-default loopback address. The
+        # server is outside Safehouse; the client runs in a child process.
+        for family, host in [
+            (socket.AF_INET, "127.0.0.1"),
+            (socket.AF_INET, "127.0.0.2"),
+            (socket.AF_INET6, "::1"),
+        ]:
+            for kind in (socket.SOCK_STREAM, socket.SOCK_DGRAM):
+                with self.subTest(host=host, kind=kind), socket.socket(family, kind) as server:
+                    # macOS need not have 127.0.0.2 assigned to an interface.
+                    # An alternate-address probe must get EPERM, not merely
+                    # ECONNREFUSED because there is no listener at that address.
+                    server.bind(("127.0.0.1" if family == socket.AF_INET else "::1", 0))
+                    if kind == socket.SOCK_STREAM:
+                        server.listen(1)
+                    address = (host, server.getsockname()[1])
+                    child = (
+                        "import socket\n"
+                        f"with socket.socket({int(family)}, {int(kind)}) as client:\n"
+                        " client.settimeout(2)\n"
+                        f" try: client.connect({address!r}); client.send(b'probe')\n"
+                        " except PermissionError: pass\n"
+                        " else: raise AssertionError('host IP service was reachable')\n"
+                    )
+                    result = self.run_probe(
+                        "import subprocess, sys; "
+                        f"subprocess.run([sys.executable, '-c', {child!r}], check=True)"
+                    )
+                    self.assertEqual(result.returncode, 0, result.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()

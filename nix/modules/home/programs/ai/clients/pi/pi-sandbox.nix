@@ -43,6 +43,13 @@ let
       find = "allow";
       ls = "allow";
       skill = "allow";
+      # The pinned web extension runs inside Safehouse too. Allow its exact
+      # research surfaces without approving arbitrary new extension tools.
+      web_enable = "allow";
+      web_search = "allow";
+      source_check = "allow";
+      fetch_content = "allow";
+      get_search_content = "allow";
       # The kernel enforces external filesystem boundaries. Unknown tools,
       # including direct MCP tools, still require approval.
       external_directory = "allow";
