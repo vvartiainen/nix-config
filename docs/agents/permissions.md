@@ -29,6 +29,9 @@ daemons can reach beyond these restrictions; review them accordingly.
 Codex allows ordinary internet access through its proxy, while local binding,
 upstream proxies and control sockets remain restricted. Claude, Cursor and
 Copilot use the package-download host policy; Pi's network limits are below.
+Claude's WebSearch and WebFetch tools are approved by a `PreToolUse` hook, not
+`WebFetch(domain:…)` allow rules, because those rules would also open the
+domains to sandboxed Bash.
 Nix build/run/develop/store operations require review because they delegate to
 the host daemon. Project checks and ordinary non-Nix builds stay sandboxed.
 Unix sockets are blocked except the Nix daemon socket and

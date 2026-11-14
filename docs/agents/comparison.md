@@ -11,8 +11,8 @@ each use, and **denied** means no approval can allow it.
 
 | Task | Use | Why |
 | --- | --- | --- |
-| Everyday work in this or another repository: edit, test, evaluate Nix, commit, read pull requests | Claude Code, in the terminal or T3 | Sandboxed, reaches the Nix daemon, and reads `gh`/`fj` and fetches without prompts |
-| The same, with web research or downloads from arbitrary hosts | Codex in the terminal | Sandboxed with ordinary internet access |
+| Everyday work in this or another repository: edit, test, evaluate Nix, commit, read pull requests, web research | Claude Code, in the terminal or T3 | Sandboxed, reaches the Nix daemon, reads `gh`/`fj`, fetches and searches the web without prompts |
+| The same, with downloads from arbitrary hosts | Codex in the terminal | Sandboxed with ordinary internet access |
 | T3 work that needs a Codex model | Codex in T3 | Expect prompts: T3 replaces the profile, so commits in worktrees, Nix, fetches and downloads all ask |
 | Code you do not trust, or an untrusted extension or MCP server | Pi | The whole process is confined and no approval can leave the sandbox |
 | Nix builds, pushes, forge writes, `tofu apply`, local dev servers | Claude Code or Codex | They can run one approved command outside the sandbox; Pi cannot |
@@ -46,7 +46,7 @@ each use, and **denied** means no approval can allow it.
 | Commands | Package download hosts; other hosts ask | Any host | Package download hosts and Cursor's defaults | Package download hosts | Any host | Any host |
 | Services on this Mac | Asks | Blocked | Client default | Blocked | Reachable | Blocked |
 | Unix sockets | Nix daemon and the OpenTofu plugin directory | Nix daemon and the OpenTofu plugin directory | Client default | Nix daemon, OpenTofu plugin directory and Herdr | Any | None, so no Nix |
-| Web tools | Package hosts run; other domains ask | Live web search | Documentation domains run | Documentation domains run | Client default | Search and fetch run |
+| Web tools | Search and fetch run | Live web search | Documentation domains run | Documentation domains run | Client default | Search and fetch run |
 
 ## Commands
 
