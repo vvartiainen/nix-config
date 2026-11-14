@@ -98,6 +98,8 @@ class ShellReviewTests(unittest.TestCase):
             "git status &&": "allow",
             "unterminated '": "allow",
             "rex --help": "allow",
+            "GIT_EDITOR=true git rebase --continue": "allow",
+            "git reset --soft HEAD~1": "allow",
             "git status 2>&1 && npm publish": "ask",
             "echo $(rex run -- id)": "ask",
             "echo `rex capture`": "ask",
@@ -203,6 +205,11 @@ EOF
             (["kitty", "@", "send-text", "payload"], "prompt"),
             (["incus", "exec", "guest", "--", "id"], "prompt"),
             (["git", "push", "origin", "main"], "prompt"),
+            (["git", "fetch", "origin"], "prompt"),
+            (["fj", "pr", "view", "13"], "allow"),
+            (["gh", "pr", "checks", "13"], "allow"),
+            (["gh", "pr", "create"], "prompt"),
+            (["gh", "auth", "status", "-t"], None),
             (["gh", "auth", "token"], "forbidden"),
             (["gh", "auth", "status", "--show-token"], "forbidden"),
             (["git", "reset", "--hard"], "forbidden"),
@@ -256,6 +263,16 @@ EOF
             self.assertIn(f"{executable} *", claude["sandbox"]["excludedCommands"])
             self.assertIn(f"Bash({executable} *)", claude["permissions"]["ask"])
         self.assertFalse([rule for rule in claude["permissions"]["allow"] if rule.startswith("Bash(rex")])
+        # Configured-remote fetches leave the sandbox unprompted; other
+        # repositories and --upload-pack still ask. Local history edits stay
+        # sandboxed.
+        self.assertIn("Bash(git fetch:*)", claude["permissions"]["allow"])
+        self.assertNotIn("Bash(git fetch:*)", claude["permissions"]["ask"])
+        for pattern in self.fixture["commands"]["fetchReviewPatterns"]:
+            self.assertIn(f"Bash({pattern})", claude["permissions"]["ask"])
+        self.assertIn("git fetch *", claude["sandbox"]["excludedCommands"])
+        self.assertNotIn("Bash(git rebase:*)", claude["permissions"]["ask"])
+        self.assertEqual(claude["env"]["GIT_CONFIG_KEY_0"], "branch.autoSetupMerge")
         copilot = self.settings_file("copilot", "github-copilot-cli-settings")
         policy = copilot["sandbox"]["userPolicy"]
         self.assertTrue(copilot["sandbox"]["enabled"])

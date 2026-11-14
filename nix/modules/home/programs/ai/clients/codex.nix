@@ -16,21 +16,17 @@ let
   quote = s: ''"${s}"'';
   worktrees = "${config.home.homeDirectory}/.codex/worktrees";
   projects = builtins.dirOf repoRoot;
-  # Local Git edits stay sandboxed. Other clients retain their own adapters.
-  localGit = [
-    [
-      "git"
-      "reset"
+  # gh and fj need the user's token outside the sandbox. Like Claude, run
+  # their read-only commands there without prompting; Codex's allow rules
+  # bypass the sandbox, so never add broader prefixes here. Exact invocations
+  # are left out: a prefix rule would also allow `gh auth status -t`.
+  forgeInspection = lib.filter (
+    cmd:
+    lib.elem (lib.head cmd) [
+      "gh"
+      "fj"
     ]
-    [
-      "git"
-      "clean"
-    ]
-    [
-      "git"
-      "rebase"
-    ]
-  ];
+  ) commands.inspection;
   toCodexRule =
     decision: cmd:
     ''prefix_rule(pattern = [${lib.concatMapStringsSep ", " quote cmd}], decision = "${decision}")'';
@@ -130,9 +126,10 @@ let
   # can authorize leaving it. Host-control CLIs need review even inside it.
   commandRules = pkgs.writeText "codex-nix-config.rules" (
     lib.concatMapStringsSep "\n" (toCodexRule "prompt") (
-      (builtins.filter (cmd: !(builtins.elem cmd localGit)) commands.review)
-      ++ map (exe: [ exe ]) commands.hostExecutables
+      commands.review ++ map (exe: [ exe ]) commands.hostExecutables
     )
+    + "\n"
+    + lib.concatMapStringsSep "\n" (toCodexRule "allow") forgeInspection
     + "\n"
     + lib.concatMapStringsSep "\n" (toCodexRule "forbidden") commands.denied
     + "\n"

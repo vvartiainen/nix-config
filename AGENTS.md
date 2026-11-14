@@ -101,7 +101,9 @@ Commands run in an OS sandbox (see
   variants or work around it.
 - Git over SSH, `fj`, and worktree add/move/remove outside the session's own
   worktree run outside the sandbox with approval; `allowed_domains` does not
-  cover SSH. Add sibling repositories to the session before writing to them.
+  cover SSH. Read-only `gh`/`fj` views and Claude's `git fetch` from a
+  configured remote skip the prompt only as standalone commands, without
+  `cd`, pipes, `-C` or `-H`. Add sibling repositories to the session before writing to them.
 - Linked worktrees can also need approval for `git add` or `git commit` when
   their index/shared Git metadata is outside the writable roots. Escalate the
   exact Git command after a denial; do not change metadata permissions.

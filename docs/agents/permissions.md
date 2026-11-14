@@ -11,8 +11,8 @@ Claude when escapes should come to you; see [T3 Code permission modes](#t3-code-
 
 | CLI | Routine work | Approval boundary |
 | --- | --- | --- |
-| Codex | Workspace commands run sandboxed; ordinary internet access is allowed | Additional access and reviewed commands ask; all Rex/Kitty/Incus calls ask |
-| Claude Code | Workspace edits and commands run sandboxed | Additional access and reviewed commands ask; Rex runs unsandboxed with approval; scoped `gh` and `fj` inspection is allowed outside the sandbox |
+| Codex | Workspace commands run sandboxed; ordinary internet access is allowed | Additional access and reviewed commands ask; all Rex/Kitty/Incus calls ask; scoped `gh` and `fj` inspection is allowed outside the sandbox |
+| Claude Code | Workspace edits and commands run sandboxed | Additional access and reviewed commands ask; Rex runs unsandboxed with approval; scoped `gh` and `fj` inspection and `git fetch` from configured remotes are allowed outside the sandbox |
 | Cursor | Workspace commands run sandboxed in Allowlist mode | Risky commands, uncertain shell syntax and unsandboxed retries ask |
 | Copilot | Inspection, scoped development runners and file edits are approved | Unlisted commands and sandbox bypasses ask; `just lint` is scoped, other `just` recipes ask |
 | OpenCode | Inspection commands and workspace file tools are allowed | No OS sandbox; project runners, cleanup and unknown commands ask |
@@ -46,10 +46,17 @@ its database, provider secrets, sign-in cache, provider registry and service
 environment stay denied. A host can also pass content directly to the model.
 
 Git over SSH and `fj` need keys, the SSH agent socket or a stored token, so
-fetches, pushes and Forgejo calls to such remotes run as approved commands
-outside the sandbox. A Claude `allowed_domains` entry does not help: SSH
-bypasses the sandbox proxy. Use HTTPS for public fetches. Claude runs `fj`
-like `gh`: read-only views run without prompting and everything else asks.
+fetches, pushes and Forgejo calls to such remotes run outside the sandbox.
+Pushes and forge writes ask. Claude and Codex run read-only `gh` and `fj`
+views without prompting, and Claude does the same for `git fetch` from a
+configured remote; fetches naming a URL, a local path or `--upload-pack` still
+ask, and Codex asks for every fetch. These rules match only standalone
+commands: with `cd`, pipes, `-C` or `-H` the command runs sandboxed and fails,
+or prompts. A Claude `allowed_domains` entry does not help: SSH bypasses the
+sandbox proxy. Use HTTPS for public fetches. Local `git rebase`, `reset` and
+`clean` run in the sandbox; their destructive forms are denied. Sandboxed Git
+does not record a new branch's upstream, because `.git/config` is protected;
+the first push sets it.
 When a task writes to a sibling repository, add it to the session (`/add-dir`
 or `--add-dir`) instead of escaping. `git worktree add`, `move` and `remove`
 for worktrees other than the session's own write the main repository's Git
@@ -75,9 +82,17 @@ Claude uses `~/.local/bin/claude` and Pi uses the sandboxed executable in the
 Home Manager profile. Codex uses the Homebrew CLI with the launch argument
 `-c 'default_permissions=":workspace"'` to avoid shell startup failures with
 custom permission profiles ([T3 #16458](https://github.com/pingdotgg/t3code/issues/16458)).
-This retains workspace sandboxing but gives T3's Codex broader reads without
-our custom secret-file denies and network restrictions. Terminal Codex keeps
-its custom profile. No separate launcher or Codex home is needed.
+Terminal Codex keeps its custom profile. No separate launcher or Codex home is
+needed.
+
+T3 also sends Codex a bare `workspaceWrite` sandbox on every turn, which
+replaces any profile and cannot be configured
+([T3 discussion #6976](https://github.com/pingdotgg/t3code/discussions/6976)).
+T3's Codex can read the whole disk without our secret-file denies, but has no
+network, no Nix daemon socket and no write access to a linked worktree's
+shared Git metadata. `git add`, `git commit`, Nix commands, fetches, forge
+writes and downloads therefore ask in **Auto-accept edits**; batch them into one command
+where practical. Claude keeps its own sandbox settings under T3.
 
 Sandboxed Pi cannot reach T3's local MCP endpoint or escape after approval.
 Run blocked operations manually or use Codex/Claude; see [Pi's limits](#pi).

@@ -148,6 +148,11 @@ let
       "mv"
       "rm"
       "rmdir"
+      # Local history edits stay in the sandbox; their destructive forms are
+      # denied below.
+      "git reset"
+      "git clean"
+      "git rebase"
     ];
 
     # Host-side delegation, remote mutations and installation always need
@@ -166,9 +171,6 @@ let
       "git push"
       "git fetch"
       "git pull"
-      "git reset"
-      "git clean"
-      "git rebase"
       "npm install"
       "npm i"
       "npm add"
@@ -254,6 +256,22 @@ let
       "rsync"
       "osascript"
       "open"
+    ];
+
+    # Fetching from a configured remote needs the SSH agent outside the sandbox
+    # but only adds objects and refs to the repository; remotes live in the
+    # protected Git config. Clients that can match whole commands may run it
+    # unreviewed outside the sandbox while these forms, which name another
+    # repository or run a command, stay reviewed.
+    fetch = argv [ "git fetch" ];
+    fetchReviewPatterns = [
+      "git fetch*--upload-pack*"
+      "git fetch*://*"
+      "git fetch*@*:*"
+      "git fetch*file:*"
+      "git fetch* /*"
+      "git fetch* ~*"
+      "git fetch* .*"
     ];
 
     # Listing metadata is distinct from capturing a terminal's contents or
@@ -633,6 +651,12 @@ let
         SSL_CERT_FILE = "/etc/ssl/certs/ca-certificates.crt";
         # Skip Terraform's version check, an unlisted host.
         CHECKPOINT_DISABLE = "1";
+        # Sandboxes protect .git/config, so creating a branch from a
+        # remote-tracking ref fails when Git records its upstream there.
+        # push.autoSetupRemote still sets one on the first, reviewed, push.
+        GIT_CONFIG_COUNT = "1";
+        GIT_CONFIG_KEY_0 = "branch.autoSetupMerge";
+        GIT_CONFIG_VALUE_0 = "false";
       };
       writePaths = map dir [
         "nix"

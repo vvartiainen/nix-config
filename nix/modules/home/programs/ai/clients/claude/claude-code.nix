@@ -33,6 +33,10 @@ let
     "fj"
   ];
 
+  # Fetches from configured remotes run outside the sandbox without a prompt;
+  # the shared fetch review patterns still ask.
+  review = lib.filter (cmd: !(lib.elem cmd commands.fetch)) commands.review;
+
   permissionSettings = {
     # Allow rules only matter outside the sandbox, so keep them for the
     # excluded programs and narrow host metadata calls. Broad runner allows
@@ -51,13 +55,15 @@ let
       ++ map (cmd: "Bash(${commandString cmd})") (
         lib.filter (cmd: lib.head cmd != "rex") commands.hostExact
       )
+      ++ map (cmd: "Bash(${commandString cmd}:*)") commands.fetch
       ++ [ "Read(//nix/store/**)" ]
       # WebFetch allows also widen the Bash sandbox's network allowlist.
       ++ map (domain: "WebFetch(domain:${domain})") network.sandbox
       # Projects list these in .mcp.json (`ct agents sync`).
       ++ map (name: "mcp__${name}__*") permissions.mcpServers;
     ask =
-      map (cmd: "Bash(${commandString cmd}:*)") commands.review
+      map (cmd: "Bash(${commandString cmd}:*)") review
+      ++ map (pattern: "Bash(${pattern})") commands.fetchReviewPatterns
       ++ map (exe: "Bash(${exe} *)") commands.rexExecutables;
     deny =
       map (cmd: "Bash(${commandString cmd}:*)") commands.denied
@@ -136,7 +142,9 @@ let
     };
   };
 
-  shellPolicy = pkgs.writeText "claude-shell-policy.json" (builtins.toJSON commands);
+  shellPolicy = pkgs.writeText "claude-shell-policy.json" (
+    builtins.toJSON (commands // { inherit review; })
+  );
   shellReview = pkgs.writeShellScript "nix-config-shell-review-claude" ''
     exec ${pkgs.python3}/bin/python3 ${../../shared/shell-review.py} claude ${shellPolicy}
   '';
@@ -211,7 +219,13 @@ let
       # approved retry.
       # Rex delegates to the host terminal server. Excluding it only selects
       # unsandboxed execution; the explicit ask rules above require approval.
-      excludedCommands = map (exe: "${exe} *") (unsandboxedPrograms ++ commands.rexExecutables);
+      # Git fetches need the SSH agent, which the sandbox blocks.
+      excludedCommands =
+        map (exe: "${exe} *") (unsandboxedPrograms ++ commands.rexExecutables)
+        ++ lib.concatMap (cmd: [
+          (commandString cmd)
+          "${commandString cmd} *"
+        ]) commands.fetch;
       # Would let Go tools reach trustd inside the sandbox, at the cost of a
       # possible exfiltration channel through it.
       enableWeakerNetworkIsolation = false;
@@ -287,6 +301,10 @@ in
         absolute paths and split dependent steps into separate tool calls.
       - For temporary files, use literal paths under `/tmp` instead of
         `$TMPDIR`; `/tmp` is writable in the sandbox.
+      - Run `gh`, `fj` and `git fetch` as standalone commands from the
+        repository, without `cd`, pipes, `-C` or `-H`. Only then do they run
+        outside the sandbox and match the read-only allow rules; otherwise
+        they fail in the sandbox or prompt.
     '';
   };
 
