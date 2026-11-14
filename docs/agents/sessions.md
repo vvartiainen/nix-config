@@ -25,3 +25,12 @@ archive. Run `agent-transcripts-archive` to sync now; its log is
 `~/Library/Logs/agent-transcripts-archive.log`.
 `agentsview` provides local session search and analytics; use `--offline` to
 avoid fetching model prices.
+
+After [upload setup](../runbooks/agent-transcript-uploads.md), a separate hourly
+job refreshes the archive and uploads Claude, Codex and Pi JSONL files to the
+homelab AgentsView. Run `agent-transcripts-upload` to upload now, or add
+`--dry-run` to preview transfers. Remote files are never deleted.
+An unconfigured or unreachable endpoint is skipped silently and retried next
+hour. Reachable-server authentication and transfer failures exit with an error;
+check `~/Library/Logs/agent-transcripts-upload.log`. A failed reachability check
+also skips server outages; there are no alerts or metrics yet.

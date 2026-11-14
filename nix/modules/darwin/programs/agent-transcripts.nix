@@ -53,9 +53,62 @@ let
       fi
     '';
   };
+
+  uploadSsh = pkgs.writeShellScript "agent-transcripts-ssh" ''
+    exec ${lib.getExe pkgs.openssh} -p 2223 \
+      -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+      -o ConnectTimeout=10 -o ServerAliveInterval=30 -o ServerAliveCountMax=2 \
+      -i ${lib.escapeShellArg "${home}/.ssh/agent-transcripts"} "$@"
+  '';
+
+  upload = pkgs.writeShellApplication {
+    name = "agent-transcripts-upload";
+    runtimeInputs = [ pkgs.rsync ];
+    text = ''
+      umask 077
+      args=()
+      if [ "$#" -gt 1 ]; then
+        echo "Usage: agent-transcripts-upload [--dry-run]" >&2
+        exit 2
+      fi
+      case "''${1:-}" in
+        "") ;;
+        --dry-run) args+=(--dry-run --itemize-changes) ;;
+        *) echo "Usage: agent-transcripts-upload [--dry-run]" >&2; exit 2 ;;
+      esac
+      # The endpoint is private host data, configured outside this repo.
+      target=${lib.escapeShellArg "${config.xdg.configHome}/agent-transcripts/upload-host"}
+      [ -f "$target" ] || exit 0
+      IFS= read -r upload_host < "$target" || true
+      if [[ ! "$upload_host" =~ ^[a-zA-Z0-9][a-zA-Z0-9.-]*$ ]]; then
+        echo "Invalid hostname in $target" >&2
+        exit 1
+      fi
+
+      # No LAN/tailnet route (or unavailable endpoint) is a quiet skip.
+      # Authentication and transfer errors after this check remain visible.
+      /usr/bin/nc -z -G 5 -w 5 "$upload_host" 2223 >/dev/null 2>&1 || exit 0
+
+      ${lib.getExe archive}
+      host=$(/usr/sbin/scutil --get LocalHostName 2>/dev/null || hostname -s)
+      source="${archiveDir}/$host"
+      [ -d "$source" ] || exit 0
+      # Match the homelab receiver's supported providers; never send symlinks
+      # or propagate local deletions. Interrupted uploads retry next hour.
+      exec rsync -rtz --timeout=300 --prune-empty-dirs \
+        --chmod=D750,F640 \
+        --exclude='.*' \
+        --include='/claude/' --include='/codex/' --include='/pi/' \
+        --exclude='/*' --include='*/' --include='*.jsonl' --exclude='*' \
+        -e ${uploadSsh} "''${args[@]}" "$source/" "upload@$upload_host:."
+    '';
+  };
 in
 {
-  home.packages = [ archive ];
+  home.packages = [
+    archive
+    upload
+  ];
 
   launchd.agents.agent-transcripts-archive = {
     enable = true;
@@ -66,6 +119,19 @@ in
       ProcessType = "Background";
       LowPriorityIO = true;
       StandardErrorPath = "${home}/Library/Logs/agent-transcripts-archive.log";
+    };
+  };
+
+  launchd.agents.agent-transcripts-upload = {
+    enable = true;
+    config = {
+      ProgramArguments = [ (lib.getExe upload) ];
+      RunAtLoad = true;
+      StartInterval = 3600;
+      ProcessType = "Background";
+      LowPriorityIO = true;
+      StandardOutPath = "${home}/Library/Logs/agent-transcripts-upload.log";
+      StandardErrorPath = "${home}/Library/Logs/agent-transcripts-upload.log";
     };
   };
 }
