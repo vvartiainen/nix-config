@@ -286,6 +286,7 @@ EOF
         self.assertIn("git fetch *", claude["sandbox"]["excludedCommands"])
         self.assertNotIn("Bash(git rebase:*)", claude["permissions"]["ask"])
         self.assertEqual(claude["env"]["GIT_CONFIG_KEY_0"], "branch.autoSetupMerge")
+        self.assertEqual(claude["env"]["TREEFMT_NO_CACHE"], "1")
         copilot = self.settings_file("copilot", "github-copilot-cli-settings")
         policy = copilot["sandbox"]["userPolicy"]
         self.assertTrue(copilot["sandbox"]["enabled"])
