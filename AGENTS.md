@@ -109,8 +109,9 @@ Commands run in an OS sandbox (see
 
 - Prefer declarative configuration for everything
 - Check existing documentation, also using MCP if such exists
-- Keep module boundaries clear: one service per file in
-  `nix/modules/nixos/services/`; host files only compose and set host facts.
+- Keep module boundaries clear: one program per file in
+  `nix/modules/home/programs/` or `nix/modules/darwin/programs/`, importable
+  on its own; host files only compose and set host facts.
 - Keep changes minimal and easy to review
 - Prefer updating existing modules/files over adding new abstractions
 - Only update `flake.lock` when dependency updates are intentional
@@ -130,9 +131,29 @@ Commands run in an OS sandbox (see
 
 ## Documentation
 
+Layout of `docs/`:
+
+- Top level (`maintenance.md`, `keybindings.md`): everyday pages with commands,
+  tables and quick checks. Keep them short; no reasoning and no one-time setup.
+- `programs/<program>.md`: everyday use of one program or area: how to use it,
+  reload it, update it and fix known problems.
+- `agents/`: everyday use of the coding agents: permissions, configuration,
+  keybindings, quotas and session history.
+- `runbooks/<task>.md`: step-by-step procedures done rarely, such as new Mac
+  setup and one-time manual grants. Write setup as "set this up again from
+  scratch".
+- `design/<topic>.md`: how something is built and why, with its decisions.
+
+Rules:
+
 - Keep repository documentation small: setup, everyday usage, required
   maintenance, agent instructions, and concise rationale needed to use or change
-  the configuration correctly. Use clear categories by purpose.
+  the configuration correctly.
+- Docs describe the current state and how to operate it, not a history of
+  changes. Remove obsolete instructions, dated status notes and deprecated
+  comparisons rather than preserving them as current guidance.
+- Put a fact in one place and link to it instead of repeating it.
 - Keep agent-only guides focused on agents; put desktop, browser and terminal
-  shortcuts in the general keybindings guide. Remove obsolete instructions and
-  deprecated comparisons rather than preserving them as current guidance.
+  shortcuts in the general keybindings guide.
+- When a change affects how a program is used or set up, update its page in
+  the same commit.
