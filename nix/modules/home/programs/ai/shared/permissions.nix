@@ -436,7 +436,8 @@ let
       ".android/**"
       ".amplify/**"
       ".snowsql/**"
-      ".terraform.d/**"
+      # Only the token file: tofu fails on an unreadable ~/.terraform.d.
+      ".terraform.d/credentials.tfrc.json"
       ".netrc"
       # ~/.npmrc is not listed: it links to the tracked dotfiles/.npmrc, and
       # Claude denies a link's target, which would block flake evaluation.
@@ -612,6 +613,8 @@ let
     sandbox = [
       # Nix's global flake registry, fetched to resolve `nixpkgs#…`.
       "channels.nixos.org"
+      # The Rex flake input's tarball, fetched by flake evaluation.
+      "pkgs.superlogical.com"
       "pypi.org"
       "files.pythonhosted.org"
       "index.crates.io"
@@ -651,6 +654,9 @@ let
         SSL_CERT_FILE = "/etc/ssl/certs/ca-certificates.crt";
         # Skip Terraform's version check, an unlisted host.
         CHECKPOINT_DISABLE = "1";
+        # Terraform and OpenTofu providers talk to the CLI over a Unix
+        # socket; keep them in the one directory the sandboxes allow.
+        PLUGIN_UNIX_SOCKET_DIR = dir "tofu";
         # Sandboxes protect .git/config, so creating a branch from a
         # remote-tracking ref fails when Git records its upstream there.
         # push.autoSetupRemote still sets one on the first, reviewed, push.
@@ -665,7 +671,11 @@ let
         "mise"
         "npm"
         "homebrew"
+        "tofu"
       ];
+      # Directories where sandboxed commands may create and connect to Unix
+      # sockets, besides the Nix daemon socket.
+      socketDirs = [ (dir "tofu") ];
     };
 
   # Catalog tools are allowed where a project enables their MCP server.

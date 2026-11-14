@@ -55,7 +55,10 @@ let
         # Keep Rex and other user-session control sockets out of the sandbox.
         dangerously_allow_all_unix_sockets = false;
         # Nix builds run through the daemon, outside the agent sandbox.
-        unix_sockets.${paths.nixDaemonSocket} = "allow";
+        unix_sockets = {
+          ${paths.nixDaemonSocket} = "allow";
+        }
+        // lib.genAttrs caches.socketDirs (_: "allow");
       };
 
       filesystem = {
