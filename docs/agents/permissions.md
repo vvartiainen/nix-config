@@ -77,21 +77,26 @@ For this repository's validation rules, use [AGENTS.md](../../AGENTS.md).
 
 ## Flake update previews
 
-From this repository's root, agents preview newer pins with:
+Agents preview newer pins of the applied configuration with:
 
 ```sh
 flake-update-preview
 flake-update-preview nixpkgs home-manager
 ```
 
-The installed wrapper accepts only plain input names (excluding `host`), pins
-the Nix executable, overrides `host` with `nix/fixtures/host`, and writes only
-`/private/tmp/flake-update-review/flake.lock.new`. It resolves into a private
-temporary directory before replacing that file; the scratch directory must be
-owned by you with mode 0700 and cannot be a symlink. It never updates the
-repository lock, builds or applies. Diff against the repository lock ignoring
-the synthetic `host` node. Run it only on trusted flakes: resolution contacts
-input URLs outside the sandbox and adds fetched sources to the Nix store.
+The installed wrapper accepts only plain input names (excluding `host`) and pins
+both the Nix executable and four small store sources: `flake.nix`, `flake.lock`,
+`nix/host-unset` and `nix/fixtures/host` from the configuration build. It copies
+them into a fresh private directory, rejecting symlinks, and resolves with the
+synthetic fixture override. It never reads the working directory's flake or
+fixture, builds or applies. Rebuild and apply to preview changed flake definitions.
+
+It atomically replaces `/private/tmp/flake-update-review/flake.lock.new`; the
+output directory must be owned by you with mode 0700 and cannot be a symlink.
+The repository lock stays untouched. The output restores the embedded lock's
+original `host` node (normally `path:./nix/host-unset`), so the fixture does not
+appear in lock diffs. Resolution contacts the embedded inputs outside the sandbox
+and adds fetched sources to the Nix store.
 
 The shared inspection policy allows this fixed wrapper. Claude excludes it
 from the sandbox and allows it without prompting; terminal Codex also allows

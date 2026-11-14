@@ -202,6 +202,7 @@ EOF
         rules = re.search(r"install -m 0644 (/nix/store/[^ ]+)", self.fixture["codex"]).group(1)
         self.assertTrue(Path(rules).exists(), "build the fixture system before native policy tests")
         for argv, expected in [
+            (["flake-update-preview"], "allow"),
             (["flake-update-preview", "nixpkgs"], "allow"),
             (["nix", "flake", "update"], "prompt"),
             (["git", "status"], None),
@@ -304,7 +305,9 @@ EOF
         xdg_cache = claude["env"]["XDG_CACHE_HOME"]
         self.assertTrue(xdg_cache.endswith("/.cache/xdg-agent"))
         self.assertIn(xdg_cache, claude["sandbox"]["filesystem"]["allowWrite"])
+        self.assertIn("flake-update-preview", claude["sandbox"]["excludedCommands"])
         self.assertIn("flake-update-preview *", claude["sandbox"]["excludedCommands"])
+        self.assertIn("Bash(flake-update-preview)", claude["permissions"]["allow"])
         self.assertIn("Bash(flake-update-preview:*)", claude["permissions"]["allow"])
         self.assertNotIn("Bash(flake-update-preview:*)", claude["permissions"]["ask"])
         hosts = claude["sandbox"]["network"]["allowedDomains"]

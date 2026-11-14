@@ -94,7 +94,9 @@ just clean                     # remove generations older than 7 days and GC
 ```
 
 Agents use [the scratch-lock preview wrapper](agents/permissions.md#flake-update-previews)
-to review updates before changing the repository lock.
+to review updates to the flake files embedded in the applied configuration
+before changing the repository lock. Rebuild and apply to preview newer flake
+definitions; working-directory edits do not affect the wrapper.
 
 Review `flake.lock` and `just build` before switching. The main `nixpkgs` input
 tracks unstable. Some inputs have their own update steps:
