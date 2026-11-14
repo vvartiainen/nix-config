@@ -114,6 +114,8 @@ For T3 mode selection and approval behavior, follow the
   worktree run outside the sandbox with approval; `allowed_domains` does not
   cover SSH. For read-only `gh`/`fj` views and Claude's reviewed fetch hook,
   follow the [standalone command rules](docs/agents/permissions.md#working-in-the-sandboxes). Add sibling repositories to the session before writing to them.
+- For `fj` repository discovery, follow
+  [Forgejo discovery](docs/agents/permissions.md#forgejo-repository-discovery).
 - Linked worktrees can also need approval for `git add` or `git commit` when
   their index/shared Git metadata is outside the writable roots. Escalate the
   exact Git command after a denial; do not change metadata permissions.
@@ -150,7 +152,7 @@ For T3 mode selection and approval behavior, follow the
   - Use the existing commit style: conventional commits, short message, no
     long descriptions, no trailers such as Co-Authored-By or Claude-Session.
   - Push with `git push -u origin <branch>` and open the pull request with
-    `fj pr create --base main --head <branch> --body-file <file> "<title>"`.
+    `fj pr create -r '<forge-host>/<owner>/<repo>' --base main --head <branch> --body-file <file> "<title>"`.
   - Write the body with the sections of
     [the PR template](.forgejo/pull_request_template.md), keeping its
     headings and order. Forgejo fills it in only in the web UI;

@@ -342,6 +342,13 @@ in
         they run outside the sandbox and match the read-only allow rules;
         otherwise they fail in the sandbox or prompt. Run one command per
         call instead of a loop.
+      - With multiple remotes and no branch upstream, include the Forgejo host
+        after the allowed subcommand: `fj pr search -r host/owner/repo`,
+        `fj issue search -r host/owner/repo`, `fj pr view 'host/owner/repo#number'`,
+        `fj pr status 'host/owner/repo#number'`, `fj issue view 'host/owner/repo#number'`
+        or `fj repo view host/owner/repo`. Replace the host, owner, repo and
+        number with the target. These forms keep the existing read-only rules;
+        writes such as `fj pr create -r host/owner/repo ...` still ask.
       - Set a Forgejo PR or issue body from a file with
         `fj-edit-body pr|issue <number> <file>`.
       - Save a T3 `request_secret` file to 1Password with

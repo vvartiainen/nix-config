@@ -96,6 +96,36 @@ metadata and need an approved run outside the sandbox.
 
 For this repository's validation rules, use [AGENTS.md](../../AGENTS.md).
 
+### Forgejo repository discovery
+
+In T3 worktrees with multiple remotes and no branch upstream, `fj` 0.7.0
+cannot infer the repository. Keep the allowed subcommand first and include
+the host in its repository argument:
+
+```sh
+fj pr search -r '<forge-host>/<owner>/<repo>'
+fj issue search -r '<forge-host>/<owner>/<repo>'
+fj pr view '<forge-host>/<owner>/<repo>#28'
+fj pr status '<forge-host>/<owner>/<repo>#28'
+fj issue view '<forge-host>/<owner>/<repo>#1'
+fj repo view '<forge-host>/<owner>/<repo>'
+```
+
+Replace the angle-bracketed placeholders and the PR or issue number. These
+standalone forms match the existing read-only rules in Claude and Codex; no
+apply or upstream write is needed. Writes still ask; see the
+[PR workflow](../../AGENTS.md#working-conventions).
+
+[Upstream discovery](https://codeberg.org/forgejo-contrib/forgejo-cli/src/tag/v0.7.0/src/repo.rs)
+uses an explicit repository host, otherwise a selected remote (explicit remote,
+sole remote, branch upstream, or host-matching remote). It has no configurable
+default remote. Alternatively,
+`FJ_FALLBACK_HOST=https://<forge-host> fj pr search -r owner/repo` supplies a
+missing host for an explicit repository (`https://` is required; a bare host
+name is rejected) without overriding an inferred host. Fully qualified
+arguments avoid discovery ambiguity without changing Git configuration or
+allow rules.
+
 ## Flake update previews
 
 Agents preview newer pins of the applied configuration with:

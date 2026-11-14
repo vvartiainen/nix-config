@@ -63,6 +63,14 @@ class ShellReviewTests(unittest.TestCase):
             "nix build .#system": "ask",
             "gh api repos/example/project": "ask",
             "fj-edit-body pr 1 /tmp/body.md": "ask",
+            "fj pr search -r forge.example/owner/repo": "allow",
+            "fj issue search -r forge.example/owner/repo": "allow",
+            "fj pr view 'forge.example/owner/repo#13'": "allow",
+            "fj pr status 'forge.example/owner/repo#13'": "allow",
+            "fj issue view 'forge.example/owner/repo#13'": "allow",
+            "fj repo view forge.example/owner/repo": "allow",
+            "fj pr create -r forge.example/owner/repo --body-file /tmp/body.md title": "ask",
+            "fj issue create -r forge.example/owner/repo --body-file /tmp/body.md title": "ask",
             "op-item-from-secret --vault Synthetic --title Example /tmp/secret": "ask",
             "sh -c 'rex run -- id'": "ask",
             "env NAME=value rex run -- id": "ask",
@@ -218,6 +226,14 @@ EOF
             (["git", "push", "origin", "main"], "prompt"),
             (["git", "fetch", "origin"], "prompt"),
             (["fj", "pr", "view", "13"], "allow"),
+            (["fj", "pr", "search", "-r", "forge.example/owner/repo"], "allow"),
+            (["fj", "issue", "search", "-r", "forge.example/owner/repo"], "allow"),
+            (["fj", "pr", "view", "forge.example/owner/repo#13"], "allow"),
+            (["fj", "pr", "status", "forge.example/owner/repo#13"], "allow"),
+            (["fj", "issue", "view", "forge.example/owner/repo#13"], "allow"),
+            (["fj", "repo", "view", "forge.example/owner/repo"], "allow"),
+            (["fj", "pr", "create", "-r", "forge.example/owner/repo"], "prompt"),
+            (["fj", "issue", "create", "-r", "forge.example/owner/repo"], "prompt"),
             (["gh", "pr", "checks", "13"], "allow"),
             (["gh", "pr", "create"], "prompt"),
             (["gh", "auth", "status", "-t"], None),
@@ -290,6 +306,12 @@ EOF
         self.assertTrue(all(path.endswith("-agent") for path in socket_dirs))
         claude = self.settings_file("claude", "claude-code-settings")
         self.assertTrue(claude["sandbox"]["enabled"])
+        self.assertIn("fj *", claude["sandbox"]["excludedCommands"])
+        for command in ("pr search", "pr view", "pr status", "issue search", "issue view", "repo view"):
+            self.assertIn(f"Bash(fj {command}:*)", claude["permissions"]["allow"])
+        for command in ("pr create", "issue create"):
+            self.assertIn(f"Bash(fj {command}:*)", claude["permissions"]["ask"])
+            self.assertNotIn(f"Bash(fj {command}:*)", claude["permissions"]["allow"])
         self.assertFalse(claude["sandbox"]["network"]["allowAllUnixSockets"])
         self.assertEqual(claude["sandbox"]["network"]["allowUnixSockets"], [socket, *socket_dirs])
         self.assertEqual(claude["env"]["PLUGIN_UNIX_SOCKET_DIR"], socket_dirs[0])
