@@ -1,8 +1,31 @@
 # Agent permissions and sandboxes
 
-The OS sandbox limits routine commands; approval allows reviewed actions beyond
-it. Active session policy is authoritative. Skills and MCP availability do not
-grant filesystem or command access.
+The OS sandbox limits routine commands. Some clients support user-approved
+commands outside it; Pi's approvals stay inside Safehouse. Active session policy
+is authoritative. Skills and MCP availability do not grant filesystem or command
+access.
+
+## Guidelines
+
+- Keep routine development low friction: inspect, edit, test and commit inside
+  the sandbox using workspace, scratch and agent-cache paths.
+- Keep sandboxing enabled. Review requests for additional access as specific
+  full-access operations; do not replace them with blanket runner approvals or
+  control-socket grants. Existing narrow allowances, such as Claude's read-only
+  `gh` commands, still apply. Pi has no escape mechanism; run blocked work manually
+  outside Pi.
+- Review installs, publishing, remote writes, privileged operations and host
+  control. Approval is permission for the requested action, not unrelated work.
+- Keep secret-file restrictions and destructive-command denies. Do not disable
+  TLS verification, move credentials or use another tool to evade a denial.
+- Treat shell, file-tool and MCP permissions separately. Host apps and MCP
+  servers may act outside the shell sandbox. In T3 Code, use **Auto-accept edits**
+  for Codex and Claude when escapes should come to you rather than auto review.
+
+Codex allows ordinary internet access, including an explicit wildcard domain
+allowance for its proxy. Other clients retain their own network policies below.
+Apply configuration changes manually and start fresh sessions; a source change
+does not alter an already-running sandbox.
 
 ## Client behavior
 
@@ -36,8 +59,8 @@ testing changed rules. Start fresh sessions after permission changes.
 
 Codex can read and write its managed checkouts under `~/.codex/worktrees`,
 including worktrees created during a session. Secret-file denies still apply
-there; their Git hooks/config stay in the main checkout's read-only Git dir.
-Other Codex state retains its existing permissions. Apply permission changes manually and start a fresh session.
+there; their Git hooks/config stay read-only even when the main checkout's Git
+metadata is writable. Other Codex state retains its existing permissions.
 
 Like Claude, Codex can read sibling projects under the directory containing
 this checkout, with environment files and keys denied throughout that directory.
@@ -183,9 +206,10 @@ fixture system. The user validates and applies real host configuration manually.
 Rex, Kitty and Incus can execute commands through host services with the user's
 permissions. Their execution, input injection, terminal-content capture and
 VM-changing operations require approval rather than a blanket command ban.
-Help/version and selected session/instance listings are allowed where the
-client can express a narrow exception. Reading terminal contents and dumping
-configuration remain reviewed operations because they can disclose secrets.
+Help/version and selected session/instance listings have narrow allowances in
+some clients; Codex and Claude's Rex rules still ask. Reading terminal contents
+and dumping configuration remain reviewed operations because they can disclose
+secrets.
 
 Keep control endpoints out of sandbox socket/network allowlists. A metadata
 command may still need approval to reach its service; Pi cannot escape

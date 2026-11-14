@@ -16,7 +16,9 @@ ct agents sync
 ```
 
 The catalog includes the `nixos` server. Codex and Pi load project servers
-after project trust. Catalog server tools have configured permission allowances.
+after project trust. Tool approval depends on the client: some adapters allow
+catalog tools, while Pi's MCP tools still ask. Loading a server does not grant
+its process an escape from the sandbox.
 See the cli-toolbox
 [agent tools guide](https://github.com/vvartiainen/cli-toolbox/blob/main/docs/agent-tools.md).
 
@@ -61,11 +63,8 @@ tool namespace; do not register a global endpoint or grant shell access to its
 local port to make those tools work. Tool-specific prompts in Codex remain
 separate from shell approvals. See [T3 permission modes](https://github.com/pingdotgg/t3code/blob/main/docs/user/permission-modes.md).
 
-Pi's approval extension runs inside Safehouse. Approving a tool cannot remove
-that process's sandbox. A similar escape workflow would require an external
-approval broker that launches only the approved command; it is not provided by
-the current wrapper. Keep using Codex or Claude for approved escapes rather than
-launching Pi without Safehouse for ordinary work.
+Pi's approvals stay inside Safehouse. Use Codex or Claude for approved escapes,
+or run blocked operations manually outside Pi. See [Pi's sandbox limits](agent-permissions.md#pi).
 
 After first applying the removal of the old launchd environment settings,
 reboot before testing GUI apps. Removing the Nix options does not clear values
