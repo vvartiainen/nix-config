@@ -37,10 +37,13 @@ upstream proxies and control sockets remain restricted. Claude, Cursor and
 Copilot use the package-download host policy; Pi's network limits are below.
 Nix build/run/develop/store operations require review because they delegate to
 the host daemon. Project checks and ordinary non-Nix builds stay sandboxed.
-Claude and Codex also allow Unix sockets in `~/.cache/tofu-agent`, where
-`PLUGIN_UNIX_SOCKET_DIR` puts Terraform and OpenTofu provider sockets, so
-`validate` with providers runs sandboxed. In T3, Codex's per-turn sandbox
-does not include this grant.
+Unix sockets are blocked except the Nix daemon socket and
+`~/.cache/tofu-agent`, where `PLUGIN_UNIX_SOCKET_DIR` puts Terraform and
+OpenTofu provider sockets, so `validate` with providers runs sandboxed. Only
+commands from agent sessions listen there, approved unsandboxed runs included;
+their provider connections use per-run TLS. Symlinks to other sockets are
+checked at their target, so Rex, the SSH agent and 1Password stay blocked. In
+T3, Codex's per-turn sandbox does not include this grant.
 
 Codex and Claude can read sibling projects under the directory containing this
 checkout, with secret-file restrictions. Claude may still ask before accessing
@@ -61,8 +64,9 @@ fails (`fj` reports `Operation not permitted` from its keychain), or prompts.
 argument; `fj-edit-body pr|issue <n> <file>` passes a file's contents instead
 of `$(cat ...)` and asks like other forge writes. `fj pr create`,
 `fj pr comment`, `fj issue create` and `fj issue comment` take `--body-file`.
-A Claude `allowed_domains` entry does not help: SSH bypasses the sandbox proxy. Use HTTPS for public fetches. Local `git rebase`, `reset` and
-`clean` run in the sandbox; their destructive forms are denied. Sandboxed Git
+A Claude `allowed_domains` entry does not help: SSH bypasses the sandbox proxy.
+Use HTTPS for public fetches. Local `git rebase`, `reset` and `clean` run in
+the sandbox; their destructive forms are denied. Sandboxed Git
 does not record a new branch's upstream, because `.git/config` is protected;
 the first push sets it.
 When a task writes to a sibling repository, add it to the session (`/add-dir`
@@ -71,6 +75,32 @@ for worktrees other than the session's own write the main repository's Git
 metadata and need an approved run outside the sandbox.
 
 For this repository's validation rules, use [AGENTS.md](../../AGENTS.md).
+
+## Secrets
+
+Agents never see secret values; the tool that needs a credential fetches it
+itself, outside the sandbox.
+
+| Need | How | Review |
+| --- | --- | --- |
+| `gh`, `fj`, Git over SSH | The tool uses its keychain token or the SSH agent | Read-only views run without prompting; writes and pushes ask |
+| Provider or cloud credentials, such as `tofu apply` | Approved retry outside the sandbox; 1Password supplies the credential | The agent's approval prompt, then 1Password's |
+| A new value only the user has | T3 `request_secret` file delivery, then `op-item-from-secret` | The user enters it; storing asks |
+
+Sandboxed commands cannot read credential files, the keychain or the 1Password
+app, so a command that needs them fails and the agent asks to retry it outside
+the sandbox. Approved commands run without the sandbox's read denies. `op read`,
+`op run`, `op inject`, `op item get` and keychain lookups are denied in every
+mode: they would put the value in the agent's context or let it run any command
+with it. Sandboxes keep exported environment variables and readable workspace
+files such as `*.tfvars` or local state; keep secrets out of both.
+
+`op-item-from-secret --vault <vault> --title <title> [--category <category>] [--field <field>] <file>`
+stores a `request_secret` file in 1Password. It asks, runs outside the sandbox,
+only accepts files under `~/.t3/userdata/secrets`, passes the value to `op` on
+stdin, prints only the item's id, title and vault, and deletes the file. Plain
+`op item create` with `$(cat <file>)` stays denied: the secret directory is a
+Read deny.
 
 ## T3 Code permission modes
 
@@ -174,14 +204,9 @@ retry still fails, report it rather than widening socket access.
 | `device not configured` on `/dev/tty` | Use non-interactive flags |
 
 Retry a confirmed sandbox failure once with escalation where supported; Pi
-cannot escalate. Explicit secret-file denies remain off-limits.
-To store a secret handed over with T3's `request_secret` file delivery, run
-`op-item-from-secret --vault <vault> --title <title> [--category <category>] [--field <field>] <file>`.
-It asks, runs outside the sandbox, only accepts files under
-`~/.t3/userdata/secrets`, passes the value to `op` on stdin, prints only the
-item's id, title and vault, and deletes the file. Plain `op item create` with
-`$(cat <file>)` stays denied: the secret directory is a Read deny. Do not loop
-through variants, move credentials or disable TLS verification.
+cannot escalate. Explicit secret-file denies remain off-limits; see
+[Secrets](#secrets). Do not loop through variants, move credentials or disable
+TLS verification.
 
 Nixpkgs-built Go tools use the configured CA bundle; upstream binaries may still
 need escalation. Claude adds the Nix bundle to system certificates. Codex adds
