@@ -13,7 +13,7 @@ each use, and **denied** means no approval can allow it.
 | --- | --- | --- |
 | Everyday work in this or another repository: edit, test, evaluate Nix, commit, read pull requests, web research | Claude Code, in the terminal or T3 | Sandboxed, reaches the Nix daemon, reads `gh`/`fj`, fetches and searches the web without prompts |
 | The same, with downloads from arbitrary hosts | Codex in the terminal | Sandboxed with ordinary internet access |
-| T3 work that needs a Codex model | Codex in T3 | Expect prompts: T3 replaces the profile, so commits in worktrees, Nix, fetches and downloads all ask |
+| T3 work that needs a Codex model | Codex in T3 | Use the [T3 permission mode guidance](permissions.md#t3-code-permission-modes) |
 | Code you do not trust, or an untrusted extension or MCP server | Pi | The whole process is confined and no approval can leave the sandbox |
 | Nix builds, pushes, forge writes, `tofu apply`, local dev servers | Claude Code or Codex | They can run one approved command outside the sandbox; Pi cannot |
 | Cursor or Copilot models | Cursor, Copilot | Sandboxed like Claude, but `gh`, `fj` and fetches need an approved retry |
@@ -69,13 +69,14 @@ Where a client matches exact prefixes only, a reordered form such as
 
 ## In T3 Code
 
-New threads start in **Auto-accept edits**; see
-[T3 Code permission modes](permissions.md#t3-code-permission-modes).
+The tables above describe terminal clients. Choose the provider's mode using
+[T3 Code permission modes](permissions.md#t3-code-permission-modes),
+which covers the new-thread default, manual overrides and observed behavior.
 
 | Provider | Difference from the terminal |
 | --- | --- |
-| Claude | Same sandbox and rules. Code Mode is off and T3's own tools run |
-| Codex | T3's per-turn sandbox replaces the profile: the whole disk is readable without the credential denies, and there is no network, Nix daemon socket or write access to a linked worktree's shared Git metadata |
+| Claude | Same sandbox settings. Code Mode is off and T3's own tools run |
+| Codex | Sandbox differs from the terminal profile; see the mode guidance above |
 | Pi | Same Safehouse sandbox, so T3's local tools are unreachable |
 | OpenCode | Same rules, no OS sandbox |
 

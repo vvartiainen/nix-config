@@ -4,8 +4,8 @@ The guidelines behind this policy are in
 [design/agent-permissions](../design/agent-permissions.md).
 
 Active session policy is authoritative. Apply configuration changes manually
-and start fresh sessions. In T3 Code, use **Auto-accept edits** for Codex and
-Claude when escapes should come to you; see [T3 Code permission modes](#t3-code-permission-modes).
+and start fresh sessions. For provider-specific mode choices in T3 Code, see
+[T3 Code permission modes](#t3-code-permission-modes).
 
 ## Client behavior
 
@@ -103,13 +103,24 @@ Read deny.
 
 ## T3 Code permission modes
 
-New threads default to **Auto**, where the provider's automatic review
-evaluates approvals and asks you only about the rest. Project overrides and
-existing threads retain their selected modes; change those separately in T3.
-**Auto-accept edits** leaves every sandbox escape for you to review; **Full
-access** removes the ordinary approval boundary. T3 injects its
-own MCP endpoint and allows its Claude tool namespace; Codex tool-specific
-prompts remain separate from shell approvals. See [T3 permission modes](https://github.com/pingdotgg/t3code/blob/main/docs/user/permission-modes.md).
+New threads default to **Auto-accept edits**. Use that mode for Claude;
+switch Codex threads to **Auto** by hand in the composer's permission picker.
+T3 supports an environment default and project overrides, but no default per
+provider or provider instance. Existing threads and project overrides retain
+their selected modes; change those separately in T3. See
+[T3 permission modes](https://github.com/pingdotgg/t3code/blob/main/docs/user/permission-modes.md)
+and the [settings schema](https://github.com/pingdotgg/t3code/blob/main/packages/contracts/src/settings.ts).
+
+| Provider | Auto-accept edits | Auto |
+| --- | --- | --- |
+| Claude | Sandboxed workspace, scratch and agent-cache writes, configured-remote fetches and `fj` views run without prompts. Nix builds, unlisted network hosts and reads outside allowed paths ask. | Automatic review can approve Nix builds without prompting. Unlisted hosts fail with `CONNECT tunnel failed, response 403` without a prompt. |
+| Codex | Observed shell writes ask, including plain `touch`/`rm` in the workspace and `/tmp`, and every agent-cache write. `git fetch origin` and Nix builds also ask. | Workspace and `/tmp` writes run without prompts; automatic review can approve escalations such as Nix builds. |
+
+**Auto** uses provider automatic review; approval requests may still reach you.
+**Full access** removes the ordinary approval boundary. T3 injects its own MCP
+endpoint and allows its Claude tool namespace; Codex tool-specific prompts
+remain separate from shell approvals.
+
 The default Codex, Claude and Pi provider paths and new-thread permission mode
 are merged into `~/.t3/userdata/settings.json` during activation. Close T3 before
 applying and restart it afterwards. Other instances and app-managed settings
@@ -123,14 +134,10 @@ custom permission profiles ([T3 #16458](https://github.com/pingdotgg/t3code/issu
 Terminal Codex keeps its custom profile. No separate launcher or Codex home is
 needed.
 
-T3 also sends Codex a bare `workspaceWrite` sandbox on every turn, which
-replaces any profile and cannot be configured
+T3's Codex sandbox differs from the terminal profile
 ([T3 discussion #6976](https://github.com/pingdotgg/t3code/discussions/6976)).
-T3's Codex can read the whole disk without our secret-file denies, but has no
-network, no Nix daemon socket and no write access to a linked worktree's
-shared Git metadata. `git add`, `git commit`, Nix commands, fetches, forge
-writes and downloads therefore ask in **Auto-accept edits**; batch them into one command
-where practical. Claude keeps its own sandbox settings under T3.
+Do not rely on the terminal profile's secret-file denies in T3. Claude keeps
+its own sandbox settings under T3.
 
 Sandboxed Pi cannot reach T3's local MCP endpoint or escape after approval.
 Run blocked operations manually or use Codex/Claude; see [Pi's limits](#pi).
