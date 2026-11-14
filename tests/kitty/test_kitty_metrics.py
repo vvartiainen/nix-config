@@ -158,7 +158,10 @@ class QuotaTests(unittest.TestCase):
         self.assertIn("Claude", lines)
 
     def exercise_terminal(self, sources, expected):
-        master, slave = pty.openpty()
+        try:
+            master, slave = pty.openpty()
+        except OSError as error:
+            self.skipTest(f"pseudo-terminals unavailable (agent sandbox?): {error}")
         self.addCleanup(os.close, master)
         self.addCleanup(os.close, slave)
         previous = termios.tcgetattr(slave)
