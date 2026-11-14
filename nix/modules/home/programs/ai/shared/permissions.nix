@@ -613,6 +613,8 @@ let
     sandbox = [
       # Nix's global flake registry, fetched to resolve `nixpkgs#…`.
       "channels.nixos.org"
+      # The Rex flake input's tarball, fetched by flake evaluation.
+      "pkgs.superlogical.com"
       "pypi.org"
       "files.pythonhosted.org"
       "index.crates.io"
