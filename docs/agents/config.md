@@ -55,24 +55,34 @@ Custom CLI homes and administrator-managed tools are outside cleanup coverage.
 
 ## T3 Code settings
 
-The Homebrew cask provides the app. Nix merges provider paths, the default
-[permission mode](permissions.md#t3-code-permission-modes) and these cleanup
-settings into `~/.t3/userdata/settings.json` on every switch:
+The Homebrew cask provides the app. Nix merges preferences from
+[`t3-code.nix`](../../nix/modules/home/programs/ai/clients/t3-code.nix) into
+`~/.t3/userdata/settings.json` on every switch. Edit that module to keep changes
+made in T3; declared values are restored on each switch. Other settings remain
+app-managed. The server watches the file, so no restart is needed.
 
-| Setting | Value | Effect |
-| --- | --- | --- |
-| `sidebarAutoSettleOnMerge` | `true` | Settle a thread after every pull request linked to it merges |
-| `storageCleanup.worktreeOnMerge` | `true` | Remove its worktree once those commits are in the remote default branch |
+Nix also merges non-default UI preferences into `client-settings.json` in the
+same directory: notifications with sound, in-app notifications, links opening in
+T3, direct quit, proactive panels and hiding the **Open in** detail item.
+Keybindings and window bounds remain app-managed.
 
-Merge cleanup needs a linked pull request, so create the pull request from T3
-Code or with `gh pr create`; a plain `git merge` leaves the worktree in place.
-The server watches the file, so no restart is needed after a switch.
+Managed preferences include provider paths and enabled providers, the default
+[permission mode](permissions.md#t3-code-permission-modes), model selections,
+favorites and hidden models, project defaults, compaction, pull request behavior
+and worktree cleanup. New threads use worktrees, projects default to auto-pull,
+and idle threads compact before the cache expires. Claude's compaction threshold
+is 400,000 tokens. Automatic settlement by age is disabled.
 
-Everything else in that file stays app-managed. Cleanup for idle, settled,
-unchanged and deleted-thread worktrees, plus browser capture and log retention,
-stays off until enabled under **Settings → Worktrees → Cleanup**. Provider
-switches, forks and delegated tasks hand off conversation context on their own;
-see [portable handoffs](https://github.com/pingdotgg/t3code/blob/main/docs/user/portable-handoffs.md).
+Threads settle after every linked pull request merges. Worktrees are cleaned up
+on merge, thread deletion, or when unchanged, subject to T3's local-change
+protection. Merge cleanup needs a linked pull request, so create the pull request
+from T3 Code or with `gh pr create`; a plain `git merge` leaves the worktree in
+place. Idle/settled-age cleanup, browser capture retention and log retention
+remain app-managed under **Settings → Worktrees → Cleanup**.
+
+Provider switches, forks and delegated tasks hand off conversation context on
+their own; see
+[portable handoffs](https://github.com/pingdotgg/t3code/blob/main/docs/user/portable-handoffs.md).
 
 ## Configuration validation
 
