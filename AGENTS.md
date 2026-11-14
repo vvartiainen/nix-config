@@ -22,6 +22,9 @@ Choose validation according to the change:
 - Nix modules: run `statix check .`, fixture evaluation and `git diff --check`.
 - Package, dependency, activation or build changes: also run a fixture system
   build. Build whenever evaluation leaves a concrete concern unresolved.
+- Sandboxed Pi cannot run Nix commands that reach the daemon, so it runs
+  `statix`, `nixfmt` and `just lint` and hands fixture evaluation and builds to
+  the user; see [Pi's limits](docs/agents/permissions.md#pi).
 
 Codex, Claude and Copilot stop hooks run the same fast checks in this repository
 and its worktrees after the user applies the hook configuration, including fast
@@ -86,8 +89,9 @@ Commands run in an OS sandbox (see
   package caches already point there. Use `/tmp` for scratch files.
 - Network: Codex allows ordinary internet access; other clients may restrict
   access to package download hosts and require approval for other domains.
-- `nix build` and `nix fmt` require approval in Codex and Claude Code: builds
-  run through the daemon outside the agent sandbox.
+- `nix build`, `nix eval` and `nix fmt` run through the daemon outside the agent
+  sandbox: Codex and Claude Code require approval, Copilot asks for the command,
+  and Pi cannot run them at all.
 - Codex and Claude Code run routine project commands inside their sandboxes
   without prompts; Copilot requires normal approval for unlisted commands.
   Claude excludes `gh` and Rex from its sandbox; Rex requires approval.

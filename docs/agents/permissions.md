@@ -110,8 +110,11 @@ an empty workspace. Clipboard integration is enabled.
 Confirm the pinned permission extension loads without errors; inspect it with
 `/permission-system show`. Routine file tools, bash and the configured web
 research tools are allowed. Installs, publishing, remote writes, host control,
-Nix daemon operations, shell wrappers and uncertain commands ask. Unknown tools
-and MCP calls also ask. Only load trusted extensions: they share Pi's process
+shell wrappers and uncertain commands ask. Unknown tools and MCP calls also ask.
+Nix is different: every command that reaches the daemon socket fails with
+`Operation not permitted`, and no approval can grant it. Write and lint Nix
+configs, then ask the user to evaluate or build with the
+[fixture commands](../../AGENTS.md#validation-commands-no-apply). Only load trusted extensions: they share Pi's process
 access, including its stored login. Prefer a provider key passed through the
 environment when possible. The installed npm package directory remains writable.
 
