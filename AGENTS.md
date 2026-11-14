@@ -87,6 +87,8 @@ Commands run in an OS sandbox (see
 
 - Writable: the workspace, `$TMPDIR`, `/tmp`, and `~/.cache/<tool>-agent`;
   package caches already point there. Use `/tmp` for scratch files.
+  Nix refuses `--output-lock-file` and `--reference-lock-file` paths through
+  the `/tmp` symlink; pass `/private/tmp/...` instead.
 - Network: Codex allows ordinary internet access; other clients may restrict
   access to package download hosts and require approval for other domains.
 - `nix build`, `nix eval` and `nix fmt` run through the daemon outside the agent
