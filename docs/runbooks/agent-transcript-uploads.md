@@ -38,6 +38,6 @@
    agent-transcripts-upload
    ```
 
-   The command packages rsync 3 and SSH through Nix. Check the homelab web UI
+   The command uses Nix rsync 3 and macOS ssh. Check the homelab web UI
    for the machine's sessions. See [session history](../agents/sessions.md#session-history)
    for scheduling, offline behavior and logs.
