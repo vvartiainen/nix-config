@@ -16,8 +16,8 @@ just bootstrap <HOSTNAME> # first activation
 ```
 
 Machine identity and private modules live outside the repo in
-`~/.config/nix-config-host/`. Use its `hostName` for `<HOSTNAME>`; recipes
-default to the machine's hostname.
+`~/.config/nix-config-host/` ([host data](docs/design/host-data.md)). Use its
+`hostName` for `<HOSTNAME>`; recipes default to the machine's hostname.
 
 ## Everyday commands
 
@@ -72,3 +72,7 @@ The rest of `docs/`:
   and [quotas, status and history](docs/agents/sessions.md)
 - [`runbooks/`](docs/runbooks/): procedures done rarely, such as
   [new Mac setup](docs/runbooks/new-mac.md)
+- [`design/`](docs/design/): how things are built and why:
+  [host data](docs/design/host-data.md), [modules and dotfiles](docs/design/modules.md),
+  [tool ownership](docs/design/tool-ownership.md) and
+  [agent permissions](docs/design/agent-permissions.md)

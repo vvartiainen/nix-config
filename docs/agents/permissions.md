@@ -1,17 +1,7 @@
 # Agent permissions and sandboxes
 
-## Guidelines
-
-- Keep routine development low friction: inspect, edit, test and commit inside
-  the sandbox using workspace, scratch and agent-cache paths.
-- Review additional access as a specific full-access operation. Keep sandboxing
-  enabled; avoid blanket runner approvals and control-socket grants. Existing
-  narrow allowances, such as Claude's read-only `gh` commands, still apply.
-- Review installs, publishing, remote writes, privileged operations and host
-  control. Keep secret-file restrictions, destructive-command denies and TLS
-  verification; do not use another tool to evade a denial.
-- Treat shell, file-tool and MCP permissions separately: host apps and servers
-  may act outside the shell sandbox. Skills and available tools grant no access.
+The guidelines behind this policy are in
+[design/agent-permissions](../design/agent-permissions.md).
 
 Active session policy is authoritative. Apply configuration changes manually
 and start fresh sessions. In T3 Code, use **Auto-accept edits** for Codex and
@@ -28,8 +18,7 @@ Claude when escapes should come to you; see [T3 Code permission modes](#t3-code-
 | OpenCode | Inspection commands and workspace file tools are allowed | No OS sandbox; project runners, cleanup and unknown commands ask |
 | Pi | Whole process runs in Safehouse; routine file, bash and named web tools are allowed | Risky commands and unknown/MCP tools ask; approval cannot escape Safehouse |
 
-Command rules cannot recognize every spelling or operation hidden in a script.
-They supplement the sandbox. OpenCode's rules are best effort without OS
+Command rules supplement the sandbox; OpenCode's are best effort without OS
 isolation. In Copilot, use `/reset-allowed-tools` to clear old broad grants
 before testing changed rules. Claude's Code Mode retains the normal permission,
 hook and sandbox checks.
@@ -147,5 +136,5 @@ it through `NODE_EXTRA_CA_CERTS` and sets `NODE_USE_SYSTEM_CA=0`; an explicit
 `--use-system-ca` flag can still trigger sandbox warnings. Private CA overrides
 must preserve the required public roots.
 
-Shared policy lives in [permissions.nix](../../nix/modules/home/programs/ai/shared/permissions.nix);
-each client module renders its own adapter.
+To change the policy, edit the [shared policy](../design/agent-permissions.md#one-policy-one-adapter-per-client)
+rather than a single client's adapter.

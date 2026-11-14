@@ -11,7 +11,7 @@ just switch <HOSTNAME>     # apply
 just switch <HOSTNAME> 1   # apply without Homebrew bundle
 ```
 
-See [host data](runbooks/new-mac.md#host-data) for host selection and
+See [host data](design/host-data.md) for host selection and
 [agent configuration validation](agents/config.md#configuration-validation)
 for coverage. The package diff includes all pending Nix changes; it excludes
 Homebrew and mise updates. After applying, reload the
@@ -71,8 +71,8 @@ mise prune --dry-run
 ```
 
 Review the preview before running `mise prune`: projects may still need those
-versions. Nix owns common language servers and btop; mise owns runtimes and uv.
-Use `type -a <tool>` to diagnose competing installations.
+versions. See [tool ownership](design/tool-ownership.md) for which manager owns
+which tools; use `type -a <tool>` to diagnose competing installations.
 
 ## Homebrew app data
 

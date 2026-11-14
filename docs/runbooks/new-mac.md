@@ -47,8 +47,8 @@ license must be accepted before `xcodebuild` and some Homebrew formulas work.
 
 3. Clone this repository and `cd` into it.
 
-4. Generate [host data](#host-data) from the current user, hostname, chip, and
-   repository path, then review the generated file:
+4. Generate [host data](../design/host-data.md) from the current user,
+   hostname, chip, and repository path, then review the generated file:
 
    ```sh
    just init-host <HOSTNAME>
@@ -60,49 +60,8 @@ license must be accepted before `xcodebuild` and some Homebrew formulas work.
    just bootstrap <HOSTNAME>
    ```
 
-   Bootstrap also creates host data if it is missing.
-
-## Host data
-
-Machine identity and private configuration stay outside this repo in
-`~/.config/nix-config-host/default.nix`:
-
-```nix
-{
-  userName = "your-user";
-  hostName = "YOUR-HOSTNAME"; # also the darwinConfigurations name
-  repoRoot = "/Users/your-user/prog/nix-config";
-  nestedVirtualization = true; # M3+ and macOS 15+; false on older Macs
-  darwinModules = [ ];
-  homeModules = [
-    ./zen-work.nix # optional private module; remove if unused
-    {
-      # SFTP hosts for yazi (`yy sftp://my-server`); auth via SSH_AUTH_SOCK.
-      programs.yazi.vfs.sftp.my-server = {
-        host = "203.0.113.10";
-        user = "me";
-        port = 22;
-      };
-    }
-  ];
-}
-```
-
-The flake's `host` input defaults to a stub that fails with an error. The `just`
-recipes select the real directory with
-`--override-input host "path:$HOME/.config/nix-config-host"`. This implies
-`--no-write-lock-file`, so the path never ends up in `flake.lock`. Use the same
-flag with raw `nix` or `darwin-rebuild` commands for your machine.
-
-Only that directory and tracked repository files are copied into the Nix store.
-New repository files need `git add` before a build sees them. Never commit real
-hostnames, usernames, or work-specific configuration.
-
-Use `hostName` for `<HOSTNAME>` in recipes; it defaults to `hostname` (or `HOST`
-if exported). Recipes stop with a hint when host data is missing.
-
-For routine agent validation, use the tracked public fixture instead of reading
-private host data; see [agent validation](../../AGENTS.md#validation-commands-no-apply).
+   Bootstrap also creates host data if it is missing. Add private modules and
+   SFTP hosts to the host file later as needed.
 
 ## After the first activation
 
