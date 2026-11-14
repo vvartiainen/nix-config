@@ -9,14 +9,8 @@ Claude when escapes should come to you; see [T3 Code permission modes](#t3-code-
 
 ## Client behavior
 
-| CLI | Routine work | Approval boundary |
-| --- | --- | --- |
-| Codex | Workspace commands run sandboxed; ordinary internet access is allowed | Additional access and reviewed commands ask; all Rex/Kitty/Incus calls ask; scoped `gh` and `fj` inspection is allowed outside the sandbox |
-| Claude Code | Workspace edits and commands run sandboxed | Additional access and reviewed commands ask; Rex runs unsandboxed with approval; scoped `gh` and `fj` inspection and `git fetch` from configured remotes are allowed outside the sandbox |
-| Cursor | Workspace commands run sandboxed in Allowlist mode | Risky commands, uncertain shell syntax and unsandboxed retries ask |
-| Copilot | Inspection, scoped development runners and file edits are approved | Unlisted commands and sandbox bypasses ask; `just lint` is scoped, other `just` recipes ask |
-| OpenCode | Inspection commands and workspace file tools are allowed | No OS sandbox; project runners, cleanup and unknown commands ask |
-| Pi | Whole process runs in Safehouse; routine file, bash and named web tools are allowed | Risky commands and unknown/MCP tools ask; approval cannot escape Safehouse |
+The [agent comparison](comparison.md) shows what each client runs, asks about
+and denies, and which one to pick.
 
 Command rules supplement the sandbox; OpenCode's are best effort without OS
 isolation. In Copilot, use `/reset-allowed-tools` to clear old broad grants

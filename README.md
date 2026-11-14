@@ -67,6 +67,7 @@ The rest of `docs/`:
   [Neovim](docs/programs/neovim.md), [Rex](docs/programs/rex.md) and
   [Linux builders](docs/programs/linux-builders.md)
 - [`agents/`](docs/agents/): coding agents:
+  [comparison](docs/agents/comparison.md),
   [permissions and sandboxes](docs/agents/permissions.md),
   [configuration](docs/agents/config.md), [keybindings](docs/agents/keybindings.md)
   and [quotas, status and history](docs/agents/sessions.md)
