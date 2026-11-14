@@ -140,6 +140,9 @@ Commands run in an OS sandbox (see
   - How the feature works on a higher level
   - If external dependencies were added or needed
   - If you deviated from some of our earlier decisions
+- Write pull request descriptions with the headings of
+  [`.forgejo/pull_request_template.md`](.forgejo/pull_request_template.md);
+  write "None" under a heading that does not apply instead of removing it
 - Also inform if you ran into some permission issues that could be fixed
 - Clearly list any commands the user must run manually in the final response,
   using copyable code blocks with the required working directory and purpose.
