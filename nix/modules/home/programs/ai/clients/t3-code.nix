@@ -6,11 +6,51 @@
 }:
 let
   mergeConfig = import ../../../merge-config.nix { inherit lib pkgs config; };
-in
-{
-  # T3 rewrites this file with provider settings and runtime markers. Merge
-  # declared preferences, preserving accounts, extra instances and app state.
-  home.activation.t3CodeConfig = lib.hm.dag.entryAfter [ "linkGeneration" ] (mergeConfig {
+  keybindings = (pkgs.formats.json { }).generate "t3-code-keybindings.json" (
+    map (binding: binding // { when = "!terminalFocus && !previewFocus"; }) [
+      {
+        key = "ctrl+shift+j";
+        command = "thread.next";
+      }
+      {
+        key = "ctrl+shift+k";
+        command = "thread.previous";
+      }
+      {
+        key = "alt+p";
+        command = "modelPicker.toggle";
+      }
+      {
+        key = "alt+t";
+        command = "composer.increaseEffort";
+      }
+      {
+        key = "alt+shift+t";
+        command = "composer.decreaseEffort";
+      }
+      {
+        key = "ctrl+shift+x";
+        command = "thread.stop";
+      }
+    ]
+  );
+  mergeKeybindings = pkgs.writeShellScript "t3-code-keybindings" ''
+    set -eu
+    destination="$1"
+    ${pkgs.coreutils}/bin/mkdir -p "$(dirname "$destination")"
+    current=/dev/null
+    if [ -f "$destination" ]; then current="$destination"; fi
+    temporary=$(${pkgs.coreutils}/bin/mktemp "$destination.XXXXXX")
+    trap '${pkgs.coreutils}/bin/rm -f "$temporary"' EXIT
+    ${pkgs.jq}/bin/jq -s --slurpfile managed ${keybindings} '
+      (if length == 0 then [] else .[0] end) |
+      if type != "array" then error("T3 keybindings must be an array") else . end |
+      map(select(.command as $command | $managed[0] | all(.command != $command)))
+      + $managed[0]
+    ' "$current" > "$temporary"
+    ${pkgs.coreutils}/bin/mv "$temporary" "$destination"
+  '';
+  serverConfig = mergeConfig {
     name = "t3-code";
     path = "${config.home.homeDirectory}/.t3/userdata/settings.json";
     settings = {
@@ -194,7 +234,16 @@ in
         };
       };
     };
-  });
+  };
+in
+{
+  # Merge shortcuts and settings into the files T3 also writes.
+  home.activation.t3CodeConfig = lib.hm.dag.entryAfter [ "linkGeneration" ] (
+    serverConfig
+    + ''
+      run ${mergeKeybindings} ${lib.escapeShellArg "${config.home.homeDirectory}/.t3/userdata/keybindings.json"}
+    ''
+  );
 
   home.activation.t3CodeClientConfig = lib.hm.dag.entryAfter [ "linkGeneration" ] (mergeConfig {
     name = "t3-code-client";

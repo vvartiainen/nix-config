@@ -64,7 +64,10 @@ app-managed. The server watches the file, so no restart is needed.
 Nix also merges non-default UI preferences into `client-settings.json` in the
 same directory: notifications with sound, in-app notifications, links opening in
 T3, direct quit, proactive panels and hiding the **Open in** detail item.
-Keybindings and window bounds remain app-managed.
+Nix also merges the [T3 keybindings](keybindings.md#t3-code) into
+`keybindings.json`, replacing rules for managed commands and preserving other
+shortcuts. Window bounds remain app-managed. Close T3 before switching and
+reopen it afterwards to load the shortcuts.
 
 Managed preferences include provider paths and enabled providers, the default
 [permission mode](permissions.md#t3-code-permission-modes), model selections,
