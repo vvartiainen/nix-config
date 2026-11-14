@@ -74,8 +74,8 @@ Commands run in an OS sandbox (see
 
 - Writable: the workspace, `$TMPDIR`, `/tmp`, and `~/.cache/<tool>-agent`;
   package caches already point there. Use `/tmp` for scratch files.
-- Network: package download hosts only; other hosts need approval. Fetching
-  flake inputs from GitHub may need `github.com` approved.
+- Network: Codex allows ordinary internet access; other clients may restrict
+  access to package download hosts and require approval for other domains.
 - `nix build` and `nix fmt` require approval in Codex and Claude Code: builds
   run through the daemon outside the agent sandbox.
 - Codex and Claude Code run routine project commands inside their sandboxes

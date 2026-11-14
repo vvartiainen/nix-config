@@ -45,9 +45,10 @@ Writes remain scoped to its workspace, managed worktrees, scratch space and
 agent caches. Ordinary local Git rebases, resets and cleanup use the sandbox
 without an extra command prompt; destructive variants still have deny rules.
 The shell launch wrapper grants a linked worktree's shared Git metadata while
-keeping hooks and config read-only. App launches bypass that wrapper; a worktree
-outside the session's roots or shared Git metadata without a write grant still
-needs an explicit directory grant and a fresh session. Moving a worktree to
+keeping hooks and config read-only. This repository's shared Git metadata also
+has a persistent grant for app launches, which bypass that wrapper. Other
+repositories launched through an app still need an explicit metadata directory
+grant and a fresh session. Moving a worktree to
 `/tmp` does not grant writes to its shared Git metadata in the original repo.
 
 Claude CLI worktrees live under the repository's `.claude/worktrees`; Claude
@@ -139,8 +140,10 @@ before they can work.
 
 - Write in the workspace, `$TMPDIR`, `/tmp`, or `~/.cache/<tool>-agent`.
   Package cache variables already point there; do not redirect them.
-- Package download hosts are allowlisted. Other hosts need approval or a
-  sandbox bypass; exact behavior differs by client and mode.
+- Codex allows ordinary internet access while retaining filesystem restrictions
+  and command approvals. Local binding, upstream proxies and control sockets
+  remain restricted. Other clients use the package-download host allowlist or
+  their documented network policy.
 - Git status, diff, add and commit work. Hooks and Git config are protected
   where supported to keep them from becoming an escape route.
 - Normal caches and tool installations stay read-only. Install tools manually
@@ -206,6 +209,12 @@ Nixpkgs-built Go tools honor the configured certificate bundle; upstream Go
 binaries may still need escalation. Claude keeps the system certificate store
 plus the Nix CA bundle; a private CA override must include both private and Nix
 roots.
+
+Codex grants read access to `/System/Library/OpenSSL` for Node startup and adds
+the Nix CA bundle through `NODE_EXTRA_CA_CERTS`. `NODE_USE_SYSTEM_CA=0` avoids
+opting into macOS trust-store lookups through the environment. An explicit
+`--use-system-ca` flag can still request those lookups and produce sandbox
+warnings. TLS verification remains enabled.
 
 Shared policy is in [permissions.nix](../nix/modules/home/programs/ai/shared/permissions.nix);
 each CLI module renders its own adapter.

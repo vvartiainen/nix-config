@@ -11,7 +11,6 @@ let
   inherit (permissions)
     commands
     paths
-    network
     caches
     ;
   quote = s: ''"${s}"'';
@@ -19,9 +18,18 @@ let
   projects = builtins.dirOf repoRoot;
   # Local Git edits stay sandboxed. Other clients retain their own adapters.
   localGit = [
-    [ "git" "reset" ]
-    [ "git" "clean" ]
-    [ "git" "rebase" ]
+    [
+      "git"
+      "reset"
+    ]
+    [
+      "git"
+      "clean"
+    ]
+    [
+      "git"
+      "rebase"
+    ]
   ];
   toCodexRule =
     decision: cmd:
@@ -32,7 +40,7 @@ let
   permissionSettings = {
     approval_policy = "on-request";
     approvals_reviewer = "user";
-    # Domain rules are not enforced without the proxy.
+    # Keep local-network and socket restrictions enforced by the proxy.
     features.network_proxy = true;
 
     default_permissions = "workspace-only";
@@ -42,11 +50,9 @@ let
       extends = ":workspace";
       network = {
         enabled = true;
-        # Hosts outside the allowlist go through on-request approval. "limited"
-        # would also block non-GET methods and require HTTPS MITM, neither of
-        # which can be approved.
+        # Ordinary internet access is allowed. Keep filesystem restrictions
+        # and command review; "limited" also blocks non-GET methods.
         mode = "full";
-        domains = lib.genAttrs network.sandbox (_: "allow");
         allow_local_binding = false;
         allow_upstream_proxy = false;
         # Keep Rex and other user-session control sockets out of the sandbox.
@@ -94,6 +100,13 @@ let
         # Match Claude's project reads without granting sibling writes. Linked
         # worktrees need to read Git metadata outside their workspace root.
         "${projects}" = "read";
+        # App launches bypass the shell wrapper below. Worktrees of this
+        # checkout still need its shared Git metadata to create commits.
+        "${repoRoot}/.git" = "write";
+        "${repoRoot}/.git/hooks" = "read";
+        "${repoRoot}/.git/config" = "read";
+        # Node's OpenSSL startup probes this even for local commands.
+        "/System/Library/OpenSSL" = "read";
         # Managed worktrees can be created after the session starts, outside
         # its original workspace roots. Keep the grant within their directory.
         # Codex allows mid-path globs only for deny rules; linked worktrees
@@ -133,7 +146,12 @@ let
     # CLIs. The limit is in tokens, so revisit it when the model changes.
     model_auto_compact_token_limit = 400000;
     web_search = "live";
-    shell_environment_policy.set = caches.env;
+    shell_environment_policy.set = caches.env // {
+      # Avoid macOS trust-store lookups from sandboxed Node commands. Keep
+      # certificate verification and add the same Nix roots used by Go.
+      NODE_USE_SYSTEM_CA = "0";
+      NODE_EXTRA_CA_CERTS = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+    };
     # Keep @ focused on files; plugins and skills remain available through $.
     features.mentions_v2 = false;
     # MCP servers come from the projects (`ct agents`), not ChatGPT apps.
@@ -142,29 +160,37 @@ let
     skills.bundled.enabled = false;
     # Also record the individual choices shown by /skills. Use paths so a
     # project's skill with the same name is still available.
-    skills.config = map (name: {
-      path = "${config.home.homeDirectory}/.codex/skills/.system/${name}/SKILL.md";
-      enabled = false;
-    }) [
-      "review-agent"
-      "skill-creator"
-      "skill-installer"
-      "openai-docs"
-      "imagegen"
-    ];
+    skills.config =
+      map
+        (name: {
+          path = "${config.home.homeDirectory}/.codex/skills/.system/${name}/SKILL.md";
+          enabled = false;
+        })
+        [
+          "review-agent"
+          "skill-creator"
+          "skill-installer"
+          "openai-docs"
+          "imagegen"
+        ];
     # Keep these bundled plugins off; private marketplace choices stay mutable.
-    plugins = lib.genAttrs [
-      "codex-app-tools@openai-bundled"
-      "browser@openai-bundled"
-      "unified-computer-use@openai-bundled"
-      "computer-use@openai-bundled"
-      "visualize@openai-bundled"
-      "documents@openai-primary-runtime"
-      "pdf@openai-primary-runtime"
-      "spreadsheets@openai-primary-runtime"
-      "presentations@openai-primary-runtime"
-      "template-creator@openai-primary-runtime"
-    ] (_: { enabled = false; });
+    plugins =
+      lib.genAttrs
+        [
+          "codex-app-tools@openai-bundled"
+          "browser@openai-bundled"
+          "unified-computer-use@openai-bundled"
+          "computer-use@openai-bundled"
+          "visualize@openai-bundled"
+          "documents@openai-primary-runtime"
+          "pdf@openai-primary-runtime"
+          "spreadsheets@openai-primary-runtime"
+          "presentations@openai-primary-runtime"
+          "template-creator@openai-primary-runtime"
+        ]
+        (_: {
+          enabled = false;
+        });
 
     # Codex only supports built-in status line items (no custom command),
     # so mirror claude-statusline.sh as closely as possible.
