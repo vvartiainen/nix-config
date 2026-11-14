@@ -98,78 +98,29 @@ Use `hostName` for `<HOSTNAME>` in recipes; it defaults to `hostname` (or `HOST`
 if exported). Recipes stop with a hint when host data is missing.
 
 For routine agent validation, use the tracked public fixture instead of reading
-private host data; see [maintenance and validation](maintenance.md).
+private host data; see [agent validation](../AGENTS.md#validation-commands-no-apply).
 
-## Vicinae launcher trial
+## Vicinae launcher
 
-[Vicinae for macOS](https://docs.vicinae.com/install/macos) requires Apple
-Silicon and macOS 14.4 or newer; macOS support is currently beta. Homebrew installs the app; Nix
-manages preferences and launchd startup. The Homebrew build is used because
-the Nix build's Qt launcher breaks macOS permission checks. Homebrew removes
-Raycast during activation using `cleanup = "uninstall"`, preserving its
-settings and data. Raycast's Nix preference module is inactive.
+Vicinae is the daily launcher, opened with **Cmd+Space**. Homebrew installs it;
+Nix manages preferences and startup. Complete onboarding and grant the macOS
+permissions requested for the features you use. Leave Vicinae's separate login
+item disabled, since Home Manager starts it through launchd.
 
-1. Export Raycast's settings using its export command and store the backup
-   privately. Disable Raycast's launch at login, then quit it to release
-   Cmd+Space. Keep its local data and backup until the trial is accepted.
-2. Quit Vicinae and disable its login item. Keep a private backup of
-   launcher settings and data.
-   From the checkout containing this change, run
-   `just check <HOSTNAME>` and `just build <HOSTNAME>`, then apply manually
-   with `just switch <HOSTNAME>`.
-   A worktree still uses the private host's `repoRoot` for dotfile links.
-3. Home Manager starts Vicinae through launchd. Finish onboarding and grant
-   the macOS permissions it requests for the features you use. Leave the
-   app's separate login item disabled to avoid duplicate startup. Restart
-   with `launchctl kickstart -k gui/$(id -u)/org.nix-community.home.vicinae`
-   if you have quit it. The agent starts the app bundle's CLI directly with
-   the declared settings, so permissions are requested for Vicinae rather than
-   a shell. If Homebrew installs the app after the agent's first start,
-   restart it the same way.
-   The declared launcher shortcut `control+SPACE` in
-   `nix/modules/darwin/programs/vicinae.nix` is Cmd+Space, because Qt maps
-   `control` to Cmd on macOS.
-4. Recreate aliases, quicklinks and command shortcuts in Vicinae. Reinstall
-   needed extensions from its store integration and configure/sign in to each
-   again. [Raycast extension compatibility](https://docs.vicinae.com/) varies
-   by extension; test each workflow. Do not assume Raycast's settings export,
-   snippets or clipboard history can be imported. The existing skhd app and
-   window shortcuts work independently of either launcher.
-5. Test app launch, calculator, file search, clipboard history, your essential
-   extensions, the chosen launcher shortcut and startup after logging in
-   again. Keep Spotlight on Left Cmd+Option+Space as a fallback.
+Configure extensions and sign-ins in Vicinae. Managed preferences live in
+`nix/modules/darwin/programs/vicinae.nix` and override the corresponding GUI
+settings; extension credentials and app data stay local.
 
-The main workflows to verify during this trial:
+The managed **Eject All Disks** command asks Finder to eject disks without
+forcing busy volumes. Approve Finder control under Privacy & Security →
+Automation if prompted. Use **Reload Script Directories** if the command is
+missing, and check Finder before unplugging a drive.
 
-| Raycast workflow | Vicinae setup |
-| --- | --- |
-| System Settings | Search for **Sound**, **Bluetooth** or another pane in the launcher and select its System Settings result to open it directly. The built-in provider is enabled declaratively; test Sound on the real host. |
-| Clipboard history | Use the built-in Clipboard History command; assign a shortcut in settings. Copy fresh text and an image, then test search and paste. Existing Raycast history stays in Raycast. |
-| Amphetamine | The app remains installed through the existing App Store entry. Install the [Amphetamine extension](https://www.raycast.com/gstvds/amphetamine) through Vicinae's Raycast store integration and test starting/ending a session and a timed session. Compatibility is unverified; use Amphetamine's menu bar controls if needed. |
-| Eject all disks | Run the managed **Eject All Disks** script command. It asks Finder to eject its ejectable disks without forcing busy volumes. Approve Finder control under Privacy & Security → Automation if prompted. Test with a spare external drive; check Finder before unplugging. |
+If Vicinae has quit, restart it with:
 
-The script is linked under `~/.local/share/vicinae/scripts/`.
-Run **Reload Script Directories** if the eject command is missing after
-activation. Useful extras to try are the built-in calculator and file search;
-keep window management on the existing yabai/skhd bindings during the trial.
-
-Declare Vicinae preferences in `nix/modules/darwin/programs/vicinae.nix`.
-They are written to a Nix store JSON file passed as `VICINAE_OVERRIDES` to
-the launchd agent and login shells. These values take precedence over
-writable `~/.config/vicinae/settings.json`; GUI changes to unmanaged values
-remain local. Removing a declared value exposes the app's saved value again,
-including values saved by the previous merge helper. Keep app-specific data
-and extension credentials local; do not commit the live config. Emacs
-navigation enables
-Ctrl+N/P inside the launcher without depending on macOS's frontmost app.
-
-To return to Raycast, re-add `programs/raycast.nix` alongside
-`programs/vicinae.nix` in the host's imports and disable
-`launchd.agents.vicinae.enable`. Quit Vicinae, then validate and apply
-manually with Homebrew enabled to reinstall Raycast. Launch Raycast and
-restore its Cmd+Space shortcut and login setting. Its saved data remains
-available unless you explicitly zap it. See [manual Homebrew data cleanup](maintenance.md#homebrew-app-data)
-when accepting the migration; Nix rollback cannot restore deleted app data.
+```sh
+launchctl kickstart -k gui/$(id -u)/org.nix-community.home.vicinae
+```
 
 ## Opening files and directories
 

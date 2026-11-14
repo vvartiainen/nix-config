@@ -15,7 +15,7 @@ aliases also work in the app's navigation mode; other apps keep their own shortc
 | Left Cmd+Option+Space | Open Spotlight |
 | Ctrl+Cmd+Z / K / C / O / M / E | Open or focus Zen / Kitty / Calendar / Obsidian / Mail / Finder |
 | Ctrl+Shift+Space | Toggle the quick-access terminal |
-| Cmd+Space | Toggle Vicinae (see [launcher setup](setup.md#vicinae-launcher-trial)) |
+| Cmd+Space | Toggle Vicinae (see [launcher setup](setup.md#vicinae-launcher)) |
 | Ctrl+Cmd+U | Toggle CodexBar's usage menu |
 | Ctrl+Cmd+Shift+U | Toggle the quota dashboard |
 | Ctrl+Cmd+Shift+M | Toggle microphone input volume between zero and its previous level (requires SketchyBar) |

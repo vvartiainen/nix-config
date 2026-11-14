@@ -33,43 +33,28 @@ commands can read the clients' plugin caches to run packaged skill helpers.
 Rex's vendor bootstrap skill and hooks remain managed with its pinned CLI.
 Skills and plugins do not grant permissions; the active session policy applies.
 
+## GUI providers
+
+In T3 Code's provider settings, set **Binary path** to the absolute path of
+`~/.local/bin/claude` for Claude and `/etc/profiles/per-user/<user>/bin/pi` for
+sandboxed Pi. Expand `~` and replace `<user>` with your local home/user name.
+The Claude launcher selects `~/.claude` through `CLAUDE_CONFIG_DIR`; app-bundled
+or Homebrew binaries invoked directly bypass it.
+
+Choose **Auto-accept edits** for Codex and Claude to keep sandbox escapes
+reviewed by you. Set the default under **Settings → Threads → New threads →
+Permissions**, and change existing threads separately. **Auto** uses automatic
+review; **Full access** removes the ordinary approval boundary. T3 injects its
+own MCP endpoint and allows its Claude tool namespace; Codex tool-specific
+prompts remain separate from shell approvals. See [T3 permission modes](https://github.com/pingdotgg/t3code/blob/main/docs/user/permission-modes.md).
+
+Sandboxed Pi cannot reach T3's local MCP endpoint or escape after approval.
+Run blocked operations manually or use Codex/Claude; see [Pi's limits](agent-permissions.md#pi).
+
 ## Global cleanup
 
 Close agent CLIs before switching so they cannot write stale settings back.
-
-Claude Code keeps its global state in `~/.claude/.claude.json` through
-`CLAUDE_CONFIG_DIR`. The managed `claude` launcher at `~/.local/bin/claude`
-defaults this variable before running the Homebrew CLI, preserving explicit
-overrides. GUI apps must use this launcher; invoking the Homebrew binary or
-an app-bundled binary directly bypasses it. The first
-switch moves `~/.claude.json` and its backups there; if a destination already
-exists, resolve the conflicting files before switching again. Restart Claude
-from a new terminal after switching.
-
-GUI apps do not depend on a session-global launchd PATH. In T3 Code's provider
-settings, set **Binary path** to the absolute path of `~/.local/bin/claude`
-for Claude and `/etc/profiles/per-user/<user>/bin/pi` for sandboxed Pi.
-Expand `~` and replace `<user>` with your local home/user name. Use
-`~/.local/bin/pi-unsandboxed` only when intentionally giving T3's Pi sessions
-access without Safehouse; T3's approval prompts are then the boundary.
-See [T3's Pi setup](https://github.com/pingdotgg/t3code/blob/main/docs/user/providers-pi.md).
-
-For Codex and Claude in T3 Code, choose **Auto-accept edits** to allow routine
-workspace work while keeping sandbox escapes reviewed by you. Set the default
-under **Settings → Threads → New threads → Permissions**, and change existing
-threads separately. **Auto** uses automatic review; **Full access** removes the
-ordinary approval boundary. T3 injects its own MCP endpoint and allows its Claude
-tool namespace; do not register a global endpoint or grant shell access to its
-local port to make those tools work. Tool-specific prompts in Codex remain
-separate from shell approvals. See [T3 permission modes](https://github.com/pingdotgg/t3code/blob/main/docs/user/permission-modes.md).
-
-Pi's approvals stay inside Safehouse. Use Codex or Claude for approved escapes,
-or run blocked operations manually outside Pi. See [Pi's sandbox limits](agent-permissions.md#pi).
-
-After first applying the removal of the old launchd environment settings,
-reboot before testing GUI apps. Removing the Nix options does not clear values
-already set in the running launchd session. Confirm provider discovery and
-Claude's config directory again after reboot.
+Restart them afterwards to load the new configuration.
 
 Every switch removes global MCP registrations, then restores declared Rex and
 Herdr integrations. Skills, plugins, marketplace choices, project tools,

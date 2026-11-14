@@ -16,18 +16,9 @@ See [setup](setup.md#host-data) for host selection and
 for coverage. The package diff includes all pending Nix changes; it excludes
 Homebrew and mise updates.
 
-Agents choose targeted checks, fixture evaluation or a build according to
-[AGENTS.md](../AGENTS.md). For Nix module evaluation, use the public fixture:
-
-```sh
-statix check .
-nix eval --raw '.#darwinConfigurations.agent-fixture.system.drvPath' \
-  --override-input host "path:$PWD/nix/fixtures/host"
-```
-
-The fixture covers public configuration only. It excludes private modules,
-real identity and nested virtualization. Never activate it. Documentation-only
-changes need diff review and `git diff --check`, without a system build.
+Agent validation commands and public-fixture limits live in
+[AGENTS.md](../AGENTS.md#validation-commands-no-apply). Agents never use private
+host data or apply a system configuration.
 
 ## Repository checks
 
@@ -48,17 +39,10 @@ apply the configuration manually to install the tool set and `nix-config-check`,
 which runs the same checker with its Nix-provided tools.
 
 After applying, start fresh Codex, Claude and Copilot sessions to load the
-repository validation hooks; approve them in the agent UI if requested. The
-hooks only run here and in this checkout's worktrees, include files committed
-since the current prompt, and ask the agent to address failures once before
-finishing. They do not run Nix evaluation, builds or automatic fixes. Relevant
-behavior tests and private-host validation remain separate.
-
-Validation tooling and its agent hook handlers live in `nix/validation/`.
-Agent hook registration and installation live in
-`nix/modules/home/programs/ai/hooks/agent-hooks.nix`. Terminal status and repository
-validation register their handlers separately through `agentHooks`; the shared
-installer combines them and preserves unrelated user and integration hooks.
+repository validation hooks; approve them in the agent UI if requested.
+They run the fast checks before the agent finishes, including commits made
+since the current prompt. Scope, failure handling and required follow-up checks
+are defined in [AGENTS.md](../AGENTS.md#validation-commands-no-apply).
 
 ## Updates and rollback
 
@@ -93,18 +77,16 @@ Use `type -a <tool>` to diagnose competing installations.
 Activation uses `homebrew.onActivation.cleanup = "uninstall"`: undeclared
 Homebrew packages are removed, while cask preferences and app data are kept
 for rollback. Review and delete that data manually after accepting a removal.
-For example, after the Vicinae migration is accepted:
+To remove saved data for a removed cask, replace `CASK_NAME` below:
 
 ```sh
-brew uninstall --cask --zap --force raycast
+brew uninstall --cask --zap --force CASK_NAME
 ```
 
 `--force` allows zapping an already uninstalled cask. Zap removes the files
 listed by the cask, which can include shared files; back up anything needed
 first. See [Homebrew's uninstall options](https://docs.brew.sh/Manpage#uninstall-remove-rm-options-installed_formulainstalled_cask-).
-Do not zap Vicinae while it is in use: the cask's zap removes its local
-settings and data. `brew cleanup` only removes old downloads and package
-versions; it does not replace a cask zap.
+`brew cleanup` removes old downloads and package versions, not saved app data.
 
 ## Linux builders and containers
 
@@ -213,5 +195,3 @@ Each agent host needs its own Rex server. Add each host separately in the Mac
 app, iPhone and CLI; the Mac is not a proxy for Linux sessions. Keep enrollment
 state and pairing addresses private. Check access after a server restart and
 from the phone on cellular before relying on it.
-
-Tailscale enrollment, persistent personal Linux servers and VM state handling:

@@ -28,7 +28,8 @@ unrelated files. Hooks do not replace the scoped validation below or relevant
 behavior tests. See [maintenance](docs/maintenance.md#repository-checks).
 
 Use the tracked `nix/fixtures/host` input for Nix verification. Run commands
-from the repository root. For module evaluation without building:
+from the repository root. Do not run `just init-host` or migrate host data to
+make validation work. For module evaluation without building:
 
 ```sh
 statix check .
@@ -49,7 +50,9 @@ nix build --no-link '.#darwinConfigurations.agent-fixture.system' \
 ```
 
 The fixture contains only synthetic identity and paths, with nested
-virtualization disabled and no private modules. Do not read
+virtualization disabled and no private modules. Its `repoRoot` is a synthetic
+path for generated dotfile links and does not need to exist. Never apply the
+fixture system or change `flake.lock` for it. Do not read
 `~/.config/nix-config-host` or request access to it for routine validation.
 Pass the fixture override on every Nix invocation; it implies
 `--no-write-lock-file`. Never commit real host names, usernames or
@@ -62,7 +65,9 @@ Neither replaces an explicit system evaluation or build.
 
 Host-specific `just` recipes use private host data and are for the user's manual
 validation. Agents use `just lint` and the direct Nix commands above. Direct
-`nix build --no-link` leaves no result symlink.
+`nix build --no-link` leaves no result symlink. Report that fixture verification
+covers public configuration only; private modules, real identity and nested
+virtualization require manual host validation.
 
 Do not run apply commands (for example `just switch <hostName>` or
 `darwin-rebuild switch`); user applies manually.
@@ -89,27 +94,16 @@ Commands run in an OS sandbox (see
   (`mise install`) are off-limits; ask the user.
 - Avoid interactive commands; pass non-interactive flags.
 
-## Validation in a restricted agent session
+## Additional validation constraints
 
-- Use `nix/fixtures/host` directly; no private host input or temporary host
-  directory is needed. Do not run `just init-host` or migrate host files just
-  to get validation working.
-- Report that fixture validation covers the public configuration only. It
-  does not validate private modules, real machine identity or nested
-  virtualization. The fixture's `repoRoot` is a synthetic path for generated
-  dotfile links; it does not need to exist. Never apply the fixture system.
-  Do not change `flake.lock` for the fixture.
-- Use small temporary consumer flakes for testing direct Home Manager imports
-  on Linux or macOS. Pin their inputs to this checkout and its existing inputs;
-  keep temporary locks, results and generic users outside this repo.
-- The user validates their private host configuration manually before
-  applying it. Fixture validation does not require wider filesystem access;
-  normal build and network approval rules still apply.
+- Test direct Home Manager imports with small temporary consumer flakes pinned
+  to this checkout and its existing inputs. Keep locks, results and generic users
+  outside this repo.
 - Do not rerun a permission-blocked formatter when the user has asked to skip
   formatting. Keep edits readable and run `git diff --check`.
-- For helper scripts, check `type -a python3` and prefer an already-installed
-  Python executable over a mise shim when it emits unrelated cache/state
-  permission warnings. Do not change tool-manager permissions just to hide logs.
+- For helper scripts, check `type -a python3` and prefer an installed executable
+  over a mise shim when it emits unrelated cache/state permission warnings.
+  Do not change tool-manager permissions just to hide logs.
 
 ## Working conventions
 

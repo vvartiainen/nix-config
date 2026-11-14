@@ -32,7 +32,7 @@ just rollback             # return to the previous system generation
 just clean                # remove generations older than 7 days and collect garbage
 ```
 
-See the [maintenance guide](docs/maintenance.md) for fixture validation,
+See the [maintenance guide](docs/maintenance.md) for repository checks,
 generation selection, Linux builds, backups, and desktop notes.
 Agents follow [AGENTS.md](AGENTS.md) and use the public fixture for validation.
 
