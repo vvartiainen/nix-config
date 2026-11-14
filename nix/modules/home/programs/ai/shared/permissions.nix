@@ -34,6 +34,8 @@ let
   commands = {
     inherit rexExecutables;
     inspection = argv [
+      # Fixed scratch-lock resolver; no arbitrary Nix flags or repo writes.
+      "flake-update-preview"
       "git status"
       "git diff"
       "git log"
@@ -620,6 +622,8 @@ let
       "channels.nixos.org"
       # The Rex flake input's tarball, fetched by flake evaluation.
       "pkgs.superlogical.com"
+      # Exact Rex tarball redirect target (Vercel Blob).
+      "wthziax2yejsqc4k.public.blob.vercel-storage.com"
       "pypi.org"
       "files.pythonhosted.org"
       "index.crates.io"

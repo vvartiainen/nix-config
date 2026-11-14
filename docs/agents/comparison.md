@@ -58,6 +58,7 @@ each use, and **denied** means no approval can allow it.
 | Nix build, run, develop and store | Asks | Asks | Asks | Asks | Asks | Fails |
 | Installs, publishing, `sudo`, `ssh`, `open`, `tofu apply` | Asks | Asks | Asks | Asks | Asks | Asks; fails where it needs a host service |
 | `git push`, forge writes | Asks | Asks | Asks | Asks | Asks | Asks; SSH and tokens fail |
+| [Flake update preview](permissions.md#flake-update-previews) | Runs outside sandbox | Runs outside sandbox (T3 may ask) | Approved retry | Approved retry | Runs, unsandboxed | Fails |
 | `git fetch` from a configured remote | Runs | Asks | Asks | Asks | Asks | Asks; SSH fails |
 | `gh` and `fj` read-only views | Runs | Runs | Approved retry | Approved retry | Runs | Fails without a token |
 | Rex, Kitty, Incus | Rex always asks; others ask beyond help and listings | Always asks | Asks beyond help and listings | Asks beyond help and listings | Asks beyond help and listings | Asks, then fails |

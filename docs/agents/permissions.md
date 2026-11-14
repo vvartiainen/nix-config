@@ -75,6 +75,43 @@ metadata and need an approved run outside the sandbox.
 
 For this repository's validation rules, use [AGENTS.md](../../AGENTS.md).
 
+## Flake update previews
+
+Agents preview newer pins of the applied configuration with:
+
+```sh
+flake-update-preview
+flake-update-preview nixpkgs home-manager
+```
+
+The installed wrapper accepts only plain input names (excluding `host`) and pins
+both the Nix executable and four small store sources: `flake.nix`, `flake.lock`,
+`nix/host-unset` and `nix/fixtures/host` from the configuration build. It copies
+them into a fresh private directory, rejecting symlinks, and resolves with the
+synthetic fixture override. It never reads the working directory's flake or
+fixture, builds or applies. Rebuild and apply to preview changed flake definitions.
+
+It atomically replaces `/private/tmp/flake-update-review/flake.lock.new`; the
+output directory must be owned by you with mode 0700 and cannot be a symlink.
+The repository lock stays untouched. The output restores the embedded lock's
+original `host` node (normally `path:./nix/host-unset`), so the fixture does not
+appear in lock diffs. Resolution contacts the embedded inputs outside the sandbox
+and adds fetched sources to the Nix store.
+
+The shared inspection policy allows this fixed wrapper. Claude excludes it
+from the sandbox and allows it without prompting; terminal Codex also allows
+it outside the sandbox. Cursor and Copilot retain their sandbox and need an
+approved retry for GitHub downloads. OpenCode allows it without OS isolation;
+Pi cannot reach the Nix daemon. T3's Codex sandbox override can still ask.
+Raw `nix flake update` stays reviewed. GitHub is not added to sandboxed Bash.
+
+The package download allowlist includes `pkgs.superlogical.com` and its exact
+Rex tarball redirect host, `wthziax2yejsqc4k.public.blob.vercel-storage.com`.
+Claude, Cursor and Copilot render this shared list; Codex and Pi already allow
+ordinary internet access. No Vercel wildcard is granted. Like any host grant,
+the exact host can receive requests from sandboxed commands, so it is limited
+to the known download endpoint.
+
 ## Secrets
 
 Agents never see secret values; the tool that needs a credential fetches it

@@ -22,7 +22,7 @@ class BehaviorRunnerTests(unittest.TestCase):
         ):
             self.assertEqual(runner.main(), 0)
         commands = [call.args[0] for call in run.call_args_list]
-        self.assertEqual(len(commands), 7)
+        self.assertEqual(len(commands), 8)
         self.assertTrue(all("unittest" in command for command in commands))
         self.assertFalse(any("test_pi_safehouse.py" in command for command in commands))
 
@@ -31,11 +31,11 @@ class BehaviorRunnerTests(unittest.TestCase):
             patch.object(runner.sys, "argv", [str(SCRIPT)]),
             patch.object(runner.subprocess, "run", side_effect=[
                 subprocess.CompletedProcess([], 1),
-                *[subprocess.CompletedProcess([], 0) for _ in range(6)],
+                *[subprocess.CompletedProcess([], 0) for _ in range(7)],
             ]) as run,
         ):
             self.assertEqual(runner.main(), 1)
-            self.assertEqual(run.call_count, 7)
+            self.assertEqual(run.call_count, 8)
 
     def test_full_mode_without_fixture_fails_instead_of_skipping_policy(self):
         with (

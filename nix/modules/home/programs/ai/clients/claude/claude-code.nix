@@ -31,6 +31,8 @@ let
   unsandboxedPrograms = [
     "gh"
     "fj"
+    # Fixed scratch lock output; allow via shared inspection rules.
+    "flake-update-preview"
     # Need fj's keychain token and the 1Password app; both stay reviewed.
     "fj-edit-body"
     "op-item-from-secret"
@@ -59,7 +61,11 @@ let
         lib.filter (cmd: lib.head cmd != "rex") commands.hostExact
       )
       ++ map (cmd: "Bash(${commandString cmd}:*)") commands.fetch
-      ++ [ "Read(//nix/store/**)" ]
+      # Keep the no-argument scheduled invocation explicit too.
+      ++ [
+        "Bash(flake-update-preview)"
+        "Read(//nix/store/**)"
+      ]
       # WebFetch allows also widen the Bash sandbox's network allowlist.
       ++ map (domain: "WebFetch(domain:${domain})") network.sandbox
       # Projects list these in .mcp.json (`ct agents sync`).
@@ -230,6 +236,7 @@ let
       # Git fetches need the SSH agent, which the sandbox blocks.
       excludedCommands =
         map (exe: "${exe} *") (unsandboxedPrograms ++ commands.rexExecutables)
+        ++ [ "flake-update-preview" ]
         ++ lib.concatMap (cmd: [
           (commandString cmd)
           "${commandString cmd} *"
