@@ -59,14 +59,25 @@ For this repository's validation rules, use [AGENTS.md](../../AGENTS.md).
 
 ## T3 Code permission modes
 
-Choose **Auto-accept edits** for Codex and Claude to keep sandbox escapes
-reviewed by you. Set the default under **Settings → Threads → New threads →
-Permissions**, and change existing threads separately. **Auto** uses automatic
+New threads default to **Auto-accept edits** to keep sandbox escapes reviewed
+by you. Project overrides and existing threads retain their selected modes;
+change those separately in T3. **Auto** uses automatic
 review; **Full access** removes the ordinary approval boundary. T3 injects its
 own MCP endpoint and allows its Claude tool namespace; Codex tool-specific
 prompts remain separate from shell approvals. See [T3 permission modes](https://github.com/pingdotgg/t3code/blob/main/docs/user/permission-modes.md).
-Provider binary paths are set once during
-[new Mac setup](../runbooks/new-mac.md#after-the-first-activation).
+The default Codex, Claude and Pi provider paths and new-thread permission mode
+are merged into `~/.t3/userdata/settings.json` during activation. Close T3 before
+applying and restart it afterwards. Other instances and app-managed settings
+are preserved; declared values are restored on each apply. Custom T3 home
+directories are not managed.
+
+Claude uses `~/.local/bin/claude` and Pi uses the sandboxed executable in the
+Home Manager profile. Codex uses the Homebrew CLI with the launch argument
+`-c 'default_permissions=":workspace"'` to avoid shell startup failures with
+custom permission profiles ([T3 #16458](https://github.com/pingdotgg/t3code/issues/16458)).
+This retains workspace sandboxing but gives T3's Codex broader reads without
+our custom secret-file denies and network restrictions. Terminal Codex keeps
+its custom profile. No separate launcher or Codex home is needed.
 
 Sandboxed Pi cannot reach T3's local MCP endpoint or escape after approval.
 Run blocked operations manually or use Codex/Claude; see [Pi's limits](#pi).

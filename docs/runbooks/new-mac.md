@@ -76,12 +76,9 @@ license must be accepted before `xcodebuild` and some Homebrew formulas work.
 - Run `rex terminfo setup` once for the SSH fallback, then
   [select the Rex theme](../programs/rex.md#theme) and
   [add remote hosts](../programs/rex.md#remote-access).
-- In T3 Code's provider settings, set **Binary path** to the absolute path of
-  `~/.local/bin/claude` for Claude and `/etc/profiles/per-user/<user>/bin/pi`
-  for sandboxed Pi. Expand `~` and replace `<user>` with your local home/user
-  name. The Claude launcher selects `~/.claude` through `CLAUDE_CONFIG_DIR`;
-  app-bundled or Homebrew binaries invoked directly bypass it. Then choose the
-  [permission mode](../agents/permissions.md#t3-code-permission-modes).
+- Open T3 Code after activation and sign in to the providers you use. Default
+  provider paths and new-thread permissions are configured automatically; see
+  [T3 Code permission modes](../agents/permissions.md#t3-code-permission-modes).
 - Sign in to Codex and Claude Code so [CodexBar](../agents/sessions.md#quotas)
   can read quotas.
 - Install the [Apple Intelligence profile](#apple-intelligence-profile).

@@ -16,6 +16,7 @@ in
     ./shared/mcp.nix
     ./clients/opencode.nix
     ./clients/pi/pi-coding-agent.nix
+    ./clients/t3-code.nix
     ../../../../validation/repository-check-hooks.nix
   ];
 
