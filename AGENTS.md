@@ -123,6 +123,9 @@ Commands run in an OS sandbox (see
   - If external dependencies were added or needed
   - If you deviated from some of our earlier decisions
 - Also inform if you ran into some permission issues that could be fixed
+- Clearly list any commands the user must run manually in the final response,
+  using copyable code blocks with the required working directory and purpose.
+  Distinguish remaining commands from commands already completed.
 - Propose AGENTS.md improvements if you ran into permission issues and had to workaround them
 
 ## Documentation
