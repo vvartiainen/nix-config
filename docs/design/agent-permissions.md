@@ -11,8 +11,9 @@ paths and diagnostics are in [agent permissions](../agents/permissions.md).
   enabled; avoid blanket runner approvals and control-socket grants. Existing
   narrow allowances, such as Claude's read-only `gh` commands, still apply.
 - Review installs, publishing, remote writes, privileged operations and host
-  control. Keep secret-file restrictions, destructive-command denies and TLS
-  verification; do not use another tool to evade a denial.
+  control, apart from a narrow sandbox-bounded routine flow such as Pi's branch
+  push and pull-request body. Keep secret-file restrictions, destructive-command
+  denies and TLS verification; do not use another tool to evade a denial.
 - Treat shell, file-tool and MCP permissions separately: host apps and servers
   may act outside the shell sandbox. Skills and available tools grant no access.
 

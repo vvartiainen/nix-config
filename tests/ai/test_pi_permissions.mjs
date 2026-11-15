@@ -44,6 +44,24 @@ try {
     ["cd nix && rm -rf result", "allow"],
     ["npm publish", "ask"],
     ["git push origin main", "ask"],
+    ["git fetch origin", "allow"],
+    ["git fetch origin main --quiet", "allow"],
+    ["git fetch origin --upload-pack='sh -c id'", "ask"],
+    ["git fetch https://example.com/repo", "ask"],
+    ["git push origin t3/example", "allow"],
+    ["git push -u origin t3/example", "allow"],
+    ["git push origin --delete t3/example", "ask"],
+    ["git push origin --mirror", "ask"],
+    ["git push origin --prune", "ask"],
+    ["git push origin main:main", "ask"],
+    ["git push origin +main", "ask"],
+    ["git push origin t3/example --force", "deny"],
+    ["git push -u origin t3/example -f", "deny"],
+    ["git push origin t3/example -qf", "ask"],
+    ["fj pr create --base main --head t3/example", "allow"],
+    ["fj pr edit 47 body text", "allow"],
+    ["fj pr merge 47", "ask"],
+    ["fj issue create --help", "ask"],
     ["nix build .#system", "ask"],
     ["nix run .#system", "ask"],
     ["nix develop", "ask"],
@@ -80,7 +98,7 @@ try {
   }
   assert.equal(manager.getToolPermission("mcp__rex__run"), "ask");
   assert.equal(manager.getToolPermission("unknown_extension_tool"), "ask");
-  for (const tool of ["web_enable", "web_search", "source_check", "fetch_content", "get_search_content"]) {
+  for (const tool of ["tool_search", "web_enable", "web_search", "source_check", "fetch_content", "get_search_content"]) {
     assert.equal(manager.getToolPermission(tool), "allow", tool);
   }
   assert.equal(manager.getToolPermission("read"), "allow");

@@ -157,8 +157,10 @@ let
       "git rebase"
     ];
 
-    # Host-side delegation, remote mutations and installation always need
-    # review, even if networking or the filesystem would permit them.
+    # Host-side delegation, remote mutations and installation need review, even
+    # if networking or the filesystem would permit them. A client may allow a
+    # narrower sandbox-bounded routine workflow on top of this list; Pi's
+    # routine forge flow is in pi-sandbox.nix.
     review = argv [
       "nix fmt"
       "nix build"

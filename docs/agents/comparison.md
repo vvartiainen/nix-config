@@ -15,7 +15,7 @@ each use, and **denied** means no approval can allow it.
 | The same, with downloads from arbitrary hosts | Codex in the terminal | Sandboxed with ordinary internet access |
 | T3 work that needs a Codex model | Codex in T3 | Use the [T3 permission mode guidance](permissions.md#t3-code-permission-modes) |
 | Code you do not trust, or an untrusted extension or MCP server | Pi | The whole process is confined and no approval can leave the sandbox |
-| Nix builds, pushes, forge writes, `tofu apply`, local dev servers | Claude Code or Codex | They can run one approved command outside the sandbox; Pi cannot |
+| Nix builds, pushes to other remotes, `tofu apply`, local dev servers | Claude Code or Codex | They can run one approved command outside the sandbox; Pi cannot |
 | Cursor or Copilot models | Cursor, Copilot | Sandboxed like Claude, but `gh`, `fj` and fetches need an approved retry |
 | OpenCode models | OpenCode, on trusted repositories only | No OS sandbox: its command rules are the only boundary, so read each prompt |
 
@@ -57,9 +57,9 @@ each use, and **denied** means no approval can allow it.
 | Tests, builds, `git add`, `git commit`, `rm`, `just` | Runs | Runs | Runs; pipes, variables and redirects ask | Listed runners and `just lint` run; the rest asks | Asks | Runs |
 | Nix build, run, develop and store | Asks | Asks | Asks | Asks | Asks | Fails |
 | Installs, publishing, `sudo`, `ssh`, `open`, `tofu apply` | Asks | Asks | Asks | Asks | Asks | Asks; SSH works through the agent, other host services fail |
-| `git push`, forge writes | Asks | Asks | Asks | Asks | Asks | Asks; uses the SSH agent or the [restricted forge token](permissions.md#secrets) |
+| `git push`, forge writes | Asks | Asks | Asks | Asks | Asks | Branch pushes to `origin` and PR create/edit run; merges, other remotes and destructive remote forms ask |
 | [Flake update preview](permissions.md#flake-update-previews) | Runs outside sandbox | Runs outside sandbox (T3 may ask) | Approved retry | Approved retry | Runs, unsandboxed | Fails |
-| [`git fetch` from a configured remote](permissions.md#working-in-the-sandboxes) | Runs | Asks | Asks | Asks | Asks | Asks; HTTPS with the forge token, or the agent |
+| [`git fetch` from a configured remote](permissions.md#working-in-the-sandboxes) | Runs | Asks | Asks | Asks | Asks | Runs for `origin`; other remotes ask |
 | `gh` and `fj` read-only views | Runs | Runs | Approved retry | Approved retry | Runs | `fj` runs with the forge token; `gh` fails |
 | Rex, Kitty, Incus | Rex always asks; others ask beyond help and listings | Always asks | Asks beyond help and listings | Asks beyond help and listings | Asks beyond help and listings | Asks, then fails |
 | `op read`, keychain lookups, force push, `git reset --hard`, `git clean -f`, disk erase | Denied | Denied, exact prefixes only | Denied | Denied, exact prefixes only | Denied | Denied |
