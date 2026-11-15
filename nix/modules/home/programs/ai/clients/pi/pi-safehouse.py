@@ -1,11 +1,13 @@
 """Launch all of Pi inside Safehouse with the repository's final-deny policy."""
 
+import ipaddress
 import json
 import os
 from pathlib import Path
 import subprocess
 import sys
 import tempfile
+from urllib.parse import urlsplit
 
 
 def sb_string(value):
@@ -38,6 +40,50 @@ def resolved_path(value):
     return ":".join(entries)
 
 
+def loopback_service(url):
+    """The TCP port of a URL naming a loopback host, otherwise None.
+
+    Only loopback URLs qualify: a host app that serves its tools on another
+    address already reaches the sandbox through the ordinary network grant.
+    """
+    try:
+        parts = urlsplit(url)
+        host = parts.hostname
+        port = parts.port
+    except ValueError:
+        return None
+    if not host or port is None:
+        return None
+    try:
+        address = ipaddress.ip_address(host)
+    except ValueError:
+        if host != "localhost":
+            return None
+    else:
+        if not address.is_loopback:
+            return None
+    return port
+
+
+def loopback_deny(service):
+    """Deny host-local TCP, except the port an injected tool endpoint uses.
+
+    T3 Code runs its MCP endpoint on the host loopback interface and hands Pi
+    the URL in T3_MCP_URL. Excluding that one port keeps Pi's T3 tools usable
+    while every other host service, including the Nix daemon and Rex, stays
+    unreachable. The endpoint keeps its bearer token, and the exclusion applies
+    to child commands too: they can reach that port but nothing else on the
+    host.
+    """
+    deny = '(remote ip "localhost:*")'
+    if service is None:
+        return f"(deny network-outbound {deny})"
+    return (
+        "(deny network-outbound (require-all "
+        f'{deny} (require-not (remote ip "localhost:{service}"))))'
+    )
+
+
 def worktree_git_dirs(workdir):
     try:
         common, current = [
@@ -52,7 +98,24 @@ def worktree_git_dirs(workdir):
     return [common, current] if common != current else []
 
 
-def make_profile(spec, workdir, tmpdir):
+def ssh_agent_sockets():
+    """Agent sockets the host offers, in raw and resolved spellings.
+
+    Safehouse's `ssh` integration grants its own agent paths and denies `~/.ssh`
+    key material, but a host app can hand over any socket through SSH_AUTH_SOCK
+    (1Password, launchd). Grant exactly that path and no other host socket.
+    """
+    value = os.environ.get("SSH_AUTH_SOCK", "")
+    if not value:
+        return []
+    paths = []
+    for path in (str(Path(value).resolve()), value):
+        if path and path not in paths and Path(path).exists():
+            paths.append(path)
+    return paths
+
+
+def make_profile(spec, workdir, tmpdir, t3_service=None, ssh_sockets=()):
     writable = [workdir, tmpdir, "/tmp", "/private/tmp", "/dev", *spec["writable"]]
     extensions = f'{spec["agentDir"]}/extensions'
     extension_logs = f"{extensions}/pi-permission-system/logs"
@@ -77,18 +140,44 @@ def make_profile(spec, workdir, tmpdir):
         # extension's review log is the only write this directory needs.
         "(deny file-write* (require-all "
         f"{subpath(extensions)} (require-not {subpath(extension_logs)})))",
-        r'(deny file-write* (regex #"/\.git/(config$|hooks(/|$))"))',
         r'(deny file-read* file-write* (regex #"/[^/]+\.(pem|key)$"))',
         r'(deny file-read* file-write* (require-all '
         r'(regex #"/\.env($|\.)") (require-not (regex #"/\.env\.example$"))))',
+        # The agent signs with a key the sandbox never reads, so only its socket
+        # and the directories leading to it are granted. Safehouse's ssh
+        # integration supplies the rest of the connection files.
+        *(
+            [f"(allow file-read* (literal {sb_string(path)}))" for path in ssh_sockets]
+            + [
+                "(allow file-read-metadata\n"
+                + "\n".join(
+                    f"  (literal {sb_string(ancestor)})"
+                    for ancestor in sorted(
+                        {
+                            str(parent)
+                            for path in ssh_sockets
+                            for parent in Path(path).parents
+                            if str(parent) != "/"
+                        }
+                    )
+                )
+                + ")"
+            ]
+            if ssh_sockets
+            else []
+        ),
         # Do not grant access to host daemons, including the Nix daemon and Rex,
-        # through UNIX sockets. DNS uses Safehouse's separate resolver grant.
-        '(deny network-outbound (require-all (remote unix-socket) '
-        '(require-not (literal "/private/var/run/mDNSResponder"))))',
+        # through UNIX sockets. DNS uses Safehouse's separate resolver grant, and
+        # the SSH agent socket is the one credential a host app hands over.
+        "(deny network-outbound (require-all (remote unix-socket) "
+        '(require-not (literal "/private/var/run/mDNSResponder"))'
+        + "".join(f" (require-not (literal {sb_string(path)}))" for path in ssh_sockets)
+        + ")",
         # Seatbelt's localhost selector covers host addresses (IPv4 and IPv6),
         # not arbitrary LAN CIDRs. Keep host TCP/UDP services unreachable even
-        # through bash or an extension; DNS still uses mDNSResponder above.
-        '(deny network-outbound (remote ip "localhost:*"))',
+        # through bash or an extension, apart from the endpoint a host app
+        # injects tools on; DNS still uses mDNSResponder above.
+        loopback_deny(t3_service),
     ])
     return "\n".join(profile) + "\n"
 
@@ -116,10 +205,18 @@ def main():
     # Grant only their Git metadata, not the main checkout's source files.
     git_dirs = worktree_git_dirs(workdir)
     spec["writable"].extend(git_dirs)
+    # Repositories that already exist keep their hooks and config read-only, so
+    # sandboxed code cannot instrument a later unsandboxed `git` run. Creating
+    # new repositories in the workspace or scratch is ordinary work.
     for directory in git_dirs:
         spec["protected"].extend(
             str(Path(directory) / name) for name in ("config", "config.worktree", "hooks")
         )
+    pointer = Path(workdir) / ".git"
+    if pointer.is_file():
+        # A linked worktree points at its Git directory through this file;
+        # rewriting it would redirect every later invocation.
+        spec["protected"].append(str(pointer))
     # Safehouse requires every explicit grant to exist. Read grants include
     # optional probes such as ~/.gitconfig and profile links; skip absent or
     # broken links without widening access to their parent directories.
@@ -130,7 +227,10 @@ def main():
         Path(path).mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="pi-safehouse-") as scratch:
         overlay = Path(scratch) / "policy.sb"
-        overlay.write_text(make_profile(spec, workdir, tmpdir))
+        t3_service = loopback_service(os.environ.get("T3_MCP_URL", ""))
+        overlay.write_text(
+            make_profile(spec, workdir, tmpdir, t3_service, ssh_agent_sockets())
+        )
         # Safehouse sanitizes the inherited environment; pass only the selected
         # API key, our cache variables and T3's session variables. T3 Code drives
         # Pi over RPC and hands its MCP endpoint, runtime mode and injected
@@ -141,10 +241,20 @@ def main():
             if not key.startswith("SAFEHOUSE_") and key not in ("BASH_ENV", "ENV")
         }
         env.update(spec["env"])
-        env["PATH"] = resolved_path(env.get("PATH", ""))
+        # A host app may put sandbox-only commands first, e.g. a wrapper that
+        # points an app-managed CLI at the sandbox's own credential store.
+        env["PATH"] = resolved_path(
+            ":".join([*spec.get("pathPrepend", []), env.get("PATH", "")])
+        )
         env["PI_CODING_AGENT_DIR"] = spec["agentDir"]
         t3_env = sorted(key for key in os.environ if key.startswith("T3_"))
-        passed = ["DEEPSEEK_API_KEY", "PI_CODING_AGENT_DIR", *spec["env"], *t3_env]
+        passed = [
+            "DEEPSEEK_API_KEY",
+            "PI_CODING_AGENT_DIR",
+            "SSH_AUTH_SOCK",
+            *spec["env"],
+            *t3_env,
+        ]
         command = [
             safehouse,
             f"--workdir={workdir}",
@@ -152,6 +262,10 @@ def main():
             # pbcopy/pbpaste and Pi's own copy/paste need the pasteboard mach
             # service, which Safehouse keeps behind this integration.
             "--enable=clipboard",
+            # SSH metadata and agent paths. The private keys stay unreadable,
+            # and the connection files let git and ssh reach a host the agent
+            # authenticates for.
+            "--enable=ssh",
             f"--append-profile={overlay}",
             "--add-dirs=" + ":".join(spec["writable"]),
             *(["--add-dirs-ro=" + ":".join(readable)] if readable else []),

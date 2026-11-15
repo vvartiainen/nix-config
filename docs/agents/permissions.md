@@ -55,19 +55,24 @@ T3 Code's caches, attachments, browser artifacts and worktrees are readable;
 its database, provider secrets, sign-in cache, provider registry and service
 environment stay denied. A host can also pass content directly to the model.
 
-Git over SSH and `fj` need keys, the SSH agent socket or a stored token, so
-fetches, pushes and Forgejo calls to such remotes run outside the sandbox.
-Pushes and forge writes ask. Claude and Codex run read-only `gh` and `fj`
-views without prompting, and Claude does the same for `git fetch` from a
-configured remote. A Claude `PreToolUse` hook reads `git remote` in the command's
-`cwd` without writing config. It defers for standalone `git fetch` with only
-known option flags, configured remote names followed by refspecs, `--all`,
-and `--multiple`/`--prefetch` with only configured remotes. Configured remotes
+Git over SSH needs a key or the SSH agent socket. Pi's sandbox reads
+`~/.ssh/config` and `known_hosts` and reaches the socket a host app exports, so
+`ssh`, `scp`, `rsync` and SSH remotes work there when the agent holds the key;
+key files stay unreadable and other sockets stay blocked. Claude and Codex run
+SSH, pushes and forge calls outside the sandbox after review. Pi also reaches the
+forge over HTTPS with an agent-only token and a wrapper that shadows `fj` inside
+its sandbox. Pushes and forge writes ask. Claude and Codex run read-only `gh`
+and `fj` views without prompting, and Claude does the same for `git fetch` from
+a configured remote. A Claude
+`PreToolUse` hook reads `git remote` in the command's `cwd` without writing
+config. It defers for standalone `git fetch` with only known option flags,
+configured remote names followed by refspecs, `--all`, and
+`--multiple`/`--prefetch` with only configured remotes. Configured remotes
 remain trusted, including file URLs, `insteadOf` rewrites and `ext::`/transport
 commands configured in Git config. Explicit URLs, scp-style addresses, paths,
-unknown names, `--upload-pack`/`-u`, unknown options,
-tilde syntax (even quoted), noncanonical whitespace, unclassified shell syntax
-and remote-read failures return `ask`. The fetch handler requires Claude Code
+unknown names, `--upload-pack`/`-u`, unknown options, tilde syntax (even quoted),
+noncanonical whitespace, unclassified shell syntax and remote-read failures
+return `ask`. The fetch handler requires Claude Code
 2.1.295 or later: [`onFailure: "block"`](https://code.claude.com/docs/en/hooks#block-the-action-when-a-hook-fails)
 blocks every Bash call if the fetch hook crashes, cannot start or times out.
 The hook ignores commands without both `git` and `fetch` words and plain
@@ -169,17 +174,20 @@ to the known download endpoint.
 ## Secrets
 
 Agents never see secret values; the tool that needs a credential fetches it
-itself, outside the sandbox.
+itself, outside the sandbox. The forge token below is the deliberate exception,
+restricted so that sandboxed pushes and forge calls need no key.
 
 | Need | How | Review |
 | --- | --- | --- |
-| `gh`, `fj`, Git over SSH | The tool uses its keychain token or the SSH agent | Read-only views run without prompting; writes and pushes ask |
+| `gh`, Git over SSH | The tool uses its keychain token or the SSH agent. Pi reaches the agent socket but no key file | Read-only views run without prompting; writes and pushes ask |
+| `fj` and forge HTTPS | Agents get their own token in `~/.local/share/agent-forge`, restricted to selected repositories. Pi's sandbox reads it and shadows `fj` with a wrapper that uses it, so sandboxed `git` and `fj` need no key. Your interactive `fj` login is separate | Pushes and forge writes ask; revoke the agent token alone if in doubt |
 | Provider or cloud credentials, such as `tofu apply` | Approved retry outside the sandbox; 1Password supplies the credential | The agent's approval prompt, then 1Password's |
 | A new value only the user has | T3 `request_secret` file delivery, then `op-item-from-secret` | The user enters it; storing asks |
 
 Sandboxed commands cannot read credential files, the keychain or the 1Password
-app, so a command that needs them fails and the agent asks to retry it outside
-the sandbox. Approved commands run without the sandbox's read denies. `op read`,
+app, apart from the forge token above. A command that needs the others fails,
+and the agent asks to retry it outside the sandbox. Approved commands run
+without the sandbox's read denies. `op read`,
 `op run`, `op inject`, `op item get` and keychain lookups are denied in every
 mode: they would put the value in the agent's context or let it run any command
 with it. Sandboxes keep exported environment variables and readable workspace
@@ -230,8 +238,10 @@ T3's Codex sandbox differs from the terminal profile
 Do not rely on the terminal profile's secret-file denies in T3. Claude keeps
 its own sandbox settings under T3.
 
-Sandboxed Pi cannot reach T3's local MCP endpoint or escape after approval.
-Run blocked operations manually or use Codex/Claude; see [Pi's limits](#pi).
+Sandboxed Pi reaches T3's local MCP endpoint, so its T3 tools and the thread's
+runtime mode work; no approval can reach any other host service or leave the
+sandbox. Run that blocked work manually or use Codex/Claude; see
+[Pi's limits](#pi).
 
 ## Worktrees
 
@@ -258,10 +268,29 @@ and agent caches; project `.pi` files, Git hooks/config, permission settings and
 installed extension code remain protected. Launching from home or `/` grants
 an empty workspace. Clipboard integration is enabled.
 
+Git and `fj` reach the forge over HTTPS with the
+[restricted agent token](#secrets): the sandbox puts a `fj` wrapper first on
+`PATH` that reads a token from `~/.local/share/agent-forge`, and a generated Git
+config rewrites that instance's SSH remotes and answers credential requests from
+the same file. SSH works too: `~/.ssh/config` and `known_hosts` are readable and
+the agent socket is reachable, while key files, your interactive `fj` login, the
+keychain and 1Password stay unavailable. The agent must already hold the key,
+and a new host key cannot be stored from the sandbox, so connect once outside
+Pi before using a new host. Create or rotate the token with the
+[forge token runbook](../../runbooks/forge-token.md).
+
+Git works as in a terminal, including `git init` and `git clone` in the project
+or scratch space. The git directories of repositories that already exist keep
+their `config` and `hooks` read-only, so sandboxed code cannot instrument a
+later unsandboxed `git` run; a linked worktree's `.git` pointer file is
+read-only for the same reason.
+
 Confirm the pinned permission extension loads without errors; inspect it with
 `/permission-system show`. Routine file tools, bash and the configured web
 research tools are allowed. Installs, publishing, remote writes, host control,
-shell wrappers and uncertain commands ask. Unknown tools and MCP calls also ask.
+shell wrappers and uncertain commands ask. Unknown tools and other MCP calls
+also ask; T3's own tools do not, because the endpoint it injects gates them
+with the thread's runtime mode.
 Nix is different: every command that reaches the daemon socket fails with
 `Operation not permitted`, and no approval can grant it. Write and lint Nix
 configs, then ask the user to evaluate or build with the
@@ -270,8 +299,11 @@ access, including its stored login. Prefer a provider key passed through the
 environment when possible. The installed npm package directory remains writable.
 
 Pi permits internet access without a domain allowlist. Host-local TCP/UDP services
-and UNIX sockets are blocked, except system DNS; other LAN hosts remain reachable.
-Local development servers and T3's local MCP endpoint are therefore unavailable.
+and UNIX sockets are blocked, except system DNS, the loopback port of a host
+app's injected tool endpoint (`T3_MCP_URL`) and the SSH agent socket the host
+exports; other LAN hosts remain reachable. Local development servers are
+therefore unavailable and only those host connections are reachable, never
+another port or socket on the host.
 An approval cannot grant a socket or escape Safehouse. Run blocked operations
 manually outside Pi or use Codex/Claude's approved escape flow; do not retry
 through Rex or `pi-unsandboxed`.
