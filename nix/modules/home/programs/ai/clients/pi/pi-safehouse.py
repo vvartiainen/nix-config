@@ -172,7 +172,7 @@ def make_profile(spec, workdir, tmpdir, t3_service=None, ssh_sockets=()):
         "(deny network-outbound (require-all (remote unix-socket) "
         '(require-not (literal "/private/var/run/mDNSResponder"))'
         + "".join(f" (require-not (literal {sb_string(path)}))" for path in ssh_sockets)
-        + ")",
+        + "))",
         # Seatbelt's localhost selector covers host addresses (IPv4 and IPv6),
         # not arbitrary LAN CIDRs. Keep host TCP/UDP services unreachable even
         # through bash or an extension, apart from the endpoint a host app

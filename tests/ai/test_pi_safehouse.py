@@ -32,6 +32,7 @@ class SafehouseTests(unittest.TestCase):
         }
         # Preparation and sandboxed Git must not load host config or overrides.
         cls.env = {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
+        cls.env.pop("SSH_AUTH_SOCK", None)
         cls.env.update(cls.config_env, HOME=str(cls.home))
         for path in [cls.work, cls.agent, cls.cache, cls.home / ".aws", cls.home / ".npm"]:
             path.mkdir(parents=True)
@@ -63,12 +64,14 @@ class SafehouseTests(unittest.TestCase):
     def tearDownClass(cls):
         cls.scratch.cleanup()
 
-    def run_probe(self, source, workdir=None):
+    def run_probe(self, source, workdir=None, ssh_socket=None):
         env = dict(
             self.env,
             SYNTHETIC_HOST_SECRET="must-not-pass",
             T3_PI_RUNTIME_MODE="approval-required",
         )
+        if ssh_socket is not None:
+            env["SSH_AUTH_SOCK"] = str(ssh_socket)
         return subprocess.run([
             sys.executable, str(Path(__file__).resolve().parents[2] / "nix/modules/home/programs/ai/clients/pi/pi-safehouse.py"),
             str(self.spec), os.environ["SAFEHOUSE"], sys.executable, "-c", source,
@@ -159,6 +162,20 @@ class SafehouseTests(unittest.TestCase):
                 f" try: client.connect({path!r})\n"
                 " except PermissionError: pass\n"
                 " else: raise AssertionError('host socket was reachable')\n"
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_starts_with_injected_ssh_socket(self):
+        with tempfile.TemporaryDirectory(prefix="pi-ssh-", dir="/tmp") as scratch, \
+                socket.socket(socket.AF_UNIX) as agent:
+            root = Path(scratch)
+            agent_path = str(root / "agent.sock")
+            agent.bind(agent_path)
+            agent.listen(1)
+            result = self.run_probe(
+                "import os\n"
+                f"assert os.environ['SSH_AUTH_SOCK'] == {agent_path!r}\n",
+                ssh_socket=agent_path,
             )
             self.assertEqual(result.returncode, 0, result.stderr)
 
