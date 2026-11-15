@@ -32,6 +32,8 @@
     {
       xdg.dataFile."vicinae/scripts/eject-all-disks.sh".source =
         ../../../../dotfiles/vicinae/scripts/eject-all-disks.sh;
+      xdg.dataFile."vicinae/scripts/toggle-fn-keys.sh".source =
+        ../../../../dotfiles/vicinae/scripts/toggle-fn-keys.sh;
 
       # Declared settings take precedence over the writable settings.json.
       home.sessionVariables.VICINAE_OVERRIDES = overrides;

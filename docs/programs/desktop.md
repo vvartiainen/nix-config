@@ -27,8 +27,13 @@ stay local.
 
 The managed **Eject All Disks** command asks Finder to eject disks without
 forcing busy volumes. Approve Finder control under Privacy & Security →
-Automation if prompted. Use **Reload Script Directories** if the command is
+Automation if prompted. Use **Reload Script Directories** if a command is
 missing, and check Finder before unplugging a drive.
+
+**Toggle Function Keys** flips `com.apple.keyboard.fnState`, the same switch as
+System Settings → Keyboard → "Use F1, F2, etc. keys as standard function keys".
+It applies immediately, but applying the configuration again enables function
+keys as declared in `nix/modules/darwin/system-settings.nix`.
 
 If Vicinae has quit, restart it with:
 
