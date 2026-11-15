@@ -65,7 +65,7 @@ def loopback_service(url):
     return port
 
 
-def loopback_deny(service):
+def loopback_rules(service):
     """Deny host-local TCP, except the port an injected tool endpoint uses.
 
     T3 Code runs its MCP endpoint on the host loopback interface and hands Pi
@@ -74,14 +74,17 @@ def loopback_deny(service):
     unreachable. The endpoint keeps its bearer token, and the exclusion applies
     to child commands too: they can reach that port but nothing else on the
     host.
+
+    A later allow wins over the blanket deny. The previous `require-not`
+    spelling parses but does not exempt the port at runtime, which blocked the
+    endpoint entirely.
     """
-    deny = '(remote ip "localhost:*")'
-    if service is None:
-        return f"(deny network-outbound {deny})"
-    return (
-        "(deny network-outbound (require-all "
-        f'{deny} (require-not (remote ip "localhost:{service}"))))'
-    )
+    rules = ['(deny network-outbound (remote ip "localhost:*"))']
+    if service is not None:
+        rules.append(
+            f'(allow network-outbound (remote ip "localhost:{service}"))'
+        )
+    return rules
 
 
 def worktree_git_dirs(workdir):
@@ -183,7 +186,7 @@ def make_profile(spec, workdir, tmpdir, t3_service=None, ssh_sockets=()):
         # not arbitrary LAN CIDRs. Keep host TCP/UDP services unreachable even
         # through bash or an extension, apart from the endpoint a host app
         # injects tools on; DNS still uses mDNSResponder above.
-        loopback_deny(t3_service),
+        *loopback_rules(t3_service),
     ])
     return "\n".join(profile) + "\n"
 

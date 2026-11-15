@@ -221,11 +221,15 @@ class StartupTests(unittest.TestCase):
         host_services = r'(deny network-outbound (remote ip "localhost:*"))'
         profile = launcher.make_profile(spec, "/work", "/tmp")
         self.assertIn(host_services, profile)
+        self.assertNotIn('allow network-outbound (remote ip "localhost:', profile)
         profile = launcher.make_profile(spec, "/work", "/tmp", 3773)
-        self.assertIn(
-            '(deny network-outbound (require-all '
-            '(remote ip "localhost:*") (require-not (remote ip "localhost:3773"))))',
-            profile,
+        self.assertIn(host_services, profile)
+        # The allow must follow the deny: Seatbelt is last-match-wins, and the
+        # earlier require-not form parsed without exempting the port at runtime.
+        self.assertIn('(allow network-outbound (remote ip "localhost:3773"))', profile)
+        self.assertLess(
+            profile.index(host_services),
+            profile.index('(allow network-outbound (remote ip "localhost:3773"))'),
         )
         # The UNIX socket and LAN denies stay in place with the port exclusion.
         self.assertIn('(remote unix-socket)', profile)
