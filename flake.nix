@@ -45,6 +45,12 @@
       };
     };
 
+    # Builds the spiced Spotify app bundle; it patches the nixpkgs package.
+    spicetify-nix = {
+      url = "github:Gerg-L/spicetify-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # On-demand Lima/Rosetta Linux builder; update its VM image separately.
     nix-rosetta-builder = {
       url = "github:cpick/nix-rosetta-builder";
