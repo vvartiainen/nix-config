@@ -122,6 +122,9 @@ def make_profile(spec, workdir, tmpdir, t3_service=None, ssh_sockets=()):
     # Safehouse's toolchain profiles permit normal user-cache writes. Narrow
     # those grants to our disposable caches, Pi state and this invocation's cwd.
     profile = [
+        # nix-darwin's system SSH includes resolve through this symlink into
+        # the already-readable Nix store. Permit traversal, not its contents.
+        '(allow file-read-metadata (literal "/private/etc/static"))',
         "(deny file-write* (require-all\n"
         + "\n".join(f"  (require-not {subpath(p)})" for p in writable)
         + "))",
