@@ -97,6 +97,10 @@ let
         ++ [ "${config.home.homeDirectory}/.agents" ];
       writable = policy.caches.writePaths ++ [ agentDir ];
       denied = policy.paths.denied;
+      # Keep SSH key files denied but allow known_hosts, config and the agent
+      # socket, so git fetch and push over SSH can authenticate inside the
+      # sandbox. The permission layer still asks for every push.
+      ssh = true;
       protected = [
         permissionFile
         "${agentDir}/settings.json"

@@ -33,8 +33,10 @@ class SafehouseTests(unittest.TestCase):
         # Preparation and sandboxed Git must not load host config or overrides.
         cls.env = {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
         cls.env.update(cls.config_env, HOME=str(cls.home))
-        for path in [cls.work, cls.agent, cls.cache, cls.home / ".aws", cls.home / ".npm"]:
+        for path in [cls.work, cls.agent, cls.cache, cls.home / ".aws", cls.home / ".npm", cls.home / ".ssh"]:
             path.mkdir(parents=True)
+        (cls.home / ".ssh/known_hosts").write_text("synthetic")
+        (cls.home / ".ssh/id_ed25519").write_text("synthetic")
         cls.policy = cls.agent / "extensions/pi-permission-system/config.json"
         cls.logs = cls.agent / "extensions/pi-permission-system/logs"
         cls.policy.parent.mkdir(parents=True)
@@ -46,6 +48,9 @@ class SafehouseTests(unittest.TestCase):
         (cls.work / ".env.example").write_text("SYNTHETIC=")
         (cls.work / ".git/hooks").mkdir(parents=True)
         (cls.work / ".git/config").write_text("[core]\n")
+        # Keep probes away from the host's real SSH agent and credentials.
+        cls.agent_socket = cls.home / ".cache/agent.sock"
+        cls.env["SSH_AUTH_SOCK"] = str(cls.agent_socket)
         cls.spec = cls.root / "spec.json"
         cls.spec.write_text(json.dumps({
             "agentDir": str(cls.agent),
@@ -54,9 +59,10 @@ class SafehouseTests(unittest.TestCase):
             # store paths, so granting only its bin parent is insufficient.
             "readable": ["/nix/store", str(Path(sys.executable).resolve().parent.parent)],
             "writable": [str(cls.agent), str(cls.cache)],
-            "denied": [str(cls.home / ".aws")],
+            "denied": [str(cls.home / ".aws"), str(cls.home / ".ssh")],
             "protected": [str(cls.policy)],
             "env": {"npm_config_cache": str(cls.cache), **cls.config_env},
+            "ssh": True,
         }))
 
     @classmethod
@@ -115,6 +121,33 @@ class SafehouseTests(unittest.TestCase):
             "assert Path('.env.example').read_text() == 'SYNTHETIC='"
         )
         self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_ssh_metadata_and_agent_socket_are_available(self):
+        # ssh integration: read-only known_hosts and config, key files denied,
+        # and this session's agent socket reachable through the blanket
+        # unix-socket deny.
+        self.agent_socket.parent.mkdir(parents=True, exist_ok=True)
+        (self.home / ".ssh/config").write_text("synthetic")
+        with socket.socket(socket.AF_UNIX) as server:
+            server.bind(str(self.agent_socket))
+            server.listen(1)
+            known_hosts = str(self.home / ".ssh/known_hosts")
+            result = self.run_probe(
+                "from pathlib import Path\n"
+                "import socket\n"
+                f"assert Path({known_hosts!r}).read_text() == 'synthetic'\n"
+                f"assert Path({str(self.home / '.ssh/config')!r}).read_text() == 'synthetic'\n"
+                "try:\n"
+                f" Path({known_hosts!r}).write_text('must fail')\n"
+                "except PermissionError: pass\n"
+                "else: raise AssertionError('known_hosts stayed writable')\n"
+                f"try: Path({str(self.home / '.ssh/id_ed25519')!r}).read_text()\n"
+                "except PermissionError: pass\n"
+                "else: raise AssertionError('SSH key was readable')\n"
+                "with socket.socket(socket.AF_UNIX) as client:\n"
+                f" client.connect({str(self.agent_socket)!r})\n"
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_denials_also_apply_to_child_processes(self):
         targets = [

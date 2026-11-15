@@ -63,7 +63,13 @@ def make_profile(spec, workdir, tmpdir):
         + "\n".join(f"  (require-not {subpath(p)})" for p in writable)
         + "))",
     ]
+    # Safehouse's ssh integration replaces its blanket `~/.ssh` deny with one
+    # that keeps key files denied while allowing `known_hosts` and `config`.
+    # Drop only that entry; every other deny below still applies.
+    ssh_home = str(Path.home() / ".ssh")
     for path in spec["denied"]:
+        if spec.get("ssh") and path == ssh_home:
+            continue
         profile.append(f"(deny file-read* file-write* {subpath(path)})")
     for path in spec["protected"]:
         profile.append(f"(deny file-write* {subpath(path)})")
@@ -90,6 +96,17 @@ def make_profile(spec, workdir, tmpdir):
         # through bash or an extension; DNS still uses mDNSResponder above.
         '(deny network-outbound (remote ip "localhost:*"))',
     ])
+    # The ssh integration opens the agent paths upstream knows about. macOS can
+    # also expose SSH_AUTH_SOCK under /private/var/run, so re-allow this
+    # session's exact socket after the blanket unix-socket deny. Every other
+    # socket stays blocked.
+    agent_socket = os.environ.get("SSH_AUTH_SOCK") if spec.get("ssh") else None
+    if agent_socket:
+        for path in dict.fromkeys((agent_socket, os.path.realpath(agent_socket))):
+            profile.append(
+                "(allow network-outbound (remote unix-socket "
+                f"(literal {sb_string(path)})))"
+            )
     return "\n".join(profile) + "\n"
 
 
@@ -145,6 +162,9 @@ def main():
         env["PI_CODING_AGENT_DIR"] = spec["agentDir"]
         t3_env = sorted(key for key in os.environ if key.startswith("T3_"))
         passed = ["DEEPSEEK_API_KEY", "PI_CODING_AGENT_DIR", *spec["env"], *t3_env]
+        if spec.get("ssh") and "SSH_AUTH_SOCK" in env:
+            # ssh needs the socket path; the sandbox grant above only allows it.
+            passed.append("SSH_AUTH_SOCK")
         command = [
             safehouse,
             f"--workdir={workdir}",
@@ -152,6 +172,9 @@ def main():
             # pbcopy/pbpaste and Pi's own copy/paste need the pasteboard mach
             # service, which Safehouse keeps behind this integration.
             "--enable=clipboard",
+            # Keep SSH keys denied while opening known_hosts, config and the
+            # agent socket, so git over SSH can authenticate inside the sandbox.
+            *(["--enable=ssh"] if spec.get("ssh") else []),
             f"--append-profile={overlay}",
             "--add-dirs=" + ":".join(spec["writable"]),
             *(["--add-dirs-ro=" + ":".join(readable)] if readable else []),
