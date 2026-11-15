@@ -126,7 +126,9 @@ fj issue view '<forge-host>/<owner>/<repo>#1'
 fj repo view '<forge-host>/<owner>/<repo>'
 ```
 
-Replace the angle-bracketed placeholders and the PR or issue number. These
+Replace the angle-bracketed placeholders and the PR or issue number. Pi's
+sandbox exports `FJ_FALLBACK_HOST` for this instance, so commands there may omit
+the host (`fj pr search -r owner/repo`, or `fj pr view owner/repo#28`). These
 standalone forms match the existing read-only rules in Claude and Codex; no
 apply or upstream write is needed. Writes still ask; see the
 [PR workflow](../../AGENTS.md#working-conventions).
@@ -134,12 +136,12 @@ apply or upstream write is needed. Writes still ask; see the
 [Upstream discovery](https://codeberg.org/forgejo-contrib/forgejo-cli/src/tag/v0.7.0/src/repo.rs)
 uses an explicit repository host, otherwise a selected remote (explicit remote,
 sole remote, branch upstream, or host-matching remote). It has no configurable
-default remote. Alternatively,
-`FJ_FALLBACK_HOST=https://<forge-host> fj pr search -r owner/repo` supplies a
-missing host for an explicit repository (`https://` is required; a bare host
-name is rejected) without overriding an inferred host. Fully qualified
-arguments avoid discovery ambiguity without changing Git configuration or
-allow rules.
+default remote. A fallback host only fills in a missing host for an explicit
+repository (`https://` is required; a bare host name is rejected) and never
+overrides an inferred one, so a bare `fj pr view <n>` still needs a branch
+upstream. Sandboxed pushes cannot record one, which is why every form above
+names the repository. Fully qualified arguments avoid discovery ambiguity
+without changing Git configuration or allow rules.
 
 ## Flake update previews
 
@@ -277,7 +279,8 @@ an empty workspace. Clipboard integration is enabled.
 
 Git and `fj` reach the forge over HTTPS with the
 [restricted agent token](#secrets): the sandbox puts a `fj` wrapper first on
-`PATH` that reads a token from `~/.local/share/agent-forge`, and a generated Git
+`PATH` that reads a token from `~/.local/share/agent-forge`, exports
+`FJ_FALLBACK_HOST`, and a generated Git
 config rewrites that instance's SSH remotes and answers credential requests from
 the same file. SSH works too: `~/.ssh/config` and `known_hosts` are readable and
 the selected agent socket is reachable, while key files, your interactive `fj`
@@ -300,7 +303,9 @@ or scratch space. The launch checkout's git directories keep `config`,
 `config.worktree` and `hooks` read-only in both ordinary and linked checkouts,
 so sandboxed code cannot instrument a
 later unsandboxed `git` run; a linked worktree's `.git` pointer file is
-read-only for the same reason.
+read-only for the same reason. `git push -u` therefore pushes the branch but
+cannot record its upstream: push with `git push origin <branch>` and give `fj`
+a repository argument.
 
 Confirm the pinned permission extension loads without errors; inspect it with
 `/permission-system show`. Routine file tools, bash and the configured web
