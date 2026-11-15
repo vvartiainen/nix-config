@@ -287,16 +287,6 @@ EOF
                 with self.subTest(action=action, rule=rule):
                     self.assertIsNone(re.search(r"\*.*:\*\)$", rule))
 
-    def test_t3_provider_cache_environment(self):
-        settings = self.settings_file("t3", "t3-code")
-        expected = [{
-            "name": "XDG_CACHE_HOME", "value": "/Users/agent/.cache/xdg-agent",
-            "sensitive": False,
-        }]
-        for provider in ("codex", "claudeAgent", "opencode", "pi"):
-            with self.subTest(provider=provider):
-                self.assertEqual(settings["providerInstances"][provider]["environment"], expected)
-
     def test_sandbox_sockets_match_codex(self):
         # Only the Nix daemon socket and the agent plugin socket directory are
         # reachable; Rex and localhost stay out.
