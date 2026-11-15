@@ -94,8 +94,11 @@ fails (`fj` reports `Operation not permitted` from its keychain), or prompts.
 argument; `fj-edit-body pr|issue <n> <file>` passes a file's contents instead
 of `$(cat ...)` and still asks. `fj pr create`,
 `fj pr comment`, `fj issue create` and `fj issue comment` take `--body-file`.
-A Claude `allowed_domains` entry does not help: SSH bypasses the sandbox proxy.
-Use HTTPS for public fetches. Local `git rebase`, `reset` and `clean` run in
+Claude excludes standalone `git push` from the sandbox, so a push asks once
+and then runs outside it; force forms stay denied. With `cd`, pipes or `-C` it
+runs sandboxed and the proxy refuses the SSH host. A Claude `allowed_domains`
+entry does not help: it applies only in auto mode and does not provide the SSH
+agent. Use HTTPS for public fetches. Local `git rebase`, `reset` and `clean` run in
 the sandbox; their destructive forms are denied. Sandboxed Git
 does not record a new branch's upstream, because `.git/config` is protected;
 the first push sets it.

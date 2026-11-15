@@ -236,14 +236,16 @@ let
       # approved retry.
       # Rex delegates to the host terminal server. Excluding it only selects
       # unsandboxed execution; the explicit ask rules above require approval.
-      # Git fetches need the SSH agent, which the sandbox blocks.
+      # Git fetches and pushes need the SSH agent, which the sandbox blocks.
+      # Pushes keep their ask rule and shell-review hook, and force forms stay
+      # denied; excluding them only skips a sandboxed attempt that cannot work.
       excludedCommands =
         map (exe: "${exe} *") (unsandboxedPrograms ++ commands.rexExecutables)
         ++ [ "flake-update-preview" ]
         ++ lib.concatMap (cmd: [
           (commandString cmd)
           "${commandString cmd} *"
-        ]) commands.fetch;
+        ]) (commands.fetch ++ [ [ "git" "push" ] ]);
       # Would let Go tools reach trustd inside the sandbox, at the cost of a
       # possible exfiltration channel through it.
       enableWeakerNetworkIsolation = false;
@@ -342,11 +344,12 @@ in
         absolute paths and split dependent steps into separate tool calls.
       - For temporary files, use literal paths under `/tmp` instead of
         `$TMPDIR`; `/tmp` is writable in the sandbox.
-      - Run `gh`, `fj` and `git fetch` as standalone commands from the
-        repository, without `cd`, pipes, loops, `-C` or `-H`. Only then do
-        they run outside the sandbox and match the read-only allow rules;
-        otherwise they fail in the sandbox or prompt. Run one command per
-        call instead of a loop.
+      - Run `gh`, `fj`, `git fetch` and `git push` as standalone commands
+        from the repository, without `cd`, pipes, loops, `-C` or `-H`. Only
+        then do they run outside the sandbox and match the allow or ask
+        rules; otherwise they fail in the sandbox or prompt. Pushes ask once;
+        do not retry them with `allowed_domains`. Run one command per call
+        instead of a loop.
       - With multiple remotes and no branch upstream, include the Forgejo host
         after the allowed subcommand: `fj pr search -r host/owner/repo`,
         `fj issue search -r host/owner/repo`, `fj pr view 'host/owner/repo#number'`,

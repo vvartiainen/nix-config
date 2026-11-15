@@ -346,6 +346,11 @@ EOF
         for pattern in self.fixture["commands"]["fetchReviewPatterns"]:
             self.assertIn(f"Bash({pattern})", claude["permissions"]["ask"])
         self.assertIn("git fetch *", claude["sandbox"]["excludedCommands"])
+        # SSH pushes leave the sandbox but still ask; force pushes stay denied.
+        self.assertIn("git push *", claude["sandbox"]["excludedCommands"])
+        self.assertIn("Bash(git push:*)", claude["permissions"]["ask"])
+        self.assertNotIn("Bash(git push:*)", claude["permissions"]["allow"])
+        self.assertIn("Bash(git push --force:*)", claude["permissions"]["deny"])
         self.assertNotIn("Bash(git rebase:*)", claude["permissions"]["ask"])
         self.assertEqual(claude["env"]["GIT_CONFIG_KEY_0"], "branch.autoSetupMerge")
         xdg_cache = claude["env"]["XDG_CACHE_HOME"]
