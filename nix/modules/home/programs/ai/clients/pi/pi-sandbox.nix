@@ -53,7 +53,18 @@ let
       # The kernel enforces external filesystem boundaries. Unknown tools,
       # including direct MCP tools, still require approval.
       external_directory = "allow";
-      mcp = "ask";
+      # T3 Code injects its own server over its loopback endpoint and gates every
+      # call with its runtime mode, so asking on the permission layer would
+      # prompt twice for the same tool. Both spellings come from the bridge's
+      # public and hidden tool names; T3 itself is the endpoint's owner.
+      mcp =
+        {
+          "*" = "ask";
+        }
+        // lib.genAttrs [
+          "t3-code"
+          "t3_code"
+        ] (_: "allow");
       # Safehouse bounds what a command can touch and the path rules above still
       # deny secrets, so asking per command only prompted for ordinary work and
       # ended in session-wide `*` grants. Allow bash instead and keep asking for

@@ -1,11 +1,13 @@
 """Launch all of Pi inside Safehouse with the repository's final-deny policy."""
 
+import ipaddress
 import json
 import os
 from pathlib import Path
 import subprocess
 import sys
 import tempfile
+from urllib.parse import urlsplit
 
 
 def sb_string(value):
@@ -38,6 +40,50 @@ def resolved_path(value):
     return ":".join(entries)
 
 
+def loopback_service(url):
+    """The TCP port of a URL naming a loopback host, otherwise None.
+
+    Only loopback URLs qualify: a host app that serves its tools on another
+    address already reaches the sandbox through the ordinary network grant.
+    """
+    try:
+        parts = urlsplit(url)
+        host = parts.hostname
+        port = parts.port
+    except ValueError:
+        return None
+    if not host or port is None:
+        return None
+    try:
+        address = ipaddress.ip_address(host)
+    except ValueError:
+        if host != "localhost":
+            return None
+    else:
+        if not address.is_loopback:
+            return None
+    return port
+
+
+def loopback_deny(service):
+    """Deny host-local TCP, except the port an injected tool endpoint uses.
+
+    T3 Code runs its MCP endpoint on the host loopback interface and hands Pi
+    the URL in T3_MCP_URL. Excluding that one port keeps Pi's T3 tools usable
+    while every other host service, including the Nix daemon and Rex, stays
+    unreachable. The endpoint keeps its bearer token, and the exclusion applies
+    to child commands too: they can reach that port but nothing else on the
+    host.
+    """
+    deny = '(remote ip "localhost:*")'
+    if service is None:
+        return f"(deny network-outbound {deny})"
+    return (
+        "(deny network-outbound (require-all "
+        f'{deny} (require-not (remote ip "localhost:{service}"))))'
+    )
+
+
 def worktree_git_dirs(workdir):
     try:
         common, current = [
@@ -52,7 +98,7 @@ def worktree_git_dirs(workdir):
     return [common, current] if common != current else []
 
 
-def make_profile(spec, workdir, tmpdir):
+def make_profile(spec, workdir, tmpdir, t3_service=None):
     writable = [workdir, tmpdir, "/tmp", "/private/tmp", "/dev", *spec["writable"]]
     extensions = f'{spec["agentDir"]}/extensions'
     extension_logs = f"{extensions}/pi-permission-system/logs"
@@ -87,8 +133,9 @@ def make_profile(spec, workdir, tmpdir):
         '(require-not (literal "/private/var/run/mDNSResponder"))))',
         # Seatbelt's localhost selector covers host addresses (IPv4 and IPv6),
         # not arbitrary LAN CIDRs. Keep host TCP/UDP services unreachable even
-        # through bash or an extension; DNS still uses mDNSResponder above.
-        '(deny network-outbound (remote ip "localhost:*"))',
+        # through bash or an extension, apart from the endpoint a host app
+        # injects tools on; DNS still uses mDNSResponder above.
+        loopback_deny(t3_service),
     ])
     return "\n".join(profile) + "\n"
 
@@ -130,7 +177,8 @@ def main():
         Path(path).mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="pi-safehouse-") as scratch:
         overlay = Path(scratch) / "policy.sb"
-        overlay.write_text(make_profile(spec, workdir, tmpdir))
+        t3_service = loopback_service(os.environ.get("T3_MCP_URL", ""))
+        overlay.write_text(make_profile(spec, workdir, tmpdir, t3_service))
         # Safehouse sanitizes the inherited environment; pass only the selected
         # API key, our cache variables and T3's session variables. T3 Code drives
         # Pi over RPC and hands its MCP endpoint, runtime mode and injected

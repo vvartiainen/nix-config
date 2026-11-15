@@ -81,7 +81,7 @@ which covers the new-thread default, manual overrides and observed behavior.
 | --- | --- |
 | Claude | Same sandbox settings. Code Mode is off and T3's own tools run |
 | Codex | Sandbox differs from the terminal profile; see the mode guidance above |
-| Pi | Same Safehouse sandbox, so T3's local tools are unreachable |
+| Pi | Same Safehouse sandbox; only T3's loopback MCP endpoint is reachable, so its own tools work |
 | OpenCode | Same rules, no OS sandbox |
 
 ## Using them

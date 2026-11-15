@@ -230,8 +230,10 @@ T3's Codex sandbox differs from the terminal profile
 Do not rely on the terminal profile's secret-file denies in T3. Claude keeps
 its own sandbox settings under T3.
 
-Sandboxed Pi cannot reach T3's local MCP endpoint or escape after approval.
-Run blocked operations manually or use Codex/Claude; see [Pi's limits](#pi).
+Sandboxed Pi reaches T3's local MCP endpoint, so its T3 tools and the thread's
+runtime mode work; no approval can reach any other host service or leave the
+sandbox. Run that blocked work manually or use Codex/Claude; see
+[Pi's limits](#pi).
 
 ## Worktrees
 
@@ -261,7 +263,9 @@ an empty workspace. Clipboard integration is enabled.
 Confirm the pinned permission extension loads without errors; inspect it with
 `/permission-system show`. Routine file tools, bash and the configured web
 research tools are allowed. Installs, publishing, remote writes, host control,
-shell wrappers and uncertain commands ask. Unknown tools and MCP calls also ask.
+shell wrappers and uncertain commands ask. Unknown tools and other MCP calls
+also ask; T3's own tools do not, because the endpoint it injects gates them
+with the thread's runtime mode.
 Nix is different: every command that reaches the daemon socket fails with
 `Operation not permitted`, and no approval can grant it. Write and lint Nix
 configs, then ask the user to evaluate or build with the
@@ -270,8 +274,10 @@ access, including its stored login. Prefer a provider key passed through the
 environment when possible. The installed npm package directory remains writable.
 
 Pi permits internet access without a domain allowlist. Host-local TCP/UDP services
-and UNIX sockets are blocked, except system DNS; other LAN hosts remain reachable.
-Local development servers and T3's local MCP endpoint are therefore unavailable.
+and UNIX sockets are blocked, except system DNS and the loopback port of a host
+app's injected tool endpoint (`T3_MCP_URL`); other LAN hosts remain reachable.
+Local development servers are therefore unavailable and only T3's endpoint is
+reachable, never another port on the host.
 An approval cannot grant a socket or escape Safehouse. Run blocked operations
 manually outside Pi or use Codex/Claude's approved escape flow; do not retry
 through Rex or `pi-unsandboxed`.

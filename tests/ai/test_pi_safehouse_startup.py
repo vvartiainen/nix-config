@@ -177,6 +177,40 @@ class StartupTests(unittest.TestCase):
                 self.assertEqual(launcher.main(), 0)
         self.assertEqual(captured["path"], f"{store_bin}:{plain}")
 
+    def test_only_the_t3_mcp_port_is_reachable_on_the_host(self):
+        # T3 Code serves its injected tools on a loopback port it advertises in
+        # T3_MCP_URL. Nothing else on the host, including the Nix daemon and
+        # Rex, may become reachable from the sandbox.
+        cases = [
+            ("http://127.0.0.1:3773/mcp", 3773),
+            ("http://localhost:4100/mcp", 4100),
+            ("http://[::1]:3773/mcp", 3773),
+            ("https://example.com:443/mcp", None),
+            ("http://192.168.1.5:3773/mcp", None),
+            ("http://127.0.0.1/mcp", None),
+            ("", None),
+        ]
+        for url, expected in cases:
+            with self.subTest(url=url):
+                self.assertEqual(launcher.loopback_service(url), expected)
+
+        spec = {
+            "agentDir": "/state", "readable": [], "writable": [], "denied": [],
+            "protected": [], "env": {},
+        }
+        host_services = r'(deny network-outbound (remote ip "localhost:*"))'
+        profile = launcher.make_profile(spec, "/work", "/tmp")
+        self.assertIn(host_services, profile)
+        profile = launcher.make_profile(spec, "/work", "/tmp", 3773)
+        self.assertIn(
+            '(deny network-outbound (require-all '
+            '(remote ip "localhost:*") (require-not (remote ip "localhost:3773"))))',
+            profile,
+        )
+        # The UNIX socket and LAN denies stay in place with the port exclusion.
+        self.assertIn('(remote unix-socket)', profile)
+        self.assertNotIn('localhost:3774', profile)
+
 
 if __name__ == "__main__":
     unittest.main()
