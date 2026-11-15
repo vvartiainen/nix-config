@@ -31,9 +31,17 @@ def needs_review(command, cwd, git="git"):
         argv = shlex.split(command)
     except ValueError:
         return True
-    # Leave unrelated Bash commands to the existing shell-review hook. Any
-    # fetch-containing wrapper/compound command must be reviewed as a whole.
-    if "fetch" not in argv and not re.search(r"\bfetch\b", command):
+    # Tokenize before looking for both words so quoted/escaped spellings of
+    # git and fetch still count. This intentionally also reviews literal
+    # arguments such as rg 'git fetch': shlex is not a full shell parser.
+    words = " ".join(argv)
+    if not all(re.search(rf"\b{word}\b", words) for word in ("git", "fetch")):
+        return False
+    # A plain log search cannot fetch. Do not exempt compounds, substitutions
+    # or other shell syntax merely because they start with git log.
+    if argv[:2] == ["git", "log"] and not re.search(
+        r"[\n\r\x00$`;&|<>(){}*?\[\]#!\\]", command
+    ):
         return False
     if argv[:2] != ["git", "fetch"]:
         return True
