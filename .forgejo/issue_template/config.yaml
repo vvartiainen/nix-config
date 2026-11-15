@@ -1,0 +1,2 @@
+# Keep blank issues: with them disabled, `fj issue create` needs --template.
+blank_issues_enabled: true
