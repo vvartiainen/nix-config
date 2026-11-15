@@ -95,7 +95,7 @@ def worktree_git_dirs(workdir):
         ]
     except (OSError, subprocess.SubprocessError):
         return []
-    return [common, current] if common != current else []
+    return list(dict.fromkeys((common, current)))
 
 
 def ssh_agent_sockets():
@@ -149,6 +149,10 @@ def make_profile(spec, workdir, tmpdir, t3_service=None, ssh_sockets=()):
         *(
             [f"(allow file-read* (literal {sb_string(path)}))" for path in ssh_sockets]
             + [
+                f"(allow network-outbound (remote unix-socket (path-literal {sb_string(path)})))"
+                for path in ssh_sockets
+            ]
+            + [
                 "(allow file-read-metadata\n"
                 + "\n".join(
                     f"  (literal {sb_string(ancestor)})"
@@ -201,8 +205,8 @@ def main():
                 "run Pi in a project directory for file access" % cwd,
                 file=sys.stderr,
             )
-    # Linked worktrees share objects and refs with the original checkout.
-    # Grant only their Git metadata, not the main checkout's source files.
+    # Protect metadata in ordinary checkouts too. Linked worktrees additionally
+    # need their shared Git metadata, without the main checkout's source files.
     git_dirs = worktree_git_dirs(workdir)
     spec["writable"].extend(git_dirs)
     # Repositories that already exist keep their hooks and config read-only, so

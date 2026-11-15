@@ -309,6 +309,10 @@ class StartupTests(unittest.TestCase):
             profile = captured["profile"]
             passed = captured["passed"]
         self.assertIn(f'(allow file-read* (literal "{socket_path}"))', profile)
+        self.assertIn(
+            f'(allow network-outbound (remote unix-socket (path-literal "{socket_path}")))',
+            profile,
+        )
         self.assertIn(f'(require-not (literal "{socket_path}"))', profile)
         # Traversal to the socket is granted, without reading its directory.
         self.assertIn(f'(literal "{socket_path.parent}")', profile)

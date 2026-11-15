@@ -45,7 +45,7 @@ each use, and **denied** means no approval can allow it.
 | --- | --- | --- | --- | --- | --- | --- |
 | Commands | Package download hosts; other hosts ask | Any host | Package download hosts and Cursor's defaults | Package download hosts | Any host | Any host |
 | Services on this Mac | Asks | Blocked | Client default | Blocked | Reachable | Blocked |
-| Unix sockets | Nix daemon and the OpenTofu plugin directory | Nix daemon and the OpenTofu plugin directory | Client default | Nix daemon, OpenTofu plugin directory and Herdr | Any | None, so no Nix |
+| Unix sockets | Nix daemon and the OpenTofu plugin directory | Nix daemon and the OpenTofu plugin directory | Client default | Nix daemon, OpenTofu plugin directory and Herdr | Any | Injected SSH agent and system DNS; no Nix |
 | Web tools | Search and fetch run | Live web search | Documentation domains run | Documentation domains run | Client default | Search and fetch run |
 
 ## Commands

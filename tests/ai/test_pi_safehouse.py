@@ -4,6 +4,7 @@ Run with SAFEHOUSE pointing to the pinned safehouse executable and
 PI_SANDBOX_TEST_ROOT pointing to a writable cache directory outside /tmp.
 """
 
+import errno
 import json
 import os
 from pathlib import Path
@@ -45,8 +46,11 @@ class SafehouseTests(unittest.TestCase):
         (cls.home / "unrelated-read").write_text("synthetic")
         (cls.work / ".env").write_text("SYNTHETIC=1")
         (cls.work / ".env.example").write_text("SYNTHETIC=")
-        (cls.work / ".git/hooks").mkdir(parents=True)
-        (cls.work / ".git/config").write_text("[core]\n")
+        subprocess.run(
+            ["/usr/bin/git", "-c", "core.hooksPath=/dev/null", "init", "-q", str(cls.work)],
+            env=cls.env, check=True, capture_output=True,
+        )
+        (cls.work / ".git/config.worktree").write_text("[core]\n")
         cls.spec = cls.root / "spec.json"
         cls.spec.write_text(json.dumps({
             "agentDir": str(cls.agent),
@@ -119,12 +123,30 @@ class SafehouseTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_main_checkout_can_commit_and_create_repositories(self):
+        result = self.run_probe(
+            "from pathlib import Path; import subprocess\n"
+            "def git(*args):\n"
+            " subprocess.run(['/usr/bin/git', '-c', 'core.hooksPath=/dev/null', "
+            "'-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', "
+            "*args], check=True)\n"
+            "Path('change').write_text('fixture')\n"
+            "git('add', 'change')\n"
+            "git('commit', '-qm', 'fixture')\n"
+            "git('init', '-q', 'new-repo')\n"
+            "git('clone', '-q', '--no-local', '.', 'clone')\n"
+            "assert Path('new-repo/.git/config').is_file()\n"
+            "assert Path('clone/change').read_text() == 'fixture'\n"
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_denials_also_apply_to_child_processes(self):
         targets = [
             self.home / "unrelated", self.home / ".npm/output", self.policy,
             self.agent / "extensions/evil.ts",
             self.work / ".env", self.work / ".pi/settings.json",
             self.work / ".git/config", self.work / ".git/hooks/pre-commit",
+            self.work / ".git/config.worktree",
         ]
         child = (
             "from pathlib import Path\n"
@@ -165,16 +187,28 @@ class SafehouseTests(unittest.TestCase):
             )
             self.assertEqual(result.returncode, 0, result.stderr)
 
-    def test_starts_with_injected_ssh_socket(self):
+    def test_injected_ssh_socket_connects_but_other_host_socket_is_blocked(self):
         with tempfile.TemporaryDirectory(prefix="pi-ssh-", dir="/tmp") as scratch, \
-                socket.socket(socket.AF_UNIX) as agent:
+                socket.socket(socket.AF_UNIX) as agent, \
+                socket.socket(socket.AF_UNIX) as other:
             root = Path(scratch)
             agent_path = str(root / "agent.sock")
+            other_path = str(root / "other.sock")
             agent.bind(agent_path)
             agent.listen(1)
+            other.bind(other_path)
+            other.listen(1)
             result = self.run_probe(
-                "import os\n"
-                f"assert os.environ['SSH_AUTH_SOCK'] == {agent_path!r}\n",
+                "import os, socket\n"
+                f"assert os.environ['SSH_AUTH_SOCK'] == {agent_path!r}\n"
+                "with socket.socket(socket.AF_UNIX) as client:\n"
+                " client.settimeout(2)\n"
+                " client.connect(os.environ['SSH_AUTH_SOCK'])\n"
+                "with socket.socket(socket.AF_UNIX) as client:\n"
+                " client.settimeout(2)\n"
+                f" try: client.connect({other_path!r})\n"
+                " except PermissionError: pass\n"
+                " else: raise AssertionError('unrelated host socket was reachable')\n",
                 ssh_socket=agent_path,
             )
             self.assertEqual(result.returncode, 0, result.stderr)
@@ -186,13 +220,19 @@ class SafehouseTests(unittest.TestCase):
             (socket.AF_INET, "127.0.0.1"),
             (socket.AF_INET, "127.0.0.2"),
             (socket.AF_INET6, "::1"),
+            (socket.AF_INET6, "::ffff:127.0.0.1"),
         ]:
             for kind in (socket.SOCK_STREAM, socket.SOCK_DGRAM):
                 with self.subTest(host=host, kind=kind), socket.socket(family, kind) as server:
-                    # macOS need not have 127.0.0.2 assigned to an interface.
-                    # An alternate-address probe must get EPERM, not merely
-                    # ECONNREFUSED because there is no listener at that address.
-                    server.bind(("127.0.0.1" if family == socket.AF_INET else "::1", 0))
+                    # Probe an actual host listener. On macOS, an unassigned
+                    # 127.0.0.2 can route off-host; a wildcard localhost rule
+                    # does not classify it as a service on this machine.
+                    try:
+                        server.bind((host, 0))
+                    except OSError as error:
+                        if error.errno == errno.EADDRNOTAVAIL:
+                            self.skipTest(f"{host} is not assigned on this host")
+                        raise
                     if kind == socket.SOCK_STREAM:
                         server.listen(1)
                     address = (host, server.getsockname()[1])

@@ -275,6 +275,23 @@ EOF
             },
         )
 
+    def test_codex_protects_worktree_configuration(self):
+        settings = re.search(r"--settings (/nix/store/[^ ]+)", self.fixture["codex"]).group(1)
+        config = json.loads(Path(settings).read_text())
+        filesystem = config["permissions"]["workspace-only"]["filesystem"]
+        workspace = filesystem[":workspace_roots"]
+        for path in (".git/config", ".git/config.worktree", ".git/hooks", ".git/worktrees"):
+            self.assertEqual(workspace[path], "read")
+        shared_configs = [path for path in filesystem if path.endswith("/.git/config")]
+        self.assertTrue(shared_configs)
+        for path in shared_configs:
+            self.assertEqual(filesystem[path + ".worktree"], "read")
+            self.assertEqual(filesystem[path.removesuffix("config") + "worktrees"], "read")
+        # Terminal launches grant shared metadata dynamically; these must keep
+        # per-worktree config protected when granting the index and refs.
+        for path in ("$c/config.worktree", "$c/worktrees", "$g/config.worktree", "$g/config", "$g/hooks"):
+            self.assertIn(path, self.fixture["launch"])
+
     def settings_file(self, client, name):
         path = Path(re.search(rf"--settings (/nix/store/[^ ]+-{name}[^ ]*\.json)", self.fixture[client]).group(1))
         self.assertTrue(path.exists(), "build the fixture system before settings tests")
@@ -304,6 +321,13 @@ EOF
             self.assertNotIn(f"Bash(fj {command}:*)", claude["permissions"]["allow"])
         self.assertFalse(claude["sandbox"]["network"]["allowAllUnixSockets"])
         self.assertEqual(claude["sandbox"]["network"]["allowUnixSockets"], [socket, *socket_dirs])
+        self.assertFalse(claude["sandbox"]["network"]["allowLocalBinding"])
+        for path in (
+            "**/.git/config", "**/.git/config.worktree", "**/.git/hooks",
+            "**/.git/worktrees/*/config", "**/.git/worktrees/*/config.worktree",
+            "**/.git/worktrees/*/hooks",
+        ):
+            self.assertIn(path, claude["sandbox"]["filesystem"]["denyWrite"])
         self.assertEqual(claude["env"]["PLUGIN_UNIX_SOCKET_DIR"], socket_dirs[0])
         for wrapper in ["fj-edit-body", "op-item-from-secret"]:
             self.assertIn(f"{wrapper} *", claude["sandbox"]["excludedCommands"])

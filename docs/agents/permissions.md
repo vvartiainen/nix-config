@@ -97,6 +97,13 @@ Use HTTPS for public fetches. Local `git rebase`, `reset` and `clean` run in
 the sandbox; their destructive forms are denied. Sandboxed Git
 does not record a new branch's upstream, because `.git/config` is protected;
 the first push sets it.
+Codex's terminal profile and Claude also protect `config.worktree`, including
+linked-worktree metadata, so enabling Git's per-worktree configuration does not
+make executable Git settings writable. T3 Codex uses its own workspace sandbox;
+the terminal profile's grants and protections cannot be assumed there.
+Use the `codex` zsh wrapper when launching in a linked worktree: it grants that
+worktree's index and refs while keeping other worktrees' metadata read-only.
+An app launch that bypasses it may need a reviewed command to commit.
 When a task writes to a sibling repository, add it to the session (`/add-dir`
 or `--add-dir`) instead of escaping. `git worktree add`, `move` and `remove`
 for worktrees other than the session's own write the main repository's Git
@@ -280,8 +287,9 @@ Pi before using a new host. Create or rotate the token with the
 [forge token runbook](../../runbooks/forge-token.md).
 
 Git works as in a terminal, including `git init` and `git clone` in the project
-or scratch space. The git directories of repositories that already exist keep
-their `config` and `hooks` read-only, so sandboxed code cannot instrument a
+or scratch space. The launch checkout's git directories keep `config`,
+`config.worktree` and `hooks` read-only in both ordinary and linked checkouts,
+so sandboxed code cannot instrument a
 later unsandboxed `git` run; a linked worktree's `.git` pointer file is
 read-only for the same reason.
 
@@ -304,6 +312,10 @@ app's injected tool endpoint (`T3_MCP_URL`) and the SSH agent socket the host
 exports; other LAN hosts remain reachable. Local development servers are
 therefore unavailable and only those host connections are reachable, never
 another port or socket on the host.
+The host-local selector matches assigned host addresses, not every address in
+`127.0.0.0/8`. On macOS an unassigned loopback-looking address can route off-host;
+do not treat this rule as a private-network allowlist. Runtime tests bind their
+own listeners and skip addresses the Mac cannot bind.
 An approval cannot grant a socket or escape Safehouse. Run blocked operations
 manually outside Pi or use Codex/Claude's approved escape flow; do not retry
 through Rex or `pi-unsandboxed`.
