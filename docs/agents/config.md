@@ -69,6 +69,13 @@ Nix also merges the [T3 keybindings](keybindings.md#t3-code) into
 shortcuts. Window bounds remain app-managed. Close T3 before switching and
 reopen it afterwards to load the shortcuts.
 
+Activation publishes the Catppuccin Mocha palette to
+`~/.t3/userdata/themes/catppuccin-mocha.json` and declares it in `settings.json`
+as the environment default theme. T3 reads published themes only from regular
+files, so the palette is copied rather than linked. Each client adopts the
+default once and keeps any later choice; bump `defaultThemeSetAt` in the module
+to apply it again.
+
 Managed preferences include provider paths and enabled providers, the default
 [permission mode](permissions.md#t3-code-permission-modes), model selections,
 favorites and hidden models, project defaults, compaction, pull request behavior
