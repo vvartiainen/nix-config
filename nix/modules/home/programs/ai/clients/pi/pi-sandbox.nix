@@ -16,6 +16,53 @@ let
   permissionFile = "${agentDir}/extensions/pi-permission-system/config.json";
   commandString = cmd: builtins.unsafeDiscardStringContext (lib.concatStringsSep " " cmd);
   rules = value: commands: lib.genAttrs (map (cmd: "${commandString cmd} *") commands) (_: value);
+  # Pi is the only client that reaches the forge from inside a sandbox with a
+  # repository-restricted token, and this repository's workflow fetches, pushes
+  # a branch and opens a pull request on every task. Allow those routine forms.
+  # Guard keys continue an allowed prefix without the space before the
+  # wildcard: that also matches an option directly after the remote, and sorts
+  # after the allow (a space sorts before `*`), so the generated
+  # last-match-wins order puts the guard last.
+  pushPrefixes = [
+    "git push origin"
+    "git push -u origin"
+  ];
+  pushGuards =
+    action: suffixes:
+    lib.genAttrs (
+      lib.concatMap (prefix: map (suffix: "${prefix}${suffix}") suffixes) pushPrefixes
+    ) (_: action);
+  routineBash =
+    lib.genAttrs (map (prefix: "${prefix} *") pushPrefixes ++ [ "git fetch origin *" ]) (_: "allow")
+    // rules "allow" (map (subcommand: [ "fj" "pr" subcommand ]) [ "create" "edit" ])
+    // pushGuards "deny" [
+      "*--force*"
+      "* -f*"
+    ]
+    // pushGuards "ask" [
+      # Destructive or broad remote mutations.
+      "*--delete*"
+      "*--mirror*"
+      "*--prune*"
+      "*--all*"
+      "*--tags*"
+      # Options that run a command on the remote.
+      "*--exec*"
+      "*--receive-pack*"
+      # Refspecs that rename, delete or force an update, and direct main pushes.
+      "*:*"
+      "*+*"
+      "* main*"
+      "* master*"
+      "*refs/heads/main*"
+      # Short-flag clusters such as -qf, and long flags the exact denies miss.
+      "* -?f*"
+    ]
+    // lib.genAttrs [
+      "git fetch origin*--upload-pack*"
+      "git fetch origin*://*"
+      "git fetch origin*@*"
+    ] (_: "ask");
   # Pi matches the command name as typed, so a path with spaces also needs
   # its quoted and escaped spellings, e.g. Rex's app-bundled CLI. Rules are
   # last-match-wins and toJSON sorts keys, so a key must not sort before the
@@ -49,6 +96,8 @@ let
       find = "allow";
       ls = "allow";
       skill = "allow";
+      # Pi's deferred-tool discovery reads tool metadata, not files.
+      tool_search = "allow";
       # The pinned web extension runs inside Safehouse too. Allow its exact
       # research surfaces without approving arbitrary new extension tools.
       web_enable = "allow";
@@ -77,7 +126,8 @@ let
       # work that leaves the sandbox: Nix hands builds to the host daemon, and
       # Rex can type into an unsandboxed terminal. The extension still floors
       # `sh -c`/`eval`, indirection wrappers (`sudo`, `xargs`, `find -exec`) and
-      # unparseable input to ask, and the deny list still denies.
+      # unparseable input to ask, and the deny list still denies. The routine
+      # forge workflow in `routineBash` is the narrow exception.
       bash =
         {
           "*" = "allow";
@@ -88,6 +138,7 @@ let
         )
         // rules "allow" policy.commands.hostInspection
         // lib.genAttrs (map commandString policy.commands.hostExact) (_: "allow")
+        // routineBash
         // rules "deny" policy.commands.denied
         // lib.genAttrs policy.commands.deniedPatterns (_: "deny");
       path =

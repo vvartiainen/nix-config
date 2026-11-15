@@ -61,7 +61,9 @@ Git over SSH needs a key or the SSH agent socket. Pi's sandbox reads
 key files stay unreadable and other sockets stay blocked. Claude and Codex run
 SSH, pushes and forge calls outside the sandbox after review. Pi also reaches the
 forge over HTTPS with an agent-only token and a wrapper that shadows `fj` inside
-its sandbox. Pushes and forge writes ask. Claude and Codex run read-only `gh`
+its sandbox. Its routine `git fetch origin`, branch push and pull-request
+create/edit run without a prompt; other remotes, force and destructive remote
+forms, merges and issue writes ask. Claude and Codex run read-only `gh`
 and `fj` views without prompting, and Claude does the same for `git fetch` from
 a configured remote. A Claude
 `PreToolUse` hook reads `git remote` in the command's `cwd` without writing
@@ -90,7 +92,7 @@ commands: with `cd`, pipes, loops, `-C` or `-H` the command runs sandboxed and
 fails (`fj` reports `Operation not permitted` from its keychain), or prompts.
 `fj pr edit <n> body` and `fj issue edit <n> body` take the body only as an
 argument; `fj-edit-body pr|issue <n> <file>` passes a file's contents instead
-of `$(cat ...)` and asks like other forge writes. `fj pr create`,
+of `$(cat ...)` and still asks. `fj pr create`,
 `fj pr comment`, `fj issue create` and `fj issue comment` take `--body-file`.
 A Claude `allowed_domains` entry does not help: SSH bypasses the sandbox proxy.
 Use HTTPS for public fetches. Local `git rebase`, `reset` and `clean` run in
@@ -189,7 +191,7 @@ restricted so that sandboxed pushes and forge calls need no key.
 | Need | How | Review |
 | --- | --- | --- |
 | `gh`, Git over SSH | The tool uses its keychain token or the SSH agent. Pi reaches the agent socket but no key file | Read-only views run without prompting; writes and pushes ask |
-| `fj` and forge HTTPS | Agents get their own token in `~/.local/share/agent-forge`, restricted to selected repositories. Pi's sandbox reads it and shadows `fj` with a wrapper that uses it, so sandboxed `git` and `fj` need no key. Your interactive `fj` login is separate | Pushes and forge writes ask; revoke the agent token alone if in doubt |
+| `fj` and forge HTTPS | Agents get their own token in `~/.local/share/agent-forge`, restricted to selected repositories. Pi's sandbox reads it and shadows `fj` with a wrapper that uses it, so sandboxed `git` and `fj` need no key. Your interactive `fj` login is separate | Pushes and forge writes ask, except Pi's [routine forge flow](#pi); revoke the agent token alone if in doubt |
 | Provider or cloud credentials, such as `tofu apply` | Approved retry outside the sandbox; 1Password supplies the credential | The agent's approval prompt, then 1Password's |
 | A new value only the user has | T3 `request_secret` file delivery, then `op-item-from-secret` | The user enters it; storing asks |
 
@@ -305,11 +307,16 @@ so sandboxed code cannot instrument a
 later unsandboxed `git` run; a linked worktree's `.git` pointer file is
 read-only for the same reason. `git push -u` therefore pushes the branch but
 cannot record its upstream: push with `git push origin <branch>` and give `fj`
-a repository argument.
+a repository argument. Both forms run without a prompt; other remotes and the
+guarded push forms still ask.
 
 Confirm the pinned permission extension loads without errors; inspect it with
-`/permission-system show`. Routine file tools, bash and the configured web
-research tools are allowed. Installs, publishing, remote writes, host control,
+`/permission-system show`. Routine file tools, bash, tool discovery and the
+configured web research tools are allowed. So is the forge flow this repository
+needs on every task: `git fetch origin`, branch pushes to `origin` and
+`fj pr create`/`fj pr edit` run without a prompt. Force pushes stay denied, and
+other remotes, remote branch deletion or mirroring, direct `main`/`master`
+pushes, merges, issue writes, installs, publishing, credentials, host control,
 shell wrappers and uncertain commands ask. Unknown tools and other MCP calls
 also ask; T3's own tools do not, because the endpoint it injects gates them
 with the thread's runtime mode.
