@@ -71,6 +71,41 @@ class ClaudeFetchTests(unittest.TestCase):
                 with self.subTest(command=command):
                     self.assertEqual(fetch_review.needs_review(command, self.cwd), expected)
 
+    def test_candidate_scope(self):
+        passes = [
+            "rg fetch README.md",
+            "python3 -c 'print(\"fetch\")'",
+            "cat /tmp/fetch-result.txt",
+            "grep -rn fetch .",
+            "git log --grep fetch",
+            "grep -r fetch .",
+            "cat <<'EOF'\nfetch\nEOF",
+        ]
+        asks = [
+            "git -c x fetch repos/x.git",
+            "git -C dir fetch origin",
+            "git --git-dir=/tmp/repo fetch origin",
+            "env A=1 git fetch repos/x.git",
+            "command git fetch origin",
+            "exec git fetch origin",
+            "cd x && git fetch origin",
+            "true; git fetch origin",
+            "true | git fetch origin",
+            "(git fetch origin)",
+            "bash -c 'git fetch x'",
+            "git log --grep fetch; git fetch x",
+            "git log --grep $(git fetch x)",
+            # Deliberately conservative: literal arguments containing both
+            # words are ambiguous without a full shell parser.
+            "rg 'git fetch' docs/",
+        ]
+        for expected, commands in ((False, passes), (True, asks)):
+            for command in commands:
+                with self.subTest(command=command):
+                    with mock.patch.object(fetch_review.subprocess, "run") as run:
+                        self.assertEqual(fetch_review.needs_review(command, self.cwd), expected)
+                    run.assert_not_called()
+
     def test_tilde_remote_names_ask(self):
         for remote in ("~", "~/x", "~user"):
             subprocess.run(["git", "-C", self.cwd, "config",

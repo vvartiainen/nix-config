@@ -72,7 +72,13 @@ unknown names, `--upload-pack`/`-u`, unknown options,
 tilde syntax (even quoted), noncanonical whitespace, unclassified shell syntax
 and remote-read failures return `ask`. The fetch handler requires Claude Code
 2.1.295 or later: [`onFailure: "block"`](https://code.claude.com/docs/en/hooks#block-the-action-when-a-hook-fails)
-blocks the action if the hook crashes, cannot start or times out. The existing
+blocks every Bash call if the fetch hook crashes, cannot start or times out.
+The hook ignores commands without both `git` and `fetch` words and plain
+`git log` searches; ambiguous literals such as `rg 'git fetch' docs/` still ask.
+Claude's [`if` filter](https://code.claude.com/docs/en/hooks#common-fields)
+uses best-effort permission patterns, with no documented candidate-only rule
+covering every wrapped, quoted and compound fetch spelling, so this hook keeps
+the broad `Bash` matcher to preserve review coverage. The existing
 fetch ask patterns remain as defence in depth. Per Claude's
 [hook decision documentation](https://code.claude.com/docs/en/hooks#pretooluse-decision-control),
 `ask` prompts even when an allow rule matches; hooks run before every tool call.
