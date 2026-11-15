@@ -135,6 +135,9 @@ For T3 mode selection and approval behavior, follow the
 - For helper scripts, check `type -a python3` and prefer an installed executable
   over a mise shim when it emits unrelated cache/state permission warnings.
   Do not change tool-manager permissions just to hide logs.
+- macOS sandbox runtime tests need reviewed execution outside the agent sandbox.
+  Use synthetic sockets and bind each tested host address before probing it;
+  skip unassigned addresses instead of changing the Mac's network interfaces.
 
 ## Working conventions
 

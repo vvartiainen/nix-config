@@ -31,7 +31,6 @@ in
   inherit (policy) commands paths;
   socketDirs = policy.caches.socketDirs;
   pi = builtins.fromJSON piPolicy;
-  piCheck = piCheck.drvPath;
   # Referencing this output makes the packaged full runner build the native
   # extension loader/schema/policy check before it can run the Python suites.
   piCheckResult = piCheck;

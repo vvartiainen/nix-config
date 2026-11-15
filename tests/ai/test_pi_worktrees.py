@@ -43,8 +43,8 @@ class PiWorktreeTests(unittest.TestCase):
             text=True,
         ).removesuffix("\n")
 
-    def test_main_checkout_and_non_repository_need_no_extra_grants(self):
-        self.assertEqual(launcher.worktree_git_dirs(self.repo), [])
+    def test_main_checkout_metadata_is_found_and_non_repository_has_no_grants(self):
+        self.assertEqual(launcher.worktree_git_dirs(self.repo), [str(self.repo / ".git")])
         self.assertEqual(launcher.worktree_git_dirs(self.root), [])
 
     def test_linked_worktree_grants_only_shared_and_per_worktree_git_dirs(self):

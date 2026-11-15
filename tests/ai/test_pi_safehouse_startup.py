@@ -4,6 +4,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import re
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -17,6 +18,25 @@ module_spec.loader.exec_module(launcher)
 
 
 class StartupTests(unittest.TestCase):
+    def test_generated_policy_expressions_are_balanced(self):
+        spec = {"agentDir": "/tmp/agent", "writable": [], "denied": [], "protected": []}
+        for sockets in ((), ('/tmp/SSH agent (fixture)/agent.sock',)):
+            for service in (None, 12345):
+                with self.subTest(sockets=sockets, service=service):
+                    profile = launcher.make_profile(
+                        spec, "/tmp/project", "/tmp", service, sockets,
+                    )
+                    # Ignore quoted strings (including regexes): paths may
+                    # contain parentheses and escaped quotes.
+                    depth = 0
+                    for token in re.findall(r'"(?:\\.|[^"\\])*"|[()]', profile):
+                        if token == "(":
+                            depth += 1
+                        elif token == ")":
+                            depth -= 1
+                            self.assertGreaterEqual(depth, 0, profile)
+                    self.assertEqual(depth, 0, profile)
+
     def test_optional_paths_and_first_launch_directories(self):
         for include_existing in (True, False):
             with self.subTest(include_existing=include_existing), tempfile.TemporaryDirectory() as scratch:
@@ -289,6 +309,10 @@ class StartupTests(unittest.TestCase):
             profile = captured["profile"]
             passed = captured["passed"]
         self.assertIn(f'(allow file-read* (literal "{socket_path}"))', profile)
+        self.assertIn(
+            f'(allow network-outbound (remote unix-socket (path-literal "{socket_path}")))',
+            profile,
+        )
         self.assertIn(f'(require-not (literal "{socket_path}"))', profile)
         # Traversal to the socket is granted, without reading its directory.
         self.assertIn(f'(literal "{socket_path.parent}")', profile)
