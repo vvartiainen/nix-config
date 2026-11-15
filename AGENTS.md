@@ -112,8 +112,10 @@ For T3 mode selection and approval behavior, follow the
   variants or work around it.
 - Git over SSH, `fj`, and worktree add/move/remove outside the session's own
   worktree run outside the sandbox with approval, and `allowed_domains` does not
-  cover SSH. Pi is the exception: it reaches the SSH agent socket and an
-  agent-only forge token inside its own sandbox.
+  cover SSH. Claude runs a standalone `git push` outside its sandbox after one
+  prompt; do not retry it with `allowed_domains`. Pi is the exception: it
+  reaches the SSH agent socket and an agent-only forge token inside its own
+  sandbox.
 - For read-only `gh`/`fj` views and Claude's reviewed fetch hook,
   follow the [standalone command rules](docs/agents/permissions.md#working-in-the-sandboxes). Add sibling repositories to the session before writing to them.
 - For `fj` repository discovery, follow
