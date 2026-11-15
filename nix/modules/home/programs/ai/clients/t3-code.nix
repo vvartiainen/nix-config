@@ -5,8 +5,9 @@
   ...
 }:
 let
+  jsonFormat = pkgs.formats.json { };
   mergeConfig = import ../../../merge-config.nix { inherit lib pkgs config; };
-  keybindings = (pkgs.formats.json { }).generate "t3-code-keybindings.json" (
+  keybindings = jsonFormat.generate "t3-code-keybindings.json" (
     map (binding: binding // { when = "!terminalFocus && !previewFocus"; }) [
       {
         key = "ctrl+shift+j";
@@ -50,6 +51,93 @@ let
     ' "$current" > "$temporary"
     ${pkgs.coreutils}/bin/mv "$temporary" "$destination"
   '';
+  # T3 publishes environment themes from regular files in this directory and
+  # skips symlinks, so activation copies the palette into place.
+  themePath = "${config.home.homeDirectory}/.t3/userdata/themes/catppuccin-mocha.json";
+  theme = jsonFormat.generate "t3-code-catppuccin-mocha.json" {
+    version = 1;
+    id = "catppuccin-mocha";
+    name = "Catppuccin Mocha";
+    appearance = "dark";
+    colors = {
+      # Base colors: base, mantle, crust, surface0-2, overlay0-1, subtext0-1.
+      canvas = "#1e1e2e";
+      chrome = "#181825";
+      surface = "#1e1e2e";
+      surfaceRaised = "#313244";
+      surfaceOverlay = "#45475a";
+      border = "#45475a";
+      input = "#313244";
+      text = "#cdd6f4";
+      textMuted = "#a6adc8";
+      secondaryLabel = "#bac2de";
+      placeholder = "#6c7086";
+      iconMuted = "#7f849c";
+      muted = "#313244";
+      mutedForeground = "#a6adc8";
+      secondary = "#45475a";
+      secondaryForeground = "#cdd6f4";
+      # Accent: mauve, with lavender for hover states.
+      focus = "#cba6f7";
+      accent = "#cba6f7";
+      accentForeground = "#1e1e2e";
+      accentSurface = "#cba6f7";
+      accentSurfaceForeground = "#1e1e2e";
+      update = "#cba6f7";
+      updateForeground = "#1e1e2e";
+      updateSurface = "#cba6f7";
+      # Status: red, yellow and peach.
+      error = "#f38ba8";
+      errorForeground = "#1e1e2e";
+      errorSurface = "#f38ba8";
+      warning = "#f9e2af";
+      warningForeground = "#1e1e2e";
+      warningSurface = "#f9e2af";
+      searchMatchBackground = "#f9e2af";
+      searchMatchForeground = "#1e1e2e";
+      searchMatchActiveBackground = "#fab387";
+      searchMatchActiveForeground = "#1e1e2e";
+      # Conversation and code surfaces.
+      messageSurface = "#181825";
+      messageForeground = "#cdd6f4";
+      messageAction = "#cba6f7";
+      messageActionForeground = "#1e1e2e";
+      messageActionHover = "#b4befe";
+      codeBackground = "#181825";
+      codeForeground = "#cdd6f4";
+      # Sidebar and toolbar.
+      sidebar = "#11111b";
+      sidebarForeground = "#cdd6f4";
+      sidebarMutedForeground = "#a6adc8";
+      sidebarControlSurface = "#1e1e2e";
+      sidebarRowHover = "#313244";
+      sidebarRowActive = "#45475a";
+      sidebarRowSelected = "#585b70";
+      sidebarBorder = "#45475a";
+      toolbar = "#181825";
+      toolbarForeground = "#cdd6f4";
+      toolbarBorder = "#45475a";
+      toolbarControl = "#313244";
+      toolbarControlForeground = "#cdd6f4";
+      toolbarControlHover = "#45475a";
+      # Terminal.
+      terminalBackground = "#11111b";
+      terminalForeground = "#cdd6f4";
+      terminalCursor = "#cba6f7";
+      terminalSelection = "#45475a";
+      terminalScrollbar = "#45475a";
+      terminalScrollbarHover = "#585b70";
+    };
+  };
+  publishTheme = pkgs.writeShellScript "t3-code-theme" ''
+    set -eu
+    destination="$1"
+    ${pkgs.coreutils}/bin/mkdir -p "$(dirname "$destination")"
+    temporary=$(${pkgs.coreutils}/bin/mktemp "$destination.XXXXXX")
+    trap '${pkgs.coreutils}/bin/rm -f "$temporary"' EXIT
+    ${pkgs.coreutils}/bin/install -m 0644 ${theme} "$temporary"
+    ${pkgs.coreutils}/bin/mv "$temporary" "$destination"
+  '';
   serverConfig = mergeConfig {
     name = "t3-code";
     path = "${config.home.homeDirectory}/.t3/userdata/settings.json";
@@ -61,6 +149,10 @@ let
         model = "claude-opus-5-5";
       };
       defaultThreadEnvMode = "worktree";
+      # Clients adopt the published Catppuccin Mocha theme once and keep their
+      # own later choice. Bump the timestamp to apply it again.
+      defaultTheme = "catppuccin-mocha";
+      defaultThemeSetAt = "2026-11-15T02:37:03.000Z";
       fallbackModelSelection = {
         instanceId = "codex";
         model = "gpt-6.1-sol";
@@ -241,7 +333,10 @@ in
 {
   # Merge shortcuts and settings into the files T3 also writes.
   home.activation.t3CodeConfig = lib.hm.dag.entryAfter [ "linkGeneration" ] (
-    serverConfig
+    ''
+      run ${publishTheme} ${lib.escapeShellArg themePath}
+    ''
+    + serverConfig
     + ''
       run ${mergeKeybindings} ${lib.escapeShellArg "${config.home.homeDirectory}/.t3/userdata/keybindings.json"}
     ''
