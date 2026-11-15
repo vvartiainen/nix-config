@@ -214,7 +214,8 @@ Read deny.
 ## T3 Code permission modes
 
 New threads default to **Auto-accept edits**. Use that mode for Claude;
-switch Codex threads to **Auto** by hand in the composer's permission picker.
+switch Codex threads to **Auto** and Pi threads to **Full access** by hand in
+the composer's permission picker.
 T3 supports an environment default and project overrides, but no default per
 provider or provider instance. Existing threads and project overrides retain
 their selected modes; change those separately in T3. See
@@ -225,6 +226,15 @@ and the [settings schema](https://github.com/pingdotgg/t3code/blob/main/packages
 | --- | --- | --- |
 | Claude | Sandboxed workspace, scratch and agent-cache writes, configured-remote fetches and `fj` views run without prompts. Nix builds, unlisted network hosts and reads outside allowed paths ask. | Automatic review can approve Nix builds without prompting. Unlisted hosts fail with `CONNECT tunnel failed, response 403` without a prompt. |
 | Codex | Observed shell writes ask, including plain `touch`/`rm` in the workspace and `/tmp`, and every agent-cache write. `git fetch origin` and Nix builds also ask. | Workspace and `/tmp` writes run without prompts; automatic review can approve escalations such as Nix builds. |
+| Pi | T3's bridge asks before every tool call it does not classify as read-only, so every shell command, including `rg`, `git status` and `just lint`, prompts even though Pi's own rules allow it. File edits run. | The same per-tool prompts: T3 has no automatic review for Pi. |
+
+T3's Pi bridge decides by tool name, not by command: only `read`, `grep`,
+`find`, `ls`, Pi's built-in `tool_search` and read-only MCP tools pass without
+asking, and Auto-accept edits adds Pi's file edits. Every other call asks, and
+a Pi allow rule cannot suppress the prompt. Run Pi threads in **Full access**,
+where no T3 approval is raised and the
+[Safehouse sandbox and permission extension](#pi) remain the boundary; a
+subagent uses its parent thread's mode.
 
 **Auto** uses provider automatic review; approval requests may still reach you.
 **Full access** removes the ordinary approval boundary. T3 injects its own MCP
@@ -313,7 +323,8 @@ guarded push forms still ask.
 Confirm the pinned permission extension loads without errors; inspect it with
 `/permission-system show`. Routine file tools, bash, tool discovery and the
 configured web research tools are allowed. So is the forge flow this repository
-needs on every task: `git fetch origin`, branch pushes to `origin` and
+needs on every task: `git fetch origin` (also with `--prune`, `--quiet` or `-q`
+before the remote), branch pushes to `origin` and
 `fj pr create`/`fj pr edit` run without a prompt. Force pushes stay denied, and
 other remotes, remote branch deletion or mirroring, direct `main`/`master`
 pushes, merges, issue writes, installs, publishing, credentials, host control,
