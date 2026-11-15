@@ -64,7 +64,8 @@ The rest of `docs/`:
 
 - [`programs/`](docs/programs/): everyday use of one program or area:
   [desktop](docs/programs/desktop.md), [terminal and files](docs/programs/terminal.md),
-  [Neovim](docs/programs/neovim.md), [Rex](docs/programs/rex.md) and
+  [Neovim](docs/programs/neovim.md), [Rex](docs/programs/rex.md),
+  [Spotify](docs/programs/spotify.md) and
   [Linux builders](docs/programs/linux-builders.md)
 - [`agents/`](docs/agents/): coding agents:
   [comparison](docs/agents/comparison.md),

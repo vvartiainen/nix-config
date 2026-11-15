@@ -23,6 +23,7 @@
     ../../modules/darwin/programs/sketchybar.nix
     ../../modules/darwin/programs/spotlight.nix
     ../../modules/darwin/programs/skhd.nix
+    ../../modules/darwin/programs/spotify.nix
     ../../modules/darwin/programs/yabai.nix
   ];
 
