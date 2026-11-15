@@ -32,7 +32,13 @@ class SafehouseTests(unittest.TestCase):
             "GIT_CONFIG_NOSYSTEM": "1",
         }
         # Preparation and sandboxed Git must not load host config or overrides.
-        cls.env = {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
+        # Strip T3 session variables too, so a host app's inherited endpoint
+        # cannot decide which port a sandbox test may reach.
+        cls.env = {
+            key: value
+            for key, value in os.environ.items()
+            if not key.startswith(("GIT_", "T3_"))
+        }
         cls.env.pop("SSH_AUTH_SOCK", None)
         cls.env.update(cls.config_env, HOME=str(cls.home))
         for path in [cls.work, cls.agent, cls.cache, cls.home / ".aws", cls.home / ".npm", cls.home / ".ssh"]:
@@ -69,7 +75,7 @@ class SafehouseTests(unittest.TestCase):
     def tearDownClass(cls):
         cls.scratch.cleanup()
 
-    def run_probe(self, source, workdir=None, ssh_socket=None):
+    def run_probe(self, source, workdir=None, ssh_socket=None, t3_url=None):
         env = dict(
             self.env,
             SYNTHETIC_HOST_SECRET="must-not-pass",
@@ -77,6 +83,8 @@ class SafehouseTests(unittest.TestCase):
         )
         if ssh_socket is not None:
             env["SSH_AUTH_SOCK"] = str(ssh_socket)
+        if t3_url is not None:
+            env["T3_MCP_URL"] = t3_url
         return subprocess.run([
             sys.executable, str(Path(__file__).resolve().parents[2] / "nix/modules/home/programs/ai/clients/pi/pi-safehouse.py"),
             str(self.spec), os.environ["SAFEHOUSE"], sys.executable, "-c", source,
@@ -300,6 +308,38 @@ class SafehouseTests(unittest.TestCase):
                         f"subprocess.run([sys.executable, '-c', {child!r}], check=True)"
                     )
                     self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_t3_mcp_port_is_reachable_and_other_host_ports_stay_blocked(self):
+        # The injected tool endpoint is the one host TCP service a sandboxed Pi
+        # may reach. Pair it with another listener to keep the allow narrow.
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as t3, \
+                socket.socket(socket.AF_INET, socket.SOCK_STREAM) as other:
+            t3.bind(("127.0.0.1", 0))
+            t3.listen(1)
+            other.bind(("127.0.0.1", 0))
+            other.listen(1)
+            t3_port = t3.getsockname()[1]
+            other_port = other.getsockname()[1]
+            child = (
+                "import socket\n"
+                f"for port, allowed in [({t3_port}, True), ({other_port}, False)]:\n"
+                " client = socket.socket()\n"
+                " client.settimeout(2)\n"
+                " try:\n"
+                "  client.connect(('127.0.0.1', port))\n"
+                " except PermissionError:\n"
+                "  if allowed: raise AssertionError('%s was blocked' % port)\n"
+                " else:\n"
+                "  if not allowed: raise AssertionError('%s was reachable' % port)\n"
+                " finally:\n"
+                "  client.close()\n"
+            )
+            result = self.run_probe(
+                "import subprocess, sys; "
+                f"subprocess.run([sys.executable, '-c', {child!r}], check=True)",
+                t3_url=f"http://127.0.0.1:{t3_port}/mcp",
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
 
 
 if __name__ == "__main__":
