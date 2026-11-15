@@ -4,6 +4,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import re
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -17,6 +18,25 @@ module_spec.loader.exec_module(launcher)
 
 
 class StartupTests(unittest.TestCase):
+    def test_generated_policy_expressions_are_balanced(self):
+        spec = {"agentDir": "/tmp/agent", "writable": [], "denied": [], "protected": []}
+        for sockets in ((), ('/tmp/SSH agent (fixture)/agent.sock',)):
+            for service in (None, 12345):
+                with self.subTest(sockets=sockets, service=service):
+                    profile = launcher.make_profile(
+                        spec, "/tmp/project", "/tmp", service, sockets,
+                    )
+                    # Ignore quoted strings (including regexes): paths may
+                    # contain parentheses and escaped quotes.
+                    depth = 0
+                    for token in re.findall(r'"(?:\\.|[^"\\])*"|[()]', profile):
+                        if token == "(":
+                            depth += 1
+                        elif token == ")":
+                            depth -= 1
+                            self.assertGreaterEqual(depth, 0, profile)
+                    self.assertEqual(depth, 0, profile)
+
     def test_optional_paths_and_first_launch_directories(self):
         for include_existing in (True, False):
             with self.subTest(include_existing=include_existing), tempfile.TemporaryDirectory() as scratch:
@@ -176,6 +196,164 @@ class StartupTests(unittest.TestCase):
             ):
                 self.assertEqual(launcher.main(), 0)
         self.assertEqual(captured["path"], f"{store_bin}:{plain}")
+
+    def test_only_the_t3_mcp_port_is_reachable_on_the_host(self):
+        # T3 Code serves its injected tools on a loopback port it advertises in
+        # T3_MCP_URL. Nothing else on the host, including the Nix daemon and
+        # Rex, may become reachable from the sandbox.
+        cases = [
+            ("http://127.0.0.1:3773/mcp", 3773),
+            ("http://localhost:4100/mcp", 4100),
+            ("http://[::1]:3773/mcp", 3773),
+            ("https://example.com:443/mcp", None),
+            ("http://192.168.1.5:3773/mcp", None),
+            ("http://127.0.0.1/mcp", None),
+            ("", None),
+        ]
+        for url, expected in cases:
+            with self.subTest(url=url):
+                self.assertEqual(launcher.loopback_service(url), expected)
+
+        spec = {
+            "agentDir": "/state", "readable": [], "writable": [], "denied": [],
+            "protected": [], "env": {},
+        }
+        host_services = r'(deny network-outbound (remote ip "localhost:*"))'
+        profile = launcher.make_profile(spec, "/work", "/tmp")
+        self.assertIn(host_services, profile)
+        profile = launcher.make_profile(spec, "/work", "/tmp", 3773)
+        self.assertIn(
+            '(deny network-outbound (require-all '
+            '(remote ip "localhost:*") (require-not (remote ip "localhost:3773"))))',
+            profile,
+        )
+        # The UNIX socket and LAN denies stay in place with the port exclusion.
+        self.assertIn('(remote unix-socket)', profile)
+        self.assertNotIn('localhost:3774', profile)
+
+    def test_existing_git_metadata_stays_read_only_but_new_repositories_work(self):
+        # `git init` and `git clone` are ordinary sandboxed work, so the blanket
+        # `.git/config` and `.git/hooks` deny is gone. The git directories of
+        # repositories that already exist stay protected, and a linked
+        # worktree's pointer file cannot be repointed.
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch).resolve()
+            repo = root / "repo"
+            repo.mkdir()
+            pointer = repo / ".git"
+            pointer.write_text("gitdir: /elsewhere/worktrees/topic\n")
+            git_dir = root / "elsewhere" / "worktrees" / "topic"
+            (git_dir / "hooks").mkdir(parents=True)
+            (git_dir / "config").write_text("[core]\n")
+            spec = root / "spec.json"
+            spec.write_text(json.dumps({
+                "agentDir": str(root / "state"), "readable": [],
+                "writable": [str(root / "state"), str(root / "cache")], "denied": [],
+                "protected": [], "env": {},
+            }))
+            captured = {}
+
+            def capture(command, env):
+                path = next(arg for arg in command if arg.startswith("--append-profile="))
+                captured["profile"] = Path(path.split("=", 1)[1]).read_text()
+                return 0
+
+            with (
+                patch.object(launcher.sys, "argv", ["launcher", str(spec), "safehouse", "pi"]),
+                patch.object(launcher.Path, "cwd", return_value=repo),
+                patch.object(launcher, "worktree_git_dirs", return_value=[str(git_dir)]),
+                patch.dict(os.environ, {"HOME": str(root / "home"), "TMPDIR": str(root)}),
+                patch.object(launcher.subprocess, "call", side_effect=capture),
+            ):
+                self.assertEqual(launcher.main(), 0)
+            profile = captured["profile"]
+        for protected in (git_dir / "config", git_dir / "hooks", pointer):
+            self.assertIn(f'(deny file-write* (subpath "{protected}"))', profile)
+        self.assertNotIn(r'(regex #"/\.git/(config$|hooks(/|$))")', profile)
+
+    def test_only_the_ssh_agent_socket_is_reachable_among_host_sockets(self):
+        # The agent signs with a key the sandbox never reads, so only the socket
+        # the host exports is reachable; the socket deny still covers the rest.
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch).resolve()
+            socket_path = root / "agent" / "Listeners"
+            socket_path.parent.mkdir()
+            socket_path.write_text("")
+            spec = root / "spec.json"
+            spec.write_text(json.dumps({
+                "agentDir": str(root / "state"), "readable": [],
+                "writable": [str(root / "state"), str(root / "cache")], "denied": [],
+                "protected": [], "env": {},
+            }))
+            captured = {}
+
+            def capture(command, env):
+                path = next(arg for arg in command if arg.startswith("--append-profile="))
+                captured["profile"] = Path(path.split("=", 1)[1]).read_text()
+                captured["passed"] = next(
+                    arg for arg in command if arg.startswith("--env-pass=")
+                ).split("=", 1)[1].split(",")
+                return 0
+
+            with (
+                patch.object(launcher.sys, "argv", ["launcher", str(spec), "safehouse", "pi"]),
+                patch.object(launcher.Path, "cwd", return_value=root),
+                patch.dict(os.environ, {
+                    "HOME": str(root / "home"),
+                    "TMPDIR": str(root),
+                    "SSH_AUTH_SOCK": str(socket_path),
+                }),
+                patch.object(launcher.subprocess, "call", side_effect=capture),
+            ):
+                self.assertEqual(launcher.main(), 0)
+            profile = captured["profile"]
+            passed = captured["passed"]
+        self.assertIn(f'(allow file-read* (literal "{socket_path}"))', profile)
+        self.assertIn(
+            f'(allow network-outbound (remote unix-socket (path-literal "{socket_path}")))',
+            profile,
+        )
+        self.assertIn(f'(require-not (literal "{socket_path}"))', profile)
+        # Traversal to the socket is granted, without reading its directory.
+        self.assertIn(f'(literal "{socket_path.parent}")', profile)
+        self.assertIn("SSH_AUTH_SOCK", passed)
+
+    def test_sandbox_only_commands_go_first_on_path(self):
+        # A host app can prepend commands that must not exist outside the
+        # sandbox, such as a wrapper pointing a CLI at the sandbox's own
+        # credential store.
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch).resolve()
+            wrapper = root / "wrapper" / "bin"
+            wrapper.mkdir(parents=True)
+            host_bin = root / "host-bin"
+            host_bin.mkdir()
+            agent = root / "state"
+            cache = root / "cache"
+            spec = root / "spec.json"
+            spec.write_text(json.dumps({
+                "agentDir": str(agent), "readable": [],
+                "writable": [str(agent), str(cache)], "denied": [],
+                "protected": [], "env": {}, "pathPrepend": [str(wrapper)],
+            }))
+            captured = {}
+
+            def capture(command, env):
+                captured["path"] = env["PATH"]
+                return 0
+
+            with (
+                patch.object(launcher.sys, "argv", ["launcher", str(spec), "safehouse", "pi"]),
+                patch.object(launcher.Path, "cwd", return_value=root),
+                patch.dict(os.environ, {
+                    "HOME": str(root / "home"),
+                    "TMPDIR": str(root),
+                    "PATH": f"{host_bin}:{wrapper}",
+                }),
+                patch.object(launcher.subprocess, "call", side_effect=capture),
+            ):
+                self.assertEqual(launcher.main(), 0)
+        self.assertEqual(captured["path"], f"{wrapper}:{host_bin}")
 
 
 if __name__ == "__main__":

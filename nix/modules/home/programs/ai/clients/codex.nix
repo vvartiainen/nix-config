@@ -82,6 +82,8 @@ let
           ".git" = "write";
           ".git/hooks" = "read";
           ".git/config" = "read";
+          ".git/config.worktree" = "read";
+          ".git/worktrees" = "read";
           "**/.env" = "deny";
           "**/.env.*" = "deny";
         }
@@ -107,6 +109,10 @@ let
         "${repoRoot}/.git" = "write";
         "${repoRoot}/.git/hooks" = "read";
         "${repoRoot}/.git/config" = "read";
+        "${repoRoot}/.git/config.worktree" = "read";
+        # Protect other worktrees' executable settings too. The terminal
+        # wrapper grants only this worktree's index/refs back below.
+        "${repoRoot}/.git/worktrees" = "read";
         # Node's OpenSSL startup probes this even for local commands.
         "/System/Library/OpenSSL" = "read";
         # Managed worktrees can be created after the session starts, outside
@@ -271,7 +277,7 @@ in
         base=''${common_dir:h}
         while [[ $base == *.* ]]; do base=''${base:h}; done
         local c=''${common_dir#$base/} g=''${git_dir#$base/}
-        command codex -c "permissions.${profile}.filesystem.$base={\"$c\"=\"write\", \"$c/hooks\"=\"read\", \"$c/config\"=\"read\", \"$g\"=\"write\"}" "$@"
+        command codex -c "permissions.${profile}.filesystem.$base={\"$c\"=\"write\", \"$c/hooks\"=\"read\", \"$c/config\"=\"read\", \"$c/config.worktree\"=\"read\", \"$c/worktrees\"=\"read\", \"$g\"=\"write\", \"$g/hooks\"=\"read\", \"$g/config\"=\"read\", \"$g/config.worktree\"=\"read\"}" "$@"
       else
         command codex "$@"
       fi

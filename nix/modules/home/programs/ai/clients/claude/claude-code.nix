@@ -253,6 +253,10 @@ let
         denyWrite = [
           "**/.git/hooks"
           "**/.git/config"
+          "**/.git/config.worktree"
+          "**/.git/worktrees/*/config"
+          "**/.git/worktrees/*/config.worktree"
+          "**/.git/worktrees/*/hooks"
         ];
         # Like Codex, deny the home directory apart from the projects
         # directory and the tool paths. Sandboxed commands can hand what they
@@ -275,6 +279,7 @@ let
       };
       network = {
         allowedDomains = network.sandbox;
+        allowLocalBinding = false;
         # Other hosts prompt instead of failing (auto mode still refuses them
         # unless the command declares the host).
         strictAllowlist = false;

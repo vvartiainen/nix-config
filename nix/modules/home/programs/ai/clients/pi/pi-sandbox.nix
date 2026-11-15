@@ -6,7 +6,13 @@
 }:
 let
   policy = import ../../shared/permissions.nix { inherit lib config; };
+  forge = import ../../shared/forge.nix { inherit config lib pkgs; };
   agentDir = config.programs.pi-coding-agent.configDir;
+  sshDir = "${config.home.homeDirectory}/.ssh";
+  # Safehouse's ssh integration denies the whole `~/.ssh` subtree and then
+  # allows the connection files, so the shared directory deny would undo it.
+  # Drop it here and deny key material on the permission layer instead.
+  denied = builtins.filter (path: path != sshDir) policy.paths.denied;
   permissionFile = "${agentDir}/extensions/pi-permission-system/config.json";
   commandString = cmd: builtins.unsafeDiscardStringContext (lib.concatStringsSep " " cmd);
   rules = value: commands: lib.genAttrs (map (cmd: "${commandString cmd} *") commands) (_: value);
@@ -28,7 +34,7 @@ let
     lib.concatMap (path: [
       path
       "${path}/*"
-    ]) policy.paths.denied
+    ]) denied
   ) (_: "deny");
   permissionSettings = {
     yoloMode = false;
@@ -53,7 +59,18 @@ let
       # The kernel enforces external filesystem boundaries. Unknown tools,
       # including direct MCP tools, still require approval.
       external_directory = "allow";
-      mcp = "ask";
+      # T3 Code injects its own server over its loopback endpoint and gates every
+      # call with its runtime mode, so asking on the permission layer would
+      # prompt twice for the same tool. Both spellings come from the bridge's
+      # public and hidden tool names; T3 itself is the endpoint's owner.
+      mcp =
+        {
+          "*" = "ask";
+        }
+        // lib.genAttrs [
+          "t3-code"
+          "t3_code"
+        ] (_: "allow");
       # Safehouse bounds what a command can touch and the path rules above still
       # deny secrets, so asking per command only prompted for ordinary work and
       # ended in session-wide `*` grants. Allow bash instead and keep asking for
@@ -83,6 +100,11 @@ let
           "*.key" = "deny";
           # Pi itself needs its credentials; model tools do not.
           "${agentDir}/auth.json" = "deny";
+          # The sandbox denies private keys outright; keep the model from asking
+          # for them, while `ssh` still reads config and known_hosts.
+          "${sshDir}/id_*" = "deny";
+          "${sshDir}/*.pem" = "deny";
+          "${sshDir}/*.key" = "deny";
         }
         // secretPathRules;
     };
@@ -94,13 +116,17 @@ let
         policy.paths.readonly
         ++ policy.paths.runtime
         ++ policy.paths.hostShared
-        ++ [ "${config.home.homeDirectory}/.agents" ];
+        # The agent-only forge home: its `fj` wrapper shadows the profile one,
+        # and this grant lets `fj` and git read the restricted token there
+        # instead of relying on the keychain or SSH authentication.
+        ++ [
+          "${config.home.homeDirectory}/.agents"
+          forge.keystoreDir
+        ];
+      # Sandbox-only commands, ahead of the profile on PATH.
+      pathPrepend = [ "${forge.fj}/bin" ];
       writable = policy.caches.writePaths ++ [ agentDir ];
-      denied = policy.paths.denied;
-      # Keep SSH key files denied but allow known_hosts, config and the agent
-      # socket, so git fetch and push over SSH can authenticate inside the
-      # sandbox. The permission layer still asks for every push.
-      ssh = true;
+      inherit denied;
       protected = [
         permissionFile
         "${agentDir}/settings.json"
@@ -112,9 +138,24 @@ let
       ];
       # Nixpkgs' OpenSSL, which Node uses, has no roots when SSL_CERT_FILE is
       # unreadable. Safehouse can't follow /etc/ssl/certs through /etc/static.
-      env = policy.caches.env // {
-        SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
-      };
+      env =
+        policy.caches.env
+        // {
+          SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+          # Forge SSH remotes switch to HTTPS with the restricted token, and the
+          # keychain credential helper is dropped.
+          GIT_CONFIG_GLOBAL = "${forge.gitConfig}";
+          # `fj` has no configurable default host, so repository arguments can
+          # leave it out.
+          FJ_FALLBACK_HOST = "https://${forge.host}";
+        }
+        # A GUI host may supply launchd's agent even when workstation SSH
+        # selects 1Password. Use the declared agent for both policy and tools.
+        // lib.optionalAttrs (config.home.sessionVariables ? SSH_AUTH_SOCK) {
+          SSH_AUTH_SOCK =
+            lib.replaceStrings [ "$HOME" "\${HOME}" ] [ config.home.homeDirectory config.home.homeDirectory ]
+              config.home.sessionVariables.SSH_AUTH_SOCK;
+        };
     }
   );
 in

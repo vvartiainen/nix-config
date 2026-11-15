@@ -111,8 +111,10 @@ For T3 mode selection and approval behavior, follow the
   mean the sandbox blocked it: retry once with escalation or ask, don't try
   variants or work around it.
 - Git over SSH, `fj`, and worktree add/move/remove outside the session's own
-  worktree run outside the sandbox with approval; `allowed_domains` does not
-  cover SSH. For read-only `gh`/`fj` views and Claude's reviewed fetch hook,
+  worktree run outside the sandbox with approval, and `allowed_domains` does not
+  cover SSH. Pi is the exception: it reaches the SSH agent socket and an
+  agent-only forge token inside its own sandbox.
+- For read-only `gh`/`fj` views and Claude's reviewed fetch hook,
   follow the [standalone command rules](docs/agents/permissions.md#working-in-the-sandboxes). Add sibling repositories to the session before writing to them.
 - For `fj` repository discovery, follow
   [Forgejo discovery](docs/agents/permissions.md#forgejo-repository-discovery).
@@ -133,6 +135,9 @@ For T3 mode selection and approval behavior, follow the
 - For helper scripts, check `type -a python3` and prefer an installed executable
   over a mise shim when it emits unrelated cache/state permission warnings.
   Do not change tool-manager permissions just to hide logs.
+- macOS sandbox runtime tests need reviewed execution outside the agent sandbox.
+  Use synthetic sockets and bind each tested host address before probing it;
+  skip unassigned addresses instead of changing the Mac's network interfaces.
 
 ## Working conventions
 
@@ -153,6 +158,9 @@ For T3 mode selection and approval behavior, follow the
     long descriptions, no trailers such as Co-Authored-By or Claude-Session.
   - Push with `git push -u origin <branch>` and open the pull request with
     `fj pr create -r '<forge-host>/<owner>/<repo>' --base main --head <branch> --body-file <file> "<title>"`.
+    Pi's sandbox keeps the shared `.git/config` read-only, so there the upstream
+    is not recorded (`git push origin <branch>`) and `fj` takes
+    `-r '<owner>/<repo>'` without the host.
   - Write the body with the sections of
     [the PR template](.forgejo/pull_request_template.md), keeping its
     headings and order. Forgejo fills it in only in the web UI;
