@@ -98,14 +98,13 @@ def worktree_git_dirs(workdir):
     return list(dict.fromkeys((common, current)))
 
 
-def ssh_agent_sockets():
+def ssh_agent_sockets(value):
     """Agent sockets the host offers, in raw and resolved spellings.
 
     Safehouse's `ssh` integration grants its own agent paths and denies `~/.ssh`
     key material, but a host app can hand over any socket through SSH_AUTH_SOCK
     (1Password, launchd). Grant exactly that path and no other host socket.
     """
-    value = os.environ.get("SSH_AUTH_SOCK", "")
     if not value:
         return []
     paths = []
@@ -232,22 +231,27 @@ def main():
     # rather than optional read paths. Ensure first launch can write to them.
     for path in spec["writable"]:
         Path(path).mkdir(parents=True, exist_ok=True)
+    # Pick the final environment before granting its agent socket. GUI hosts
+    # can inherit launchd's socket while workstation SSH uses another agent.
+    env = {
+        key: value for key, value in os.environ.items()
+        if not key.startswith("SAFEHOUSE_") and key not in ("BASH_ENV", "ENV")
+    }
+    env.update(spec["env"])
     with tempfile.TemporaryDirectory(prefix="pi-safehouse-") as scratch:
         overlay = Path(scratch) / "policy.sb"
         t3_service = loopback_service(os.environ.get("T3_MCP_URL", ""))
         overlay.write_text(
-            make_profile(spec, workdir, tmpdir, t3_service, ssh_agent_sockets())
+            make_profile(
+                spec, workdir, tmpdir, t3_service,
+                ssh_agent_sockets(env.get("SSH_AUTH_SOCK", "")),
+            )
         )
         # Safehouse sanitizes the inherited environment; pass only the selected
         # API key, our cache variables and T3's session variables. T3 Code drives
         # Pi over RPC and hands its MCP endpoint, runtime mode and injected
         # extension path to the process through T3_* names. Stored Pi credentials
         # also work.
-        env = {
-            key: value for key, value in os.environ.items()
-            if not key.startswith("SAFEHOUSE_") and key not in ("BASH_ENV", "ENV")
-        }
-        env.update(spec["env"])
         # A host app may put sandbox-only commands first, e.g. a wrapper that
         # points an app-managed CLI at the sandbox's own credential store.
         env["PATH"] = resolved_path(
