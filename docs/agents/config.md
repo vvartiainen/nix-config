@@ -97,7 +97,9 @@ This builds the validator from the checkout and reads actual global config
 files. `just check` and `just build` also invoke it; activation checks merged
 settings. It reports schema coverage, parsing-only checks and missing files.
 Validation is offline and checks structure and supported values, not whether
-commands, models or servers work.
+commands, models or servers work. The bundled Claude schema adds hook
+`onFailure`, which SchemaStore lacks; the schema build fails once upstream
+adds it, so the patch can be dropped.
 
 A failing merge preserves its destination and merge state, but activation is
 not transactional: earlier successful steps may already have written files.

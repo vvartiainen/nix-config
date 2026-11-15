@@ -65,6 +65,23 @@ class ValidationTest(unittest.TestCase):
             with self.subTest(schema=schema), self.assertRaises(ValueError):
                 validation.validate(data, schema)
 
+    def test_claude_hooks_accept_on_failure(self):
+        def settings(hook):
+            return {"hooks": {"PreToolUse": [{"matcher": "Bash", "hooks": [hook]}]}}
+
+        for hook in [
+            {"type": "command", "command": "true", "onFailure": "block"},
+            {"type": "http", "url": "http://localhost", "onFailure": "continue"},
+        ]:
+            with self.subTest(hook=hook["type"]):
+                validation.validate(settings(hook), "claude")
+        for hook in [
+            {"type": "command", "command": "true", "onFailure": "stop"},
+            {"type": "prompt", "prompt": "check", "onFailure": "block"},
+        ]:
+            with self.subTest(hook=hook), self.assertRaises(ValueError):
+                validation.validate(settings(hook), "claude")
+
     def test_codex_globs_need_deny_access(self):
         def config(filesystem):
             return {"permissions": {"p": {"filesystem": filesystem}}}

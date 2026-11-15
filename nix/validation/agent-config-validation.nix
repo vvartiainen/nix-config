@@ -29,11 +29,26 @@ let
   );
   # Keep only schema JSON in the validator's runtime closure, rather than
   # pulling the Pi executable into every merge helper.
-  bundle = pkgs.runCommandLocal "agent-config-schemas" { } ''
+  bundle = pkgs.runCommandLocal "agent-config-schemas" { nativeBuildInputs = [ pkgs.jq ]; } ''
     mkdir -p "$out"
     ${builtins.concatStringsSep "\n" (
       map (name: ''cp ${schemas.${name}} "$out/${name}.json"'') (builtins.attrNames schemas)
     )}
+    # SchemaStore lacks onFailure, which Claude Code 2.1.295 added to
+    # command and http hooks. Fail the build once upstream adds it.
+    jq -e '[.["$defs"].hookCommand.anyOf[] | select(.properties.onFailure)] | length == 0' \
+      "$out/claude.json" >/dev/null
+    jq '.["$defs"].hookCommand.anyOf |= map(
+          if (.properties.type.const | IN("command", "http"))
+          then .properties.onFailure = {
+            type: "string",
+            enum: ["continue", "block"],
+            description: "Whether the triggering action goes ahead when the hook fails"
+          }
+          else . end)' "$out/claude.json" > claude.json
+    jq -e '[.["$defs"].hookCommand.anyOf[] | select(.properties.onFailure)] | length == 2' \
+      claude.json >/dev/null
+    mv claude.json "$out/claude.json"
   '';
   manifest = pkgs.writeText "agent-config-schemas.json" (
     builtins.toJSON (builtins.mapAttrs (name: _: "${bundle}/${name}.json") schemas)
