@@ -118,7 +118,7 @@ let
         ++ policy.paths.hostShared
         # The agent-only forge home: its `fj` wrapper shadows the profile one,
         # and this grant lets `fj` and git read the restricted token there
-        # instead of the keychain or the SSH agent this sandbox keeps out.
+        # instead of relying on the keychain or SSH authentication.
         ++ [
           "${config.home.homeDirectory}/.agents"
           forge.keystoreDir
@@ -138,12 +138,21 @@ let
       ];
       # Nixpkgs' OpenSSL, which Node uses, has no roots when SSL_CERT_FILE is
       # unreadable. Safehouse can't follow /etc/ssl/certs through /etc/static.
-      env = policy.caches.env // {
-        SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
-        # Forge SSH remotes switch to HTTPS with the restricted token, and the
-        # keychain credential helper is dropped.
-        GIT_CONFIG_GLOBAL = "${forge.gitConfig}";
-      };
+      env =
+        policy.caches.env
+        // {
+          SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+          # Forge SSH remotes switch to HTTPS with the restricted token, and the
+          # keychain credential helper is dropped.
+          GIT_CONFIG_GLOBAL = "${forge.gitConfig}";
+        }
+        # A GUI host may supply launchd's agent even when workstation SSH
+        # selects 1Password. Use the declared agent for both policy and tools.
+        // lib.optionalAttrs (config.home.sessionVariables ? SSH_AUTH_SOCK) {
+          SSH_AUTH_SOCK =
+            lib.replaceStrings [ "$HOME" "\${HOME}" ] [ config.home.homeDirectory config.home.homeDirectory ]
+              config.home.sessionVariables.SSH_AUTH_SOCK;
+        };
     }
   );
 in

@@ -3,7 +3,8 @@
 Sandboxed agents get their own Forgejo token: one restricted to selected
 repositories, kept in a sandbox-only home. Inside Pi, `fj` and git use it, so
 pushes and forge calls need no SSH key, SSH agent or keychain. Interactive `fj`
-outside a sandbox keeps your own login.
+outside a sandbox keeps your own login. This creates an HTTPS token, not an SSH
+key; explicit SSH commands use the separate [SSH agent access](../agents/permissions.md#pi).
 
 Create it again from scratch when rotating, or when a repository joins or leaves
 the agent's reach.

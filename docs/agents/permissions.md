@@ -280,8 +280,13 @@ Git and `fj` reach the forge over HTTPS with the
 `PATH` that reads a token from `~/.local/share/agent-forge`, and a generated Git
 config rewrites that instance's SSH remotes and answers credential requests from
 the same file. SSH works too: `~/.ssh/config` and `known_hosts` are readable and
-the agent socket is reachable, while key files, your interactive `fj` login, the
-keychain and 1Password stay unavailable. The agent must already hold the key,
+the selected agent socket is reachable, while key files, your interactive `fj`
+login, the keychain and the rest of 1Password stay unavailable. Pi uses the
+declared workstation `SSH_AUTH_SOCK` when configured, otherwise the host app's
+inherited value. The same value selects the sandbox grant and child environment;
+a GUI app's different launchd socket is not also granted. Agent access permits
+authentication with keys the agent offers, which can reach beyond the token's
+repository restrictions. The agent must already hold the key,
 and a new host key cannot be stored from the sandbox, so connect once outside
 Pi before using a new host. Create or rotate the token with the
 [forge token runbook](../../runbooks/forge-token.md).
@@ -312,8 +317,8 @@ environment when possible. The installed npm package directory remains writable.
 
 Pi permits internet access without a domain allowlist. Host-local TCP/UDP services
 and UNIX sockets are blocked, except system DNS, the loopback port of a host
-app's injected tool endpoint (`T3_MCP_URL`) and the SSH agent socket the host
-exports; other LAN hosts remain reachable. Local development servers are
+app's injected tool endpoint (`T3_MCP_URL`) and the selected SSH agent socket;
+other LAN hosts remain reachable. Local development servers are
 therefore unavailable and only those host connections are reachable, never
 another port or socket on the host.
 The host-local selector matches assigned host addresses, not every address in

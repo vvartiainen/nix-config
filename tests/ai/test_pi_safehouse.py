@@ -232,6 +232,38 @@ class SafehouseTests(unittest.TestCase):
             )
             self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_configured_ssh_agent_overrides_host_app_socket(self):
+        with tempfile.TemporaryDirectory(prefix="pi-agent-", dir="/tmp") as scratch, \
+                socket.socket(socket.AF_UNIX) as configured, \
+                socket.socket(socket.AF_UNIX) as inherited:
+            root = Path(scratch)
+            configured_path = str(root / "configured.sock")
+            inherited_path = str(root / "inherited.sock")
+            configured.bind(configured_path)
+            configured.listen(1)
+            inherited.bind(inherited_path)
+            inherited.listen(1)
+            original = self.spec.read_text()
+            spec = json.loads(original)
+            spec["env"]["SSH_AUTH_SOCK"] = configured_path
+            self.spec.write_text(json.dumps(spec))
+            try:
+                result = self.run_probe(
+                    "import os, socket\n"
+                    f"assert os.environ['SSH_AUTH_SOCK'] == {configured_path!r}\n"
+                    "with socket.socket(socket.AF_UNIX) as client:\n"
+                    " client.settimeout(2)\n"
+                    " client.connect(os.environ['SSH_AUTH_SOCK'])\n"
+                    "with socket.socket(socket.AF_UNIX) as client:\n"
+                    f" try: client.connect({inherited_path!r})\n"
+                    " except PermissionError: pass\n"
+                    " else: raise AssertionError('unselected agent was reachable')\n",
+                    ssh_socket=inherited_path,
+                )
+            finally:
+                self.spec.write_text(original)
+            self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_host_ip_services_are_blocked(self):
         # Exercise IPv4/IPv6, TCP/UDP and a non-default loopback address. The
         # server is outside Safehouse; the client runs in a child process.
