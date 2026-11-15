@@ -145,6 +145,9 @@ let
           # Forge SSH remotes switch to HTTPS with the restricted token, and the
           # keychain credential helper is dropped.
           GIT_CONFIG_GLOBAL = "${forge.gitConfig}";
+          # `fj` has no configurable default host, so repository arguments can
+          # leave it out.
+          FJ_FALLBACK_HOST = "https://${forge.host}";
         }
         # A GUI host may supply launchd's agent even when workstation SSH
         # selects 1Password. Use the declared agent for both policy and tools.

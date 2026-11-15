@@ -158,6 +158,9 @@ For T3 mode selection and approval behavior, follow the
     long descriptions, no trailers such as Co-Authored-By or Claude-Session.
   - Push with `git push -u origin <branch>` and open the pull request with
     `fj pr create -r '<forge-host>/<owner>/<repo>' --base main --head <branch> --body-file <file> "<title>"`.
+    Pi's sandbox keeps the shared `.git/config` read-only, so there the upstream
+    is not recorded (`git push origin <branch>`) and `fj` takes
+    `-r '<owner>/<repo>'` without the host.
   - Write the body with the sections of
     [the PR template](.forgejo/pull_request_template.md), keeping its
     headings and order. Forgejo fills it in only in the web UI;
