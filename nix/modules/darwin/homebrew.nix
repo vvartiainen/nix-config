@@ -39,6 +39,7 @@
       "ripgrep"
       "scc"
       "sevenzip"
+      "spicetify-cli"
       "sqlite"
       "tectonic"
       "tlrc"
