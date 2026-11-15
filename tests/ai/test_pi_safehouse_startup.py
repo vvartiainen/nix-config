@@ -211,6 +211,89 @@ class StartupTests(unittest.TestCase):
         self.assertIn('(remote unix-socket)', profile)
         self.assertNotIn('localhost:3774', profile)
 
+    def test_existing_git_metadata_stays_read_only_but_new_repositories_work(self):
+        # `git init` and `git clone` are ordinary sandboxed work, so the blanket
+        # `.git/config` and `.git/hooks` deny is gone. The git directories of
+        # repositories that already exist stay protected, and a linked
+        # worktree's pointer file cannot be repointed.
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch).resolve()
+            repo = root / "repo"
+            repo.mkdir()
+            pointer = repo / ".git"
+            pointer.write_text("gitdir: /elsewhere/worktrees/topic\n")
+            git_dir = root / "elsewhere" / "worktrees" / "topic"
+            (git_dir / "hooks").mkdir(parents=True)
+            (git_dir / "config").write_text("[core]\n")
+            spec = root / "spec.json"
+            spec.write_text(json.dumps({
+                "agentDir": str(root / "state"), "readable": [],
+                "writable": [str(root / "state"), str(root / "cache")], "denied": [],
+                "protected": [], "env": {},
+            }))
+            captured = {}
+
+            def capture(command, env):
+                path = next(arg for arg in command if arg.startswith("--append-profile="))
+                captured["profile"] = Path(path.split("=", 1)[1]).read_text()
+                return 0
+
+            with (
+                patch.object(launcher.sys, "argv", ["launcher", str(spec), "safehouse", "pi"]),
+                patch.object(launcher.Path, "cwd", return_value=repo),
+                patch.object(launcher, "worktree_git_dirs", return_value=[str(git_dir)]),
+                patch.dict(os.environ, {"HOME": str(root / "home"), "TMPDIR": str(root)}),
+                patch.object(launcher.subprocess, "call", side_effect=capture),
+            ):
+                self.assertEqual(launcher.main(), 0)
+            profile = captured["profile"]
+        for protected in (git_dir / "config", git_dir / "hooks", pointer):
+            self.assertIn(f'(deny file-write* (subpath "{protected}"))', profile)
+        self.assertNotIn(r'(regex #"/\.git/(config$|hooks(/|$))")', profile)
+
+    def test_only_the_ssh_agent_socket_is_reachable_among_host_sockets(self):
+        # The agent signs with a key the sandbox never reads, so only the socket
+        # the host exports is reachable; the socket deny still covers the rest.
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch).resolve()
+            socket_path = root / "agent" / "Listeners"
+            socket_path.parent.mkdir()
+            socket_path.write_text("")
+            spec = root / "spec.json"
+            spec.write_text(json.dumps({
+                "agentDir": str(root / "state"), "readable": [],
+                "writable": [str(root / "state"), str(root / "cache")], "denied": [],
+                "protected": [], "env": {},
+            }))
+            captured = {}
+
+            def capture(command, env):
+                path = next(arg for arg in command if arg.startswith("--append-profile="))
+                captured["profile"] = Path(path.split("=", 1)[1]).read_text()
+                captured["passed"] = next(
+                    arg for arg in command if arg.startswith("--env-pass=")
+                ).split("=", 1)[1].split(",")
+                return 0
+
+            with (
+                patch.object(launcher.sys, "argv", ["launcher", str(spec), "safehouse", "pi"]),
+                patch.object(launcher.Path, "cwd", return_value=root),
+                patch.dict(os.environ, {
+                    "HOME": str(root / "home"),
+                    "TMPDIR": str(root),
+                    "SSH_AUTH_SOCK": str(socket_path),
+                }),
+                patch.object(launcher.subprocess, "call", side_effect=capture),
+            ):
+                self.assertEqual(launcher.main(), 0)
+            profile = captured["profile"]
+            passed = captured["passed"]
+        self.assertIn(f'(allow file-read* (literal "{socket_path}"))', profile)
+        self.assertIn(f'(require-not (literal "{socket_path}"))', profile)
+        # Traversal to the socket is granted, without reading its directory.
+        self.assertIn(f'(literal "{socket_path.parent}")', profile)
+        self.assertIn("SSH_AUTH_SOCK", passed)
+
     def test_sandbox_only_commands_go_first_on_path(self):
         # A host app can prepend commands that must not exist outside the
         # sandbox, such as a wrapper pointing a CLI at the sandbox's own

@@ -24,7 +24,7 @@ each use, and **denied** means no approval can allow it.
 | | Claude Code | Codex | Cursor | Copilot | OpenCode | Pi |
 | --- | --- | --- | --- | --- | --- | --- |
 | OS sandbox | Each Bash command | Each command | Each command | Each command and hook (experimental) | None | Whole process, with extensions and MCP servers |
-| Outside the sandbox | File tools, MCP servers, `gh`, `fj`, `git fetch`, Rex | File tools, MCP servers, allowed `gh`/`fj` views | File tools, MCP servers | File tools, MCP servers | Everything | Nothing |
+| Outside the sandbox | File tools, MCP servers, `gh`, `fj`, `git fetch`, Rex | File tools, MCP servers, allowed `gh`/`fj` views | File tools, MCP servers | File tools, MCP servers | Everything | The SSH agent, for signing only |
 | Mode | Accept edits | On request, reviewed by you | Allowlist, with a shell hook | Allow and deny flags from the `copilot` shell function | Ordered rules, last match wins | Permission extension, YOLO off |
 | Approved run outside the sandbox | Yes | Yes | Yes | Yes | Not applicable | Never |
 | Start it | `claude` | `codex`, through the zsh wrapper in linked worktrees | `cursor-agent` | `copilot` from zsh; other shells skip the flags | `opencode` | `pi` from the project root |
@@ -56,10 +56,10 @@ each use, and **denied** means no approval can allow it.
 | `nix eval`, `nix flake show` | Runs | Runs | Runs if Cursor's sandbox reaches the daemon | Runs | Runs, unsandboxed | Fails |
 | Tests, builds, `git add`, `git commit`, `rm`, `just` | Runs | Runs | Runs; pipes, variables and redirects ask | Listed runners and `just lint` run; the rest asks | Asks | Runs |
 | Nix build, run, develop and store | Asks | Asks | Asks | Asks | Asks | Fails |
-| Installs, publishing, `sudo`, `ssh`, `open`, `tofu apply` | Asks | Asks | Asks | Asks | Asks | Asks; fails where it needs a host service |
-| `git push`, forge writes | Asks | Asks | Asks | Asks | Asks | Asks; works over HTTPS with the [restricted forge token](permissions.md#secrets) |
+| Installs, publishing, `sudo`, `ssh`, `open`, `tofu apply` | Asks | Asks | Asks | Asks | Asks | Asks; SSH works through the agent, other host services fail |
+| `git push`, forge writes | Asks | Asks | Asks | Asks | Asks | Asks; uses the SSH agent or the [restricted forge token](permissions.md#secrets) |
 | [Flake update preview](permissions.md#flake-update-previews) | Runs outside sandbox | Runs outside sandbox (T3 may ask) | Approved retry | Approved retry | Runs, unsandboxed | Fails |
-| [`git fetch` from a configured remote](permissions.md#working-in-the-sandboxes) | Runs | Asks | Asks | Asks | Asks | Asks; the forge remote uses HTTPS |
+| [`git fetch` from a configured remote](permissions.md#working-in-the-sandboxes) | Runs | Asks | Asks | Asks | Asks | Asks; HTTPS with the forge token, or the agent |
 | `gh` and `fj` read-only views | Runs | Runs | Approved retry | Approved retry | Runs | `fj` runs with the forge token; `gh` fails |
 | Rex, Kitty, Incus | Rex always asks; others ask beyond help and listings | Always asks | Asks beyond help and listings | Asks beyond help and listings | Asks beyond help and listings | Asks, then fails |
 | `op read`, keychain lookups, force push, `git reset --hard`, `git clean -f`, disk erase | Denied | Denied, exact prefixes only | Denied | Denied, exact prefixes only | Denied | Denied |
@@ -81,7 +81,7 @@ which covers the new-thread default, manual overrides and observed behavior.
 | --- | --- |
 | Claude | Same sandbox settings. Code Mode is off and T3's own tools run |
 | Codex | Sandbox differs from the terminal profile; see the mode guidance above |
-| Pi | Same Safehouse sandbox; only T3's loopback MCP endpoint is reachable, so its own tools work |
+| Pi | Same Safehouse sandbox; T3's loopback MCP endpoint and the SSH agent socket are reachable, so its own tools and SSH remotes work |
 | OpenCode | Same rules, no OS sandbox |
 
 ## Using them

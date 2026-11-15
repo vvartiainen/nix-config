@@ -98,7 +98,24 @@ def worktree_git_dirs(workdir):
     return [common, current] if common != current else []
 
 
-def make_profile(spec, workdir, tmpdir, t3_service=None):
+def ssh_agent_sockets():
+    """Agent sockets the host offers, in raw and resolved spellings.
+
+    Safehouse's `ssh` integration grants its own agent paths and denies `~/.ssh`
+    key material, but a host app can hand over any socket through SSH_AUTH_SOCK
+    (1Password, launchd). Grant exactly that path and no other host socket.
+    """
+    value = os.environ.get("SSH_AUTH_SOCK", "")
+    if not value:
+        return []
+    paths = []
+    for path in (str(Path(value).resolve()), value):
+        if path and path not in paths and Path(path).exists():
+            paths.append(path)
+    return paths
+
+
+def make_profile(spec, workdir, tmpdir, t3_service=None, ssh_sockets=()):
     writable = [workdir, tmpdir, "/tmp", "/private/tmp", "/dev", *spec["writable"]]
     extensions = f'{spec["agentDir"]}/extensions'
     extension_logs = f"{extensions}/pi-permission-system/logs"
@@ -123,14 +140,39 @@ def make_profile(spec, workdir, tmpdir, t3_service=None):
         # extension's review log is the only write this directory needs.
         "(deny file-write* (require-all "
         f"{subpath(extensions)} (require-not {subpath(extension_logs)})))",
-        r'(deny file-write* (regex #"/\.git/(config$|hooks(/|$))"))',
         r'(deny file-read* file-write* (regex #"/[^/]+\.(pem|key)$"))',
         r'(deny file-read* file-write* (require-all '
         r'(regex #"/\.env($|\.)") (require-not (regex #"/\.env\.example$"))))',
+        # The agent signs with a key the sandbox never reads, so only its socket
+        # and the directories leading to it are granted. Safehouse's ssh
+        # integration supplies the rest of the connection files.
+        *(
+            [f"(allow file-read* (literal {sb_string(path)}))" for path in ssh_sockets]
+            + [
+                "(allow file-read-metadata\n"
+                + "\n".join(
+                    f"  (literal {sb_string(ancestor)})"
+                    for ancestor in sorted(
+                        {
+                            str(parent)
+                            for path in ssh_sockets
+                            for parent in Path(path).parents
+                            if str(parent) != "/"
+                        }
+                    )
+                )
+                + ")"
+            ]
+            if ssh_sockets
+            else []
+        ),
         # Do not grant access to host daemons, including the Nix daemon and Rex,
-        # through UNIX sockets. DNS uses Safehouse's separate resolver grant.
-        '(deny network-outbound (require-all (remote unix-socket) '
-        '(require-not (literal "/private/var/run/mDNSResponder"))))',
+        # through UNIX sockets. DNS uses Safehouse's separate resolver grant, and
+        # the SSH agent socket is the one credential a host app hands over.
+        "(deny network-outbound (require-all (remote unix-socket) "
+        '(require-not (literal "/private/var/run/mDNSResponder"))'
+        + "".join(f" (require-not (literal {sb_string(path)}))" for path in ssh_sockets)
+        + ")",
         # Seatbelt's localhost selector covers host addresses (IPv4 and IPv6),
         # not arbitrary LAN CIDRs. Keep host TCP/UDP services unreachable even
         # through bash or an extension, apart from the endpoint a host app
@@ -163,10 +205,18 @@ def main():
     # Grant only their Git metadata, not the main checkout's source files.
     git_dirs = worktree_git_dirs(workdir)
     spec["writable"].extend(git_dirs)
+    # Repositories that already exist keep their hooks and config read-only, so
+    # sandboxed code cannot instrument a later unsandboxed `git` run. Creating
+    # new repositories in the workspace or scratch is ordinary work.
     for directory in git_dirs:
         spec["protected"].extend(
             str(Path(directory) / name) for name in ("config", "config.worktree", "hooks")
         )
+    pointer = Path(workdir) / ".git"
+    if pointer.is_file():
+        # A linked worktree points at its Git directory through this file;
+        # rewriting it would redirect every later invocation.
+        spec["protected"].append(str(pointer))
     # Safehouse requires every explicit grant to exist. Read grants include
     # optional probes such as ~/.gitconfig and profile links; skip absent or
     # broken links without widening access to their parent directories.
@@ -178,7 +228,9 @@ def main():
     with tempfile.TemporaryDirectory(prefix="pi-safehouse-") as scratch:
         overlay = Path(scratch) / "policy.sb"
         t3_service = loopback_service(os.environ.get("T3_MCP_URL", ""))
-        overlay.write_text(make_profile(spec, workdir, tmpdir, t3_service))
+        overlay.write_text(
+            make_profile(spec, workdir, tmpdir, t3_service, ssh_agent_sockets())
+        )
         # Safehouse sanitizes the inherited environment; pass only the selected
         # API key, our cache variables and T3's session variables. T3 Code drives
         # Pi over RPC and hands its MCP endpoint, runtime mode and injected
@@ -196,7 +248,13 @@ def main():
         )
         env["PI_CODING_AGENT_DIR"] = spec["agentDir"]
         t3_env = sorted(key for key in os.environ if key.startswith("T3_"))
-        passed = ["DEEPSEEK_API_KEY", "PI_CODING_AGENT_DIR", *spec["env"], *t3_env]
+        passed = [
+            "DEEPSEEK_API_KEY",
+            "PI_CODING_AGENT_DIR",
+            "SSH_AUTH_SOCK",
+            *spec["env"],
+            *t3_env,
+        ]
         command = [
             safehouse,
             f"--workdir={workdir}",
@@ -204,6 +262,10 @@ def main():
             # pbcopy/pbpaste and Pi's own copy/paste need the pasteboard mach
             # service, which Safehouse keeps behind this integration.
             "--enable=clipboard",
+            # SSH metadata and agent paths. The private keys stay unreadable,
+            # and the connection files let git and ssh reach a host the agent
+            # authenticates for.
+            "--enable=ssh",
             f"--append-profile={overlay}",
             "--add-dirs=" + ":".join(spec["writable"]),
             *(["--add-dirs-ro=" + ":".join(readable)] if readable else []),

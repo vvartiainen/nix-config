@@ -8,6 +8,11 @@ let
   policy = import ../../shared/permissions.nix { inherit lib config; };
   forge = import ../../shared/forge.nix { inherit config lib pkgs; };
   agentDir = config.programs.pi-coding-agent.configDir;
+  sshDir = "${config.home.homeDirectory}/.ssh";
+  # Safehouse's ssh integration denies the whole `~/.ssh` subtree and then
+  # allows the connection files, so the shared directory deny would undo it.
+  # Drop it here and deny key material on the permission layer instead.
+  denied = builtins.filter (path: path != sshDir) policy.paths.denied;
   permissionFile = "${agentDir}/extensions/pi-permission-system/config.json";
   commandString = cmd: builtins.unsafeDiscardStringContext (lib.concatStringsSep " " cmd);
   rules = value: commands: lib.genAttrs (map (cmd: "${commandString cmd} *") commands) (_: value);
@@ -29,7 +34,7 @@ let
     lib.concatMap (path: [
       path
       "${path}/*"
-    ]) policy.paths.denied
+    ]) denied
   ) (_: "deny");
   permissionSettings = {
     yoloMode = false;
@@ -95,6 +100,11 @@ let
           "*.key" = "deny";
           # Pi itself needs its credentials; model tools do not.
           "${agentDir}/auth.json" = "deny";
+          # The sandbox denies private keys outright; keep the model from asking
+          # for them, while `ssh` still reads config and known_hosts.
+          "${sshDir}/id_*" = "deny";
+          "${sshDir}/*.pem" = "deny";
+          "${sshDir}/*.key" = "deny";
         }
         // secretPathRules;
     };
@@ -116,7 +126,7 @@ let
       # Sandbox-only commands, ahead of the profile on PATH.
       pathPrepend = [ "${forge.fj}/bin" ];
       writable = policy.caches.writePaths ++ [ agentDir ];
-      denied = policy.paths.denied;
+      inherit denied;
       protected = [
         permissionFile
         "${agentDir}/settings.json"

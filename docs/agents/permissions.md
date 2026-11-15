@@ -55,12 +55,15 @@ T3 Code's caches, attachments, browser artifacts and worktrees are readable;
 its database, provider secrets, sign-in cache, provider registry and service
 environment stay denied. A host can also pass content directly to the model.
 
-Git over SSH needs keys or the SSH agent socket, so fetches and pushes to such
-remotes run outside the sandbox. Pi reaches the forge over HTTPS instead, with an
-agent-only token and a wrapper that shadows `fj` inside its sandbox, so
-sandboxed `git fetch`, `git push` and `fj` work there. Pushes and forge writes
-ask. Claude and Codex run read-only `gh` and `fj` views without prompting, and
-Claude does the same for `git fetch` from a configured remote. A Claude
+Git over SSH needs a key or the SSH agent socket. Pi's sandbox reads
+`~/.ssh/config` and `known_hosts` and reaches the socket a host app exports, so
+`ssh`, `scp`, `rsync` and SSH remotes work there when the agent holds the key;
+key files stay unreadable and other sockets stay blocked. Claude and Codex run
+SSH, pushes and forge calls outside the sandbox after review. Pi also reaches the
+forge over HTTPS with an agent-only token and a wrapper that shadows `fj` inside
+its sandbox. Pushes and forge writes ask. Claude and Codex run read-only `gh`
+and `fj` views without prompting, and Claude does the same for `git fetch` from
+a configured remote. A Claude
 `PreToolUse` hook reads `git remote` in the command's `cwd` without writing
 config. It defers for standalone `git fetch` with only known option flags,
 configured remote names followed by refspecs, `--all`, and
@@ -176,7 +179,7 @@ restricted so that sandboxed pushes and forge calls need no key.
 
 | Need | How | Review |
 | --- | --- | --- |
-| `gh`, Git over SSH | The tool uses its keychain token or the SSH agent | Read-only views run without prompting; writes and pushes ask |
+| `gh`, Git over SSH | The tool uses its keychain token or the SSH agent. Pi reaches the agent socket but no key file | Read-only views run without prompting; writes and pushes ask |
 | `fj` and forge HTTPS | Agents get their own token in `~/.local/share/agent-forge`, restricted to selected repositories. Pi's sandbox reads it and shadows `fj` with a wrapper that uses it, so sandboxed `git` and `fj` need no key. Your interactive `fj` login is separate | Pushes and forge writes ask; revoke the agent token alone if in doubt |
 | Provider or cloud credentials, such as `tofu apply` | Approved retry outside the sandbox; 1Password supplies the credential | The agent's approval prompt, then 1Password's |
 | A new value only the user has | T3 `request_secret` file delivery, then `op-item-from-secret` | The user enters it; storing asks |
@@ -269,10 +272,18 @@ Git and `fj` reach the forge over HTTPS with the
 [restricted agent token](#secrets): the sandbox puts a `fj` wrapper first on
 `PATH` that reads a token from `~/.local/share/agent-forge`, and a generated Git
 config rewrites that instance's SSH remotes and answers credential requests from
-the same file. Your interactive `fj` login, the keychain helper, every other SSH
-remote, the SSH agent and 1Password stay unavailable, so pushes to other hosts
-still fail. Create or rotate the token with the
+the same file. SSH works too: `~/.ssh/config` and `known_hosts` are readable and
+the agent socket is reachable, while key files, your interactive `fj` login, the
+keychain and 1Password stay unavailable. The agent must already hold the key,
+and a new host key cannot be stored from the sandbox, so connect once outside
+Pi before using a new host. Create or rotate the token with the
 [forge token runbook](../../runbooks/forge-token.md).
+
+Git works as in a terminal, including `git init` and `git clone` in the project
+or scratch space. The git directories of repositories that already exist keep
+their `config` and `hooks` read-only, so sandboxed code cannot instrument a
+later unsandboxed `git` run; a linked worktree's `.git` pointer file is
+read-only for the same reason.
 
 Confirm the pinned permission extension loads without errors; inspect it with
 `/permission-system show`. Routine file tools, bash and the configured web
@@ -288,10 +299,11 @@ access, including its stored login. Prefer a provider key passed through the
 environment when possible. The installed npm package directory remains writable.
 
 Pi permits internet access without a domain allowlist. Host-local TCP/UDP services
-and UNIX sockets are blocked, except system DNS and the loopback port of a host
-app's injected tool endpoint (`T3_MCP_URL`); other LAN hosts remain reachable.
-Local development servers are therefore unavailable and only T3's endpoint is
-reachable, never another port on the host.
+and UNIX sockets are blocked, except system DNS, the loopback port of a host
+app's injected tool endpoint (`T3_MCP_URL`) and the SSH agent socket the host
+exports; other LAN hosts remain reachable. Local development servers are
+therefore unavailable and only those host connections are reachable, never
+another port or socket on the host.
 An approval cannot grant a socket or escape Safehouse. Run blocked operations
 manually outside Pi or use Codex/Claude's approved escape flow; do not retry
 through Rex or `pi-unsandboxed`.

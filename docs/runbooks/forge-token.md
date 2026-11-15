@@ -45,8 +45,8 @@ the agent's reach.
 
    `git fetch` asks once and then succeeds: a generated Git config rewrites
    `ssh://git@git.lab.vartiainen.io:2222/` to HTTPS and answers credential
-   requests from the same token. `gh`, other SSH remotes, the keychain and
-   1Password stay unavailable.
+   requests from the same token. SSH remotes work as well through the agent,
+   while `gh`, the keychain and 1Password stay unavailable.
 
 Rotate the token by generating a new one and repeating step 2; delete the old
 token in Forgejo afterwards. To revoke agent access only, delete the token —
