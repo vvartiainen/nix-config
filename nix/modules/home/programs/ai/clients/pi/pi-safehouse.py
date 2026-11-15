@@ -189,7 +189,11 @@ def main():
             if not key.startswith("SAFEHOUSE_") and key not in ("BASH_ENV", "ENV")
         }
         env.update(spec["env"])
-        env["PATH"] = resolved_path(env.get("PATH", ""))
+        # A host app may put sandbox-only commands first, e.g. a wrapper that
+        # points an app-managed CLI at the sandbox's own credential store.
+        env["PATH"] = resolved_path(
+            ":".join([*spec.get("pathPrepend", []), env.get("PATH", "")])
+        )
         env["PI_CODING_AGENT_DIR"] = spec["agentDir"]
         t3_env = sorted(key for key in os.environ if key.startswith("T3_"))
         passed = ["DEEPSEEK_API_KEY", "PI_CODING_AGENT_DIR", *spec["env"], *t3_env]

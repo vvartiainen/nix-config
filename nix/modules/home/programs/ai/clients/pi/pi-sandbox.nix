@@ -6,6 +6,7 @@
 }:
 let
   policy = import ../../shared/permissions.nix { inherit lib config; };
+  forge = import ../../shared/forge.nix { inherit config lib pkgs; };
   agentDir = config.programs.pi-coding-agent.configDir;
   permissionFile = "${agentDir}/extensions/pi-permission-system/config.json";
   commandString = cmd: builtins.unsafeDiscardStringContext (lib.concatStringsSep " " cmd);
@@ -105,7 +106,15 @@ let
         policy.paths.readonly
         ++ policy.paths.runtime
         ++ policy.paths.hostShared
-        ++ [ "${config.home.homeDirectory}/.agents" ];
+        # The agent-only forge home: its `fj` wrapper shadows the profile one,
+        # and this grant lets `fj` and git read the restricted token there
+        # instead of the keychain or the SSH agent this sandbox keeps out.
+        ++ [
+          "${config.home.homeDirectory}/.agents"
+          forge.keystoreDir
+        ];
+      # Sandbox-only commands, ahead of the profile on PATH.
+      pathPrepend = [ "${forge.fj}/bin" ];
       writable = policy.caches.writePaths ++ [ agentDir ];
       denied = policy.paths.denied;
       protected = [
@@ -121,6 +130,9 @@ let
       # unreadable. Safehouse can't follow /etc/ssl/certs through /etc/static.
       env = policy.caches.env // {
         SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+        # Forge SSH remotes switch to HTTPS with the restricted token, and the
+        # keychain credential helper is dropped.
+        GIT_CONFIG_GLOBAL = "${forge.gitConfig}";
       };
     }
   );

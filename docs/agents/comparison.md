@@ -57,10 +57,10 @@ each use, and **denied** means no approval can allow it.
 | Tests, builds, `git add`, `git commit`, `rm`, `just` | Runs | Runs | Runs; pipes, variables and redirects ask | Listed runners and `just lint` run; the rest asks | Asks | Runs |
 | Nix build, run, develop and store | Asks | Asks | Asks | Asks | Asks | Fails |
 | Installs, publishing, `sudo`, `ssh`, `open`, `tofu apply` | Asks | Asks | Asks | Asks | Asks | Asks; fails where it needs a host service |
-| `git push`, forge writes | Asks | Asks | Asks | Asks | Asks | Asks; SSH and tokens fail |
+| `git push`, forge writes | Asks | Asks | Asks | Asks | Asks | Asks; works over HTTPS with the [restricted forge token](permissions.md#secrets) |
 | [Flake update preview](permissions.md#flake-update-previews) | Runs outside sandbox | Runs outside sandbox (T3 may ask) | Approved retry | Approved retry | Runs, unsandboxed | Fails |
-| [`git fetch` from a configured remote](permissions.md#working-in-the-sandboxes) | Runs | Asks | Asks | Asks | Asks | Asks; SSH fails |
-| `gh` and `fj` read-only views | Runs | Runs | Approved retry | Approved retry | Runs | Fails without a token |
+| [`git fetch` from a configured remote](permissions.md#working-in-the-sandboxes) | Runs | Asks | Asks | Asks | Asks | Asks; the forge remote uses HTTPS |
+| `gh` and `fj` read-only views | Runs | Runs | Approved retry | Approved retry | Runs | `fj` runs with the forge token; `gh` fails |
 | Rex, Kitty, Incus | Rex always asks; others ask beyond help and listings | Always asks | Asks beyond help and listings | Asks beyond help and listings | Asks beyond help and listings | Asks, then fails |
 | `op read`, keychain lookups, force push, `git reset --hard`, `git clean -f`, disk erase | Denied | Denied, exact prefixes only | Denied | Denied, exact prefixes only | Denied | Denied |
 | Catalog MCP tools | Runs | Client prompt | Runs | Runs | Client default | Asks |

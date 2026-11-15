@@ -211,6 +211,43 @@ class StartupTests(unittest.TestCase):
         self.assertIn('(remote unix-socket)', profile)
         self.assertNotIn('localhost:3774', profile)
 
+    def test_sandbox_only_commands_go_first_on_path(self):
+        # A host app can prepend commands that must not exist outside the
+        # sandbox, such as a wrapper pointing a CLI at the sandbox's own
+        # credential store.
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch).resolve()
+            wrapper = root / "wrapper" / "bin"
+            wrapper.mkdir(parents=True)
+            host_bin = root / "host-bin"
+            host_bin.mkdir()
+            agent = root / "state"
+            cache = root / "cache"
+            spec = root / "spec.json"
+            spec.write_text(json.dumps({
+                "agentDir": str(agent), "readable": [],
+                "writable": [str(agent), str(cache)], "denied": [],
+                "protected": [], "env": {}, "pathPrepend": [str(wrapper)],
+            }))
+            captured = {}
+
+            def capture(command, env):
+                captured["path"] = env["PATH"]
+                return 0
+
+            with (
+                patch.object(launcher.sys, "argv", ["launcher", str(spec), "safehouse", "pi"]),
+                patch.object(launcher.Path, "cwd", return_value=root),
+                patch.dict(os.environ, {
+                    "HOME": str(root / "home"),
+                    "TMPDIR": str(root),
+                    "PATH": f"{host_bin}:{wrapper}",
+                }),
+                patch.object(launcher.subprocess, "call", side_effect=capture),
+            ):
+                self.assertEqual(launcher.main(), 0)
+        self.assertEqual(captured["path"], f"{wrapper}:{host_bin}")
+
 
 if __name__ == "__main__":
     unittest.main()

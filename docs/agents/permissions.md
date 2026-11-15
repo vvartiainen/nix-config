@@ -55,19 +55,21 @@ T3 Code's caches, attachments, browser artifacts and worktrees are readable;
 its database, provider secrets, sign-in cache, provider registry and service
 environment stay denied. A host can also pass content directly to the model.
 
-Git over SSH and `fj` need keys, the SSH agent socket or a stored token, so
-fetches, pushes and Forgejo calls to such remotes run outside the sandbox.
-Pushes and forge writes ask. Claude and Codex run read-only `gh` and `fj`
-views without prompting, and Claude does the same for `git fetch` from a
-configured remote. A Claude `PreToolUse` hook reads `git remote` in the command's
-`cwd` without writing config. It defers for standalone `git fetch` with only
-known option flags, configured remote names followed by refspecs, `--all`,
-and `--multiple`/`--prefetch` with only configured remotes. Configured remotes
+Git over SSH needs keys or the SSH agent socket, so fetches and pushes to such
+remotes run outside the sandbox. Pi reaches the forge over HTTPS instead, with an
+agent-only token and a wrapper that shadows `fj` inside its sandbox, so
+sandboxed `git fetch`, `git push` and `fj` work there. Pushes and forge writes
+ask. Claude and Codex run read-only `gh` and `fj` views without prompting, and
+Claude does the same for `git fetch` from a configured remote. A Claude
+`PreToolUse` hook reads `git remote` in the command's `cwd` without writing
+config. It defers for standalone `git fetch` with only known option flags,
+configured remote names followed by refspecs, `--all`, and
+`--multiple`/`--prefetch` with only configured remotes. Configured remotes
 remain trusted, including file URLs, `insteadOf` rewrites and `ext::`/transport
 commands configured in Git config. Explicit URLs, scp-style addresses, paths,
-unknown names, `--upload-pack`/`-u`, unknown options,
-tilde syntax (even quoted), noncanonical whitespace, unclassified shell syntax
-and remote-read failures return `ask`. The fetch handler requires Claude Code
+unknown names, `--upload-pack`/`-u`, unknown options, tilde syntax (even quoted),
+noncanonical whitespace, unclassified shell syntax and remote-read failures
+return `ask`. The fetch handler requires Claude Code
 2.1.295 or later: [`onFailure: "block"`](https://code.claude.com/docs/en/hooks#block-the-action-when-a-hook-fails)
 blocks every Bash call if the fetch hook crashes, cannot start or times out.
 The hook ignores commands without both `git` and `fetch` words and plain
@@ -169,17 +171,20 @@ to the known download endpoint.
 ## Secrets
 
 Agents never see secret values; the tool that needs a credential fetches it
-itself, outside the sandbox.
+itself, outside the sandbox. The forge token below is the deliberate exception,
+restricted so that sandboxed pushes and forge calls need no key.
 
 | Need | How | Review |
 | --- | --- | --- |
-| `gh`, `fj`, Git over SSH | The tool uses its keychain token or the SSH agent | Read-only views run without prompting; writes and pushes ask |
+| `gh`, Git over SSH | The tool uses its keychain token or the SSH agent | Read-only views run without prompting; writes and pushes ask |
+| `fj` and forge HTTPS | Agents get their own token in `~/.local/share/agent-forge`, restricted to selected repositories. Pi's sandbox reads it and shadows `fj` with a wrapper that uses it, so sandboxed `git` and `fj` need no key. Your interactive `fj` login is separate | Pushes and forge writes ask; revoke the agent token alone if in doubt |
 | Provider or cloud credentials, such as `tofu apply` | Approved retry outside the sandbox; 1Password supplies the credential | The agent's approval prompt, then 1Password's |
 | A new value only the user has | T3 `request_secret` file delivery, then `op-item-from-secret` | The user enters it; storing asks |
 
 Sandboxed commands cannot read credential files, the keychain or the 1Password
-app, so a command that needs them fails and the agent asks to retry it outside
-the sandbox. Approved commands run without the sandbox's read denies. `op read`,
+app, apart from the forge token above. A command that needs the others fails,
+and the agent asks to retry it outside the sandbox. Approved commands run
+without the sandbox's read denies. `op read`,
 `op run`, `op inject`, `op item get` and keychain lookups are denied in every
 mode: they would put the value in the agent's context or let it run any command
 with it. Sandboxes keep exported environment variables and readable workspace
@@ -259,6 +264,15 @@ and child commands. Writes are limited to the project, scratch space, Pi state
 and agent caches; project `.pi` files, Git hooks/config, permission settings and
 installed extension code remain protected. Launching from home or `/` grants
 an empty workspace. Clipboard integration is enabled.
+
+Git and `fj` reach the forge over HTTPS with the
+[restricted agent token](#secrets): the sandbox puts a `fj` wrapper first on
+`PATH` that reads a token from `~/.local/share/agent-forge`, and a generated Git
+config rewrites that instance's SSH remotes and answers credential requests from
+the same file. Your interactive `fj` login, the keychain helper, every other SSH
+remote, the SSH agent and 1Password stay unavailable, so pushes to other hosts
+still fail. Create or rotate the token with the
+[forge token runbook](../../runbooks/forge-token.md).
 
 Confirm the pinned permission extension loads without errors; inspect it with
 `/permission-system show`. Routine file tools, bash and the configured web
