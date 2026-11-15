@@ -8,7 +8,12 @@
 
 set -eu
 
-current=$(/usr/bin/defaults read NSGlobalDomain com.apple.keyboard.fnState 2>/dev/null || echo 0)
+defaults=/usr/bin/defaults
+# Private helper macOS uses to push stored keyboard preferences to the running
+# HID system; a bare `defaults write` would only apply at the next login.
+activate_settings=/System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings
+
+current=$("$defaults" read NSGlobalDomain com.apple.keyboard.fnState 2>/dev/null || echo 0)
 
 case "$current" in
   1 | true)
@@ -21,8 +26,13 @@ case "$current" in
     ;;
 esac
 
-if ! /usr/bin/defaults write NSGlobalDomain com.apple.keyboard.fnState -bool "$target"; then
+if ! "$defaults" write NSGlobalDomain com.apple.keyboard.fnState -bool "$target"; then
   echo "Could not change the fn key setting"
+  exit 1
+fi
+
+if [ -x "$activate_settings" ] && ! "$activate_settings" -u >/dev/null 2>&1; then
+  echo "Saved the fn key setting, but macOS did not apply it; log out and back in"
   exit 1
 fi
 

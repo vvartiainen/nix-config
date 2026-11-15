@@ -32,8 +32,10 @@ missing, and check Finder before unplugging a drive.
 
 **Toggle Function Keys** flips `com.apple.keyboard.fnState`, the same switch as
 System Settings → Keyboard → "Use F1, F2, etc. keys as standard function keys".
-It applies immediately, but applying the configuration again enables function
-keys as declared in `nix/modules/darwin/system-settings.nix`.
+The stored preference only reaches the keyboard at login, so the command also
+hands it to macOS with the `activateSettings` helper and the top row switches
+without logging out. Applying the configuration again writes the declared value
+from `nix/modules/darwin/system-settings.nix`, which enables function keys.
 
 If Vicinae has quit, restart it with:
 
