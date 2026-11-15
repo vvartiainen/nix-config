@@ -32,8 +32,28 @@ let
     lib.genAttrs (
       lib.concatMap (prefix: map (suffix: "${prefix}${suffix}") suffixes) pushPrefixes
     ) (_: action);
+  # Fetching is routine and only adds objects and refs, but agents put option
+  # flags before the remote (`git fetch --prune origin`), which a remote-first
+  # allow does not match. List those spellings instead of a `git fetch -*`
+  # wildcard, so options such as `--upload-pack` still fall through to the ask.
+  fetchPrefixes = [
+    "git fetch origin"
+    "git fetch --quiet origin"
+    "git fetch -q origin"
+    "git fetch --prune origin"
+    "git fetch -p origin"
+    "git fetch --prune --quiet origin"
+    "git fetch --quiet --prune origin"
+  ];
+  fetchGuards = lib.genAttrs (
+    lib.concatMap (prefix: [
+      "${prefix}*--upload-pack*"
+      "${prefix}*://*"
+      "${prefix}*@*"
+    ]) fetchPrefixes
+  ) (_: "ask");
   routineBash =
-    lib.genAttrs (map (prefix: "${prefix} *") pushPrefixes ++ [ "git fetch origin *" ]) (_: "allow")
+    lib.genAttrs (map (prefix: "${prefix} *") (pushPrefixes ++ fetchPrefixes)) (_: "allow")
     // rules "allow" (map (subcommand: [ "fj" "pr" subcommand ]) [ "create" "edit" ])
     // pushGuards "deny" [
       "*--force*"
@@ -58,11 +78,7 @@ let
       # Short-flag clusters such as -qf, and long flags the exact denies miss.
       "* -?f*"
     ]
-    // lib.genAttrs [
-      "git fetch origin*--upload-pack*"
-      "git fetch origin*://*"
-      "git fetch origin*@*"
-    ] (_: "ask");
+    // fetchGuards;
   # Pi matches the command name as typed, so a path with spaces also needs
   # its quoted and escaped spellings, e.g. Rex's app-bundled CLI. Rules are
   # last-match-wins and toJSON sorts keys, so a key must not sort before the
