@@ -2,13 +2,13 @@
 let
   rexApp = pkgs.stdenvNoCC.mkDerivation (finalAttrs: {
     pname = "rex-app";
-    version = "0.1.0-1956";
+    version = "0.1.0-1973";
 
     # Pin the signed GUI release from Rex's official preview appcast.
     # https://blob.superlogical.com/public/rex-app/preview/appcast.xml
     src = pkgs.fetchurl {
       url = "https://blob.superlogical.com/public/rex-app/preview/Rex-${finalAttrs.version}.dmg";
-      sha256 = "1f24601f4963e3577edf836780b21d0505e227ae981d5138659fc7f68b8fba6e";
+      sha256 = "1inpa1vchvghj39hkxrgz5lv3cszpqxxrwpmi9m7wswfkz6gsp93";
     };
 
     nativeBuildInputs = [ pkgs.undmg ];
