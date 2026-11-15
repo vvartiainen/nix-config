@@ -12,8 +12,7 @@ FAST = {
     "repository": ["test_*.py"],
     "darwin": ["test_default_apps.py"],
     "kitty": ["test_kitty_metrics.py", "test_kitty_tab_bar.py"],
-    "ai": ["test_flake_update_preview.py", "test_agent_hooks.py", "test_pi_safehouse_startup.py",
-           "test_pi_worktrees.py", "test_t3_config.py"],
+    "ai": ["test_flake_update_preview.py", "test_agent_hooks.py", "test_pi_safehouse_startup.py", "test_pi_worktrees.py"],
 }
 
 

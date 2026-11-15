@@ -23,14 +23,11 @@ Write in the workspace, `$TMPDIR`, `/tmp` or `~/.cache/<tool>-agent`. Preserve
 the configured cache variables. Normal caches and tool installations remain
 read-only; install workstation tools manually outside the agent session.
 `XDG_CACHE_HOME` points to `~/.cache/xdg-agent`, so tools without their own
-cache variable, such as treefmt, uv and pre-commit, cache there.
-T3's managed Codex, Claude, OpenCode and Pi instances set it in their
-[provider environment](https://github.com/pingdotgg/t3code/blob/main/packages/provider-core/src/server/instanceEnvironment.ts)
-before the client starts, overriding the inherited normal-shell
-cache. These instances' environment lists are managed by Nix; declare any extra
-variables there too. Normal shells keep their usual cache. After applying,
-restart T3, open new Claude and Codex threads and run `printenv XDG_CACHE_HOME`
-in each; expect `~/.cache/xdg-agent` expanded to your home directory.
+cache variable, such as treefmt, uv and pre-commit, cache there. Under T3 it
+stays `~/.cache` for Claude and Codex, although the other cache variables
+apply; such tools can then fail with `Operation not permitted`.
+Set the tool's own cache variable to a `~/.cache/<tool>-agent` path, or run
+the tool in a terminal session.
 Credentials, shell history, browser profiles, private host data, keys and
 environment files are restricted. Approved unrestricted commands and host
 daemons can reach beyond these restrictions; review them accordingly.

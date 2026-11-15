@@ -50,9 +50,7 @@ nix run .#check-repository --override-input host "path:$PWD/nix/fixtures/host" -
 ```
 
 `just test` uses the public fixture and supplies the validator's Python
-dependencies, bundled schemas, generated permission policy and T3 provider
-cache settings. The generated T3 regression check runs here because it needs
-a Nix build; the fast suite checks the synthetic activation merge. Building its
+dependencies, bundled schemas and generated permission policy. Building its
 runner also checks Pi's pinned native extension loader and policy. The suite
 uses the configured Kitty on `PATH` for its runtime tests; it does not launch
 or close terminal windows. A missing prerequisite fails rather than skipping a
