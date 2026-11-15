@@ -286,6 +286,10 @@ and a new host key cannot be stored from the sandbox, so connect once outside
 Pi before using a new host. Create or rotate the token with the
 [forge token runbook](../../runbooks/forge-token.md).
 
+System SSH includes can resolve through nix-darwin's `/etc/static` symlink:
+Pi grants metadata-only traversal of that symlink into the already-readable
+Nix store. This does not grant recursive reads of `/etc/static` or key files.
+
 Git works as in a terminal, including `git init` and `git clone` in the project
 or scratch space. The launch checkout's git directories keep `config`,
 `config.worktree` and `hooks` read-only in both ordinary and linked checkouts,

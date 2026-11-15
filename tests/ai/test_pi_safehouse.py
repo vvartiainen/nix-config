@@ -35,7 +35,7 @@ class SafehouseTests(unittest.TestCase):
         cls.env = {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
         cls.env.pop("SSH_AUTH_SOCK", None)
         cls.env.update(cls.config_env, HOME=str(cls.home))
-        for path in [cls.work, cls.agent, cls.cache, cls.home / ".aws", cls.home / ".npm"]:
+        for path in [cls.work, cls.agent, cls.cache, cls.home / ".aws", cls.home / ".npm", cls.home / ".ssh"]:
             path.mkdir(parents=True)
         cls.policy = cls.agent / "extensions/pi-permission-system/config.json"
         cls.logs = cls.agent / "extensions/pi-permission-system/logs"
@@ -43,6 +43,7 @@ class SafehouseTests(unittest.TestCase):
         cls.logs.mkdir()
         cls.policy.write_text("{}")
         (cls.home / ".aws/synthetic").write_text("synthetic")
+        (cls.home / ".ssh/id_ed25519").write_text("synthetic, not a private key")
         (cls.home / "unrelated-read").write_text("synthetic")
         (cls.work / ".env").write_text("SYNTHETIC=1")
         (cls.work / ".env.example").write_text("SYNTHETIC=")
@@ -120,6 +121,24 @@ class SafehouseTests(unittest.TestCase):
             "assert 'SYNTHETIC_HOST_SECRET' not in os.environ; "
             "assert os.environ['T3_PI_RUNTIME_MODE'] == 'approval-required'; "
             "assert Path('.env.example').read_text() == 'SYNTHETIC='"
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_system_ssh_configuration_and_nix_includes_are_readable(self):
+        # -G parses configuration without connecting. An explicit system
+        # config avoids reading the real user's ~/.ssh/config; the system's
+        # includes still exercise nix-darwin's /etc/static symlink traversal.
+        result = self.run_probe(
+            "import subprocess\n"
+            "result = subprocess.run(['/usr/bin/ssh', '-G', '-F', "
+            "'/etc/ssh/ssh_config', 'fixture.invalid'], capture_output=True, text=True)\n"
+            "assert result.returncode == 0, result.stderr\n"
+            "assert 'hostname fixture.invalid' in result.stdout\n"
+            # The metadata traversal grant must not expose private-key paths.
+            f"from pathlib import Path\nkey = Path({str(self.home / '.ssh/id_ed25519')!r})\n"
+            "try: key.read_text()\n"
+            "except PermissionError: pass\n"
+            "else: raise AssertionError('synthetic private-key path was readable')\n"
         )
         self.assertEqual(result.returncode, 0, result.stderr)
 
