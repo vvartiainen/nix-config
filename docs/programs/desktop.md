@@ -24,8 +24,8 @@ Quit Zen before applying its GUI preferences, then reopen it.
 JankyBorders outlines the focused window in bsp layout; yabai keeps windows
 fully opaque. Stack layout hides the borders because JankyBorders flashes while
 Spaces change with stacked windows. `~/.config/yabai/borders-layout.sh` follows
-the focused Space's layout, setting the border width to 0 in stack layout and
-re-running the Home Manager bordersrc otherwise. Yabai signals run it after
+the focused Space's layout, hiding the borders in stack layout and re-running
+the Home Manager bordersrc otherwise. Yabai signals run it after
 Space and display changes, and the layout keybindings run it after switching
 layouts; run it by hand after changing a layout some other way.
 

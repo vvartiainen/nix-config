@@ -30,7 +30,7 @@ if [ "$previous" = "$borders_pid $layout" ]; then
 fi
 
 if [ "$layout" = "stack" ]; then
-  borders width=0.0 || exit 0
+  borders width=0.0 active_color=0x00000000 inactive_color=0x00000000 || exit 0
 else
   [ -x "$bordersrc" ] || exit 0
   "$bordersrc" || exit 0
