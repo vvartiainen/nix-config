@@ -185,7 +185,9 @@ For T3 mode selection and approval behavior, follow the
   - Write issue bodies with the sections of the
     [task](.forgejo/issue_template/task.md) or
     [bug](.forgejo/issue_template/bug.md) template, dropping those that do not
-    apply; `fj issue create --body-file` does not apply them either.
+    apply; `fj issue create --body-file` does not apply them either. Because
+    the repository has issue templates, pass `--no-template` with
+    `--body-file`; without it `fj` refuses to create the issue.
   - In T3, link the pull request to the thread; see
     [T3 Code settings](docs/agents/config.md#t3-code-settings).
   - Push only to `origin`. Pushing to the public `github` mirror stays with
