@@ -5,6 +5,9 @@ Vicinae is the launcher. Shortcuts are in [keybindings](../keybindings.md);
 one-time permissions and Spaces are in
 [new Mac setup](../runbooks/new-mac.md#after-the-first-activation).
 
+For keeping builds and coding agents running with the lid closed, see
+[Amphetamine](amphetamine.md).
+
 ## Reload after changes
 
 After applying configuration, `reloadall` reloads yabai rules, skhd bindings,
