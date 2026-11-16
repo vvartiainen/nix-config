@@ -13,10 +13,7 @@ yabai -m config external_bar all:49:0 \
   window_zoom_persist off \
   window_placement second_child \
   window_shadow float \
-  window_opacity on \
-  window_opacity_duration 0.15 \
-  active_window_opacity 1.0 \
-  normal_window_opacity 0.85 \
+  window_opacity off \
   window_animation_duration 0.0 \
   insert_feedback_color 0xff9dd274 \
   split_ratio 0.50 \
@@ -85,10 +82,10 @@ yabai -m rule --add label="About This Mac" app="System Information" title="About
 # # 1. Force the system ControlCenter biometric prompt completely out of the window tree
 yabai -m rule --add label="ControlCenter" app="^ControlCenter$" manage=off sub-layer=above
 # 2. Add an explicit regex rule to target ALL variations of 1Password's sub-windows
-# Keep these windows unmanaged and fully opaque.
-yabai -m rule --add label="1Password" app="^1Password.*$" manage=off sub-layer=above opacity=1.0
+# Keep these windows unmanaged.
+yabai -m rule --add label="1Password" app="^1Password.*$" manage=off sub-layer=above
 # 3. Handle the browser extensions specifically (e.g. if using Arc or Safari)
-yabai -m rule --add label="1Password Extension" app="^1Password Extension$" manage=off sub-layer=above opacity=1.0
+yabai -m rule --add label="1Password Extension" app="^1Password Extension$" manage=off sub-layer=above
 
 # Focus a pending auth prompt (1Password unlock/sudo, Touch ID, keychain) when switching spaces.
 focus_auth_prompt="osascript -l JavaScript $HOME/.config/yabai/focus-auth-prompt.js"
