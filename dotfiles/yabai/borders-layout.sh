@@ -30,10 +30,10 @@ if [ "$previous" = "$borders_pid $layout" ]; then
   exit 0
 fi
 
-if [ "$layout" = "stack" ]; then
-  borders width=0.0 active_color=0x00000000 inactive_color=0x00000000 || exit 0
-else
+if [ "$layout" = "bsp" ]; then
   [ -x "$bordersrc" ] || exit 0
   "$bordersrc" || exit 0
+else
+  borders width=0.0 active_color=0x00000000 inactive_color=0x00000000 || exit 0
 fi
 printf '%s %s\n' "$borders_pid" "$layout" >"$state_file"
