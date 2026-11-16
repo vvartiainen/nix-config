@@ -24,7 +24,7 @@ ctrl - right : "$HOME/.config/yabai/borders-layout.sh" --focus next
 $window - up : yabai -m space --move next
 $window - down : yabai -m space --move prev
 
-$window - n : yabai -m space --create
+$window - n : "$HOME/.config/yabai/create-space.sh"
 $window - d : yabai -m space --destroy
 
 $window - left : $HOME/.config/yabai/movewindow.sh prev
