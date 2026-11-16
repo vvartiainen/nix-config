@@ -27,7 +27,9 @@ windows. `~/.config/yabai/borders-layout.sh` follows the focused Space's layout,
 hiding the borders outside bsp layout and re-running the Home Manager bordersrc
 in bsp. Yabai signals run it after Space and display changes, and the layout
 keybindings run it after switching layouts; run it by hand after changing a
-layout some other way.
+layout some other way. The Space keybindings hide borders before leaving bsp,
+but native trackpad or Mission Control switches can still flash briefly because
+macOS switches before yabai reports it.
 
 Change the border colours or width in
 `nix/modules/darwin/programs/jankyborders.nix`; applying the configuration
