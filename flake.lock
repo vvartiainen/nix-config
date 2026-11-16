@@ -384,16 +384,16 @@
     "yabai-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1793908976,
-        "narHash": "sha256-I0lsbWpIoUSnPBMBTd/YrWcIqgVZTCrN6MvifYQL6tM=",
+        "lastModified": 1794816049,
+        "narHash": "sha256-hHgPo8AQTxPnYlO1vPrBgDigzGHu7XHFqJywX57LK5s=",
         "owner": "Christian-SC26",
         "repo": "yabai",
-        "rev": "313bcd163bc15a05d23d9590741b2d0f64888e0a",
+        "rev": "6e249916c418abba396b72748e6d5bf85534e156",
         "type": "github"
       },
       "original": {
         "owner": "Christian-SC26",
-        "ref": "v7.3.2",
+        "ref": "v7.3.4",
         "repo": "yabai",
         "type": "github"
       }
