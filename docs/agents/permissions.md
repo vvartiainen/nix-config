@@ -98,21 +98,63 @@ Claude excludes standalone `git push` from the sandbox, so a push asks once
 and then runs outside it; force forms stay denied. With `cd`, pipes or `-C` it
 runs sandboxed and the proxy refuses the SSH host. A Claude `allowed_domains`
 entry does not help: it applies only in auto mode and does not provide the SSH
-agent. Use HTTPS for public fetches. Local `git rebase`, `reset` and `clean` run in
-the sandbox; their destructive forms are denied. Sandboxed Git
-does not record a new branch's upstream, because `.git/config` is protected;
-the first push sets it.
-Codex's terminal profile and Claude also protect `config.worktree`, including
-linked-worktree metadata, so enabling Git's per-worktree configuration does not
-make executable Git settings writable. T3 Codex uses its own workspace sandbox;
-the terminal profile's grants and protections cannot be assumed there.
-Use the `codex` zsh wrapper when launching in a linked worktree: it grants that
-worktree's index and refs while keeping other worktrees' metadata read-only.
-An app launch that bypasses it may need a reviewed command to commit.
-When a task writes to a sibling repository, add it to the session (`/add-dir`
-or `--add-dir`) instead of escaping. `git worktree add`, `move` and `remove`
-for worktrees other than the session's own write the main repository's Git
-metadata and need an approved run outside the sandbox.
+agent. Use HTTPS for public fetches. Local `git rebase`, `reset` and `clean` run
+in the sandbox; their destructive forms are denied. Git config and hooks remain read-only, including
+`config.worktree` and settings under `.git/worktrees/`: they can execute
+commands during a later unsandboxed Git invocation. Create ordinary branches
+with `git switch --no-track -c <branch> origin/main`; the first reviewed push
+can still record an upstream.
+
+### Local Git maintenance
+
+Use the installed `agent-git` helper for these standalone commands, from the
+repository or one of its linked worktrees:
+
+```sh
+agent-git worktree add topic origin/main
+agent-git worktree move topic renamed
+agent-git worktree remove renamed
+agent-git branch -d agent/topic
+agent-git branch -m feature/old feature/new
+agent-git branch --set-upstream-to origin/main feature/topic
+agent-git branch --unset-upstream feature/topic
+```
+
+`add` creates branch `agent/<name>` without an upstream, inside the main
+checkout's `.agent-worktrees/<name>`. Names contain letters, digits, `_` and
+`-`. `move` and `remove` accept only names in that directory; removal retains
+Git's dirty and locked worktree checks. Branch deletion uses `-d`, removes its
+`branch.*` config section, and refuses a branch checked out in another
+worktree. Upstream changes accept plain branch/remote-tracking names only.
+Branch rename uses `-m` and updates linked worktree HEADs without overwriting
+an existing branch. Other Git operations and arbitrary config changes are rejected.
+
+Claude (terminal and T3) and terminal Codex allow this fixed helper outside
+their sandbox without a per-command prompt. It immediately runs pinned Git
+in a separate Seatbelt: no network, only pinned Git may execute, no writes
+outside Git metadata and `.agent-worktrees`, no hooks or fsmonitor, and no
+caller Git configuration environment. Common config is writable only for the fixed
+branch operations; checkout filters cannot modify it. Pi's launcher starts
+a session-scoped broker outside Safehouse, bound to the launch repository;
+inside Pi the same helper sends only operation arguments over its one allowed
+Unix socket. This is a fixed maintenance service, not a general sandbox escape.
+New worktrees' `config`, `config.worktree` and hooks stay protected in Pi too.
+Checkouts requiring external filters, such as Git LFS, need reviewed raw Git.
+
+T3 Codex supplies its own per-turn sandbox and review rules. Workstation Codex
+allow rules cannot override those: invoking `agent-git` there may still need
+T3 approval. Applying this configuration does not remove that host limitation.
+Codex app launches may likewise bypass terminal settings. For normal commits
+in terminal linked worktrees, launch through the `codex` zsh wrapper, which
+grants the current worktree's index and refs while protecting config.
+
+T3-managed worktrees under `~/.t3/worktrees` remain usable as launch locations;
+the helper never removes or moves those paths. Use `git worktree list --porcelain`
+and T3's thread list to identify ownership. Do not remove a worktree belonging
+to another live thread, even if its branch is merged; let T3 clean up its own
+worktrees. Other external worktree locations still require reviewed raw Git
+commands. Add a sibling repository to the session (`/add-dir` or `--add-dir`)
+before working on it.
 
 For this repository's validation rules, use [AGENTS.md](../../AGENTS.md).
 

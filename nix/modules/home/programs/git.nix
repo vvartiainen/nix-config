@@ -16,6 +16,8 @@ _: {
       "**/.claude/.cc-writes/"
       "**/.claude/settings.local.json"
       "**/.claude/worktrees"
+      # Local worktrees managed by the fixed agent-git helper.
+      ".agent-worktrees/"
     ];
 
     settings = {

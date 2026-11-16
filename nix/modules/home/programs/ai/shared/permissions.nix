@@ -33,6 +33,8 @@ let
   argv = map (lib.splitString " ");
   commands = {
     inherit rexExecutables;
+    # Fixed local operations inside the helper's own network-free Seatbelt.
+    gitMaintenance = argv [ "agent-git" ];
     inspection = argv [
       # Fixed scratch-lock resolver; no arbitrary Nix flags or repo writes.
       "flake-update-preview"

@@ -110,7 +110,11 @@ For T3 mode selection and approval behavior, follow the
 - `Operation not permitted`, `403`/`Forbidden`, or `x509: OSStatus -26276`
   mean the sandbox blocked it: retry once with escalation or ask, don't try
   variants or work around it.
-- Git over SSH, `fj`, and worktree add/move/remove outside the session's own
+- Use `agent-git` for local worktree add/move/remove, merged branch deletion
+  and upstream changes; see [local Git maintenance](docs/agents/permissions.md#local-git-maintenance).
+  It manages only `<main>/.agent-worktrees`; never remove another live T3
+  thread's worktree. T3 Codex may still require host approval for the helper.
+- Git over SSH, `fj`, and raw worktree operations outside the session's own
   worktree run outside the sandbox with approval, and `allowed_domains` does not
   cover SSH. Claude runs a standalone `git push` outside its sandbox after one
   prompt; do not retry it with `allowed_domains`. Pi is the exception: it

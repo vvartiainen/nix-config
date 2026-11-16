@@ -24,7 +24,7 @@ each use, and **denied** means no approval can allow it.
 | | Claude Code | Codex | Cursor | Copilot | OpenCode | Pi |
 | --- | --- | --- | --- | --- | --- | --- |
 | OS sandbox | Each Bash command | Each command | Each command | Each command and hook (experimental) | None | Whole process, with extensions and MCP servers |
-| Outside the sandbox | File tools, MCP servers, `gh`, `fj`, `git fetch`, Rex | File tools, MCP servers, allowed `gh`/`fj` views | File tools, MCP servers | File tools, MCP servers | Everything | The SSH agent, for signing only |
+| Outside the sandbox | File tools, MCP servers, `gh`, `fj`, `git fetch`, Rex | File tools, MCP servers, allowed `gh`/`fj` views | File tools, MCP servers | File tools, MCP servers | Everything | SSH agent and fixed session-scoped Git maintenance broker |
 | Mode | Accept edits | On request, reviewed by you | Allowlist, with a shell hook | Allow and deny flags from the `copilot` shell function | Ordered rules, last match wins | Permission extension, YOLO off |
 | Approved run outside the sandbox | Yes | Yes | Yes | Yes | Not applicable | Never |
 | Start it | `claude` | `codex`, through the zsh wrapper in linked worktrees | `cursor-agent` | `copilot` from zsh; other shells skip the flags | `opencode` | `pi` from the project root |
@@ -45,7 +45,7 @@ each use, and **denied** means no approval can allow it.
 | --- | --- | --- | --- | --- | --- | --- |
 | Commands | Package download hosts; other hosts ask | Any host | Package download hosts and Cursor's defaults | Package download hosts | Any host | Any host |
 | Services on this Mac | Asks | Blocked | Client default | Blocked | Reachable | Blocked |
-| Unix sockets | Nix daemon and the OpenTofu plugin directory | Nix daemon and the OpenTofu plugin directory | Client default | Nix daemon, OpenTofu plugin directory and Herdr | Any | Injected SSH agent and system DNS; no Nix |
+| Unix sockets | Nix daemon and the OpenTofu plugin directory | Nix daemon and the OpenTofu plugin directory | Client default | Nix daemon, OpenTofu plugin directory and Herdr | Any | Injected SSH agent, system DNS and session Git broker; no Nix |
 | Web tools | Search and fetch run | Live web search | Documentation domains run | Documentation domains run | Client default | Search and fetch run |
 
 ## Commands
@@ -59,6 +59,7 @@ each use, and **denied** means no approval can allow it.
 | Installs, publishing, `sudo`, `ssh`, `open`, `tofu apply` | Asks | Asks | Asks | Asks | Asks | Asks; SSH works through the agent, other host services fail |
 | `git push`, forge writes | Asks | Asks | Asks | Asks | Asks | Branch pushes to `origin` and PR create/edit run; merges, other remotes and destructive remote forms ask |
 | [Flake update preview](permissions.md#flake-update-previews) | Runs outside sandbox | Runs outside sandbox (T3 may ask) | Approved retry | Approved retry | Runs, unsandboxed | Fails |
+| [Local Git maintenance](permissions.md#local-git-maintenance): `agent-git` | Runs | Runs (T3 may ask) | Approved retry | Approved retry | Runs, unsandboxed | Runs through session broker |
 | [`git fetch` from a configured remote](permissions.md#working-in-the-sandboxes) | Runs | Asks | Asks | Asks | Asks | Runs for `origin`; other remotes ask |
 | `gh` and `fj` read-only views | Runs | Runs | Approved retry | Approved retry | Runs | `fj` runs with the forge token; `gh` fails |
 | Rex, Kitty, Incus | Rex always asks; others ask beyond help and listings | Always asks | Asks beyond help and listings | Asks beyond help and listings | Asks beyond help and listings | Asks, then fails |

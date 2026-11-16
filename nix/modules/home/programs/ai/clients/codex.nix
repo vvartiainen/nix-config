@@ -140,7 +140,9 @@ let
       commands.review ++ map (exe: [ exe ]) commands.hostExecutables
     )
     + "\n"
-    + lib.concatMapStringsSep "\n" (toCodexRule "allow") unsandboxedInspection
+    + lib.concatMapStringsSep "\n" (toCodexRule "allow") (
+      unsandboxedInspection ++ commands.gitMaintenance
+    )
     + "\n"
     + lib.concatMapStringsSep "\n" (toCodexRule "forbidden") commands.denied
     + "\n"

@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 import subprocess
 import socket
+import shutil
 import sys
 import tempfile
 import unittest
@@ -61,10 +62,13 @@ class SafehouseTests(unittest.TestCase):
         cls.spec = cls.root / "spec.json"
         cls.spec.write_text(json.dumps({
             "agentDir": str(cls.agent),
+            "gitHelper": str(Path(__file__).resolve().parents[2] / "nix/modules/home/programs/ai/shared/agent-git.py"),
+            "gitExecutable": str(Path(shutil.which("git")).resolve()),
             # Match the production read-only toolchain grant. A Nix Python
             # environment wraps an interpreter whose dylibs live in other
             # store paths, so granting only its bin parent is insufficient.
-            "readable": ["/nix/store", str(Path(sys.executable).resolve().parent.parent)],
+            "readable": ["/nix/store", str(Path(sys.executable).resolve().parent.parent),
+                         str(Path(__file__).resolve().parents[2] / "nix/modules/home/programs/ai/shared/agent-git.py")],
             "writable": [str(cls.agent), str(cls.cache)],
             "denied": [str(cls.home / ".aws")],
             "protected": [str(cls.policy)],
@@ -130,6 +134,29 @@ class SafehouseTests(unittest.TestCase):
             "assert os.environ['T3_PI_RUNTIME_MODE'] == 'approval-required'; "
             "assert Path('.env.example').read_text() == 'SYNTHETIC='"
         )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_git_maintenance_broker_keeps_direct_config_writes_blocked(self):
+        repo = self.root / "broker-repo"
+        repo.mkdir()
+        subprocess.run(["git", "init", "-q", "-b", "main", str(repo)], env=self.env, check=True)
+        subprocess.run(["git", "-C", str(repo), "-c", "user.name=Fixture", "-c",
+                        "user.email=fixture@example.invalid", "commit", "--allow-empty", "-qm", "fixture"],
+                       env=self.env, check=True)
+        script = Path(__file__).resolve().parents[2] / "nix/modules/home/programs/ai/shared/agent-git.py"
+        source = (
+            "import os, subprocess, sys\nfrom pathlib import Path\n"
+            f"helper = [sys.executable, '-I', {str(script)!r}, 'unused-client-binary']\n"
+            "assert os.environ.get('AGENT_GIT_SOCKET')\n"
+            "for args in [('worktree', 'add', 'pi', 'main'), ('worktree', 'remove', 'pi'), "
+            "('branch', '-d', 'agent/pi')]:\n"
+            " subprocess.run(helper + list(args), check=True)\n"
+            "for key in ['core.hooksPath', 'core.fsmonitor', 'alias.inject']:\n"
+            " result = subprocess.run(['git', 'config', key, '!injected'])\n"
+            " assert result.returncode != 0\n"
+            "assert 'agent/pi' not in Path('.git/config').read_text()\n"
+        )
+        result = self.run_probe(source, workdir=repo)
         self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_system_ssh_configuration_and_nix_includes_are_readable(self):
