@@ -68,6 +68,13 @@ license must be accepted before `xcodebuild` and some Homebrew formulas work.
 - Grant Accessibility to `/opt/yabai/bin/yabai` and `/Applications/skhd.app` in
   System Settings → Privacy & Security. Grant skhd Input Monitoring if
   requested.
+- For the [Mission Control create-Space fallback](../programs/desktop.md#create-spaces),
+  allow skhd to control System Events when prompted (Privacy & Security →
+  Automation). The Accessibility grant belongs to the launching app: skhd for
+  the shortcut, or your terminal app when testing manually. Grant the terminal
+  Accessibility and System Events Automation for manual diagnostics too; do
+  not grant Dock or WindowManager. Confirm the shortcut separately, since a
+  successful terminal test does not verify skhd's permissions.
 - Create missing Mission Control Spaces before relying on yabai routing:
   Notes apps use Space 5; Mail and Calendar use Space 6.
 - Complete Vicinae's onboarding and grant the macOS permissions requested for

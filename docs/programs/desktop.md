@@ -19,6 +19,37 @@ upstream skhd service-install commands, which create a competing service.
 
 Quit Zen before applying its GUI preferences, then reopen it.
 
+## Create Spaces
+
+The create-Space shortcut runs `~/.config/yabai/create-space.sh`. It tries
+`yabai -m space --create` first, then opens Mission Control and presses the
+current display's add button through System Events if yabai fails. It searches
+WindowManager and Dock, waits for a new thumbnail, and closes Mission Control
+on success or failure. SIP can stay enabled. It does not focus the new Space.
+Failures go to skhd's stderr log; a timeout after pressing may mean creation
+succeeded, so inspect your Spaces before retrying.
+
+Diagnose the UI without adding a Space (this opens and closes Mission Control):
+
+```sh
+~/.config/yabai/create-space.sh --diagnose
+```
+
+`--dry-run` is an alias. Output lists the Mission Control owner, display IDs
+and whether the current display's add button was found. Permissions are in
+[new Mac setup](../runbooks/new-mac.md#after-the-first-activation).
+
+Creation fills empty labels for Spaces 1–6 and refreshes SketchyBar's Space
+associations and app icons without reloading it. The bar has items for Spaces
+1–10; higher Spaces have no bar item. Creation does not rerun startup app
+assignments or move Spaces to other displays.
+
+Destroy still uses `yabai -m space --destroy`. Mission Control's close button
+usually requires hover. The upstream workaround also uses `AXRemoveDesktop`,
+but its availability and thumbnail mapping on macOS 27.2 are unverified here,
+so there is no accessibility fallback for destroy; remove Spaces manually in
+Mission Control when yabai cannot.
+
 ## Window borders
 
 JankyBorders outlines the focused window in bsp layout only; stack and float
