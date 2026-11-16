@@ -92,9 +92,19 @@ focus_auth_prompt="osascript -l JavaScript $HOME/.config/yabai/focus-auth-prompt
 yabai -m signal --add label=focus_auth_prompt_space event=space_changed action="$focus_auth_prompt"
 yabai -m signal --add label=focus_auth_prompt_display event=display_changed action="$focus_auth_prompt"
 
+# JankyBorders flashes while Spaces change with stacked windows, so keep
+# borders for bsp layout only. The layout bindings in skhd re-run this too.
+borders_layout="$HOME/.config/yabai/borders-layout.sh"
+yabai -m signal --add label=borders_layout_space event=space_changed action="$borders_layout"
+yabai -m signal --add label=borders_layout_display event=display_changed action="$borders_layout"
+
 # yabai -m signal --add event=window_destroyed action="yabai -m query --windows --window &> /dev/null || yabai -m window --focus recent || yabai -m window --focus first"
 # yabai -m signal --add event=application_terminated action="yabai -m query --windows --window &> /dev/null || yabai -m window --focus recent || yabai -m window --focus first"
 
 yabai -m config layout stack
 
 yabai -m rule --apply
+
+# A restart has to re-apply the cached border state. The launchd border
+# service may still be starting; the next change retries.
+"$borders_layout" --reset || true

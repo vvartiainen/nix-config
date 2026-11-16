@@ -21,7 +21,14 @@ Quit Zen before applying its GUI preferences, then reopen it.
 
 ## Window borders
 
-JankyBorders outlines the focused window; yabai keeps windows fully opaque.
+JankyBorders outlines the focused window in bsp layout; yabai keeps windows
+fully opaque. Stack layout hides the borders because JankyBorders flashes while
+Spaces change with stacked windows. `~/.config/yabai/borders-layout.sh` follows
+the focused Space's layout, setting the border width to 0 in stack layout and
+re-running the Home Manager bordersrc otherwise. Yabai signals run it after
+Space and display changes, and the layout keybindings run it after switching
+layouts; run it by hand after changing a layout some other way.
+
 Change the border colours or width in
 `nix/modules/darwin/programs/jankyborders.nix`; applying the configuration
 restarts it. To restart it by hand:
