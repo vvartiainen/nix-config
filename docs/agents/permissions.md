@@ -258,9 +258,10 @@ Read deny.
 
 ## T3 Code permission modes
 
-New threads default to **Auto-accept edits**. Use that mode for Claude;
-switch Codex threads to **Auto** and Pi threads to **Full access** by hand in
-the composer's permission picker.
+New threads default to **Auto** for provider automatic review of routine
+actions. Choose **Auto-accept edits** for Claude when sandbox escapes should
+remain user-reviewed; switch Pi threads to **Full access** by hand in the
+composer's permission picker.
 T3 supports an environment default and project overrides, but no default per
 provider or provider instance. Existing threads and project overrides retain
 their selected modes; change those separately in T3. See
@@ -296,8 +297,15 @@ Claude uses `~/.local/bin/claude` and Pi uses the sandboxed executable in the
 Home Manager profile. Codex uses the Homebrew CLI with the launch argument
 `-c 'default_permissions=":workspace"'` to avoid shell startup failures with
 custom permission profiles ([T3 #16458](https://github.com/pingdotgg/t3code/issues/16458)).
-Terminal Codex keeps its custom profile. No separate launcher or Codex home is
-needed.
+Terminal Codex keeps its custom profile. Launch arguments reach the app-server,
+but T3 sends its own `sandboxPolicy` on every turn, so selecting a modified
+profile through `-c default_permissions=...` does not make it authoritative.
+In Auto, T3 sends `workspaceWrite` and selects the automatic approvals reviewer.
+Custom profiles with a root deny have reported macOS shell failures with this
+override. Keep the built-in profile workaround until T3 supports
+[profile inheritance](https://github.com/pingdotgg/t3code/discussions/6976);
+see the [Codex adapter](https://github.com/pingdotgg/t3code/blob/main/apps/server/src/orchestration-v2/Adapters/CodexAdapterV2.ts).
+No separate launcher or Codex home is needed.
 
 T3's Codex sandbox differs from the terminal profile
 ([T3 discussion #6976](https://github.com/pingdotgg/t3code/discussions/6976)).

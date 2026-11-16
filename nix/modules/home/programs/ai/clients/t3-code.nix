@@ -284,9 +284,9 @@ let
           ];
         };
       };
-      # Keep Claude escapes user-reviewed; switch Codex threads to Auto in T3.
+      # Let provider automatic review handle routine approval requests.
       # T3 has no per-provider or per-instance permission default.
-      defaultRuntimeMode = "auto-accept-edits";
+      defaultRuntimeMode = "auto";
       # Settle a thread once every linked pull request has merged.
       sidebarAutoSettleOnMerge = true;
       storageCleanup = {
