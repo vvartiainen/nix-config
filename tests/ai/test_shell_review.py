@@ -292,6 +292,14 @@ EOF
         for path in ("$c/config.worktree", "$c/worktrees", "$g/config.worktree", "$g/config", "$g/hooks"):
             self.assertIn(path, self.fixture["launch"])
 
+    def test_git_maintenance_has_a_narrow_unsandboxed_entry(self):
+        self.assertEqual(self.policy["gitMaintenance"], [["agent-git"]])
+        rules = Path(re.search(r"install -m 0644 (/nix/store/[^ ]+)", self.fixture["codex"]).group(1)).read_text()
+        self.assertIn('pattern = ["agent-git"], decision = "allow"', rules)
+        claude = self.settings_file("claude", "claude-code-settings")
+        self.assertIn("agent-git *", claude["sandbox"]["excludedCommands"])
+        self.assertIn("Bash(agent-git:*)", claude["permissions"]["allow"])
+
     def settings_file(self, client, name):
         path = Path(re.search(rf"--settings (/nix/store/[^ ]+-{name}[^ ]*\.json)", self.fixture[client]).group(1))
         self.assertTrue(path.exists(), "build the fixture system before settings tests")

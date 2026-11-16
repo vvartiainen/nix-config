@@ -56,6 +56,13 @@ uses the configured Kitty on `PATH` for its runtime tests; it does not launch
 or close terminal windows. A missing prerequisite fails rather than skipping a
 suite. None of these commands applies configuration.
 
+The fixed Git helper also has standalone macOS sandbox tests, using only
+synthetic repositories under `/private/tmp`:
+
+```sh
+AGENT_GIT_RUNTIME=1 python3 -B -m unittest discover -s tests/ai -p test_agent_git.py -v
+```
+
 Runtime integration tests run separately on macOS. From the repository root,
 provide an existing disposable directory outside `/tmp` (Safehouse grants
 `/tmp` itself, which would invalidate denial tests) and an existing Neovim

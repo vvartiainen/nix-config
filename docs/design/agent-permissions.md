@@ -29,3 +29,29 @@ client has no OS sandbox, as with OpenCode, its rules are best effort.
 Rex, Kitty and Incus delegate to host services, so their control endpoints
 stay out of sandbox socket and network grants and each use is reviewed
 instead.
+
+## Local Git maintenance
+
+Direct Git config writes stay blocked: hooks, fsmonitor, aliases, filters and
+includes can persist command execution for a later user invocation. Granting
+only refs/logs/packed-refs and `.git/worktrees` cannot remove stale branch
+config after `branch -d`. Writable per-worktree config has the same execution
+risk and does not isolate shared branch settings. Pushing without `-u` avoids
+new upstream sections but does not clean existing ones.
+
+`agent-git` instead validates a small command grammar and runs pinned Git in
+its own network-free Seatbelt. Config writes are permitted only during fixed
+branch operations, where checkout filters are not run. Worktree operations
+protect common config even against filters that directly re-exec Git. The
+caller cannot supply Git flags, executable, environment, sandbox profile or
+absolute worktree destinations. A prompt-injected caller can create local
+worktrees, remove clean helper-managed worktrees, delete merged branches and
+change upstreams, but cannot use this entry point to install executable config
+or publish data. Git's locks serialize concurrent config changes.
+
+Claude and terminal Codex grant the helper entry point, not unrestricted Git.
+Pi cannot escape Safehouse, so its unsandboxed launcher owns a short-lived
+broker bound to its launch repository. The sole additional socket accepts the
+same fixed argument grammar and runs the same inner Seatbelt. T3 Codex's
+per-turn policy remains host-owned and may require approval. Managed worktrees
+use a separate `.agent-worktrees` namespace to exclude T3's live thread paths.

@@ -13,6 +13,7 @@ FAST = {
     "darwin": ["test_default_apps.py"],
     "kitty": ["test_kitty_metrics.py", "test_kitty_tab_bar.py"],
     "ai": [
+        "test_agent_git.py",
         "test_flake_update_preview.py",
         "test_agent_hooks.py",
         "test_git_credential_forgejo.py",
@@ -46,6 +47,8 @@ def main():
         if sys.platform != "darwin":
             parser.error("Safehouse integration tests require macOS")
         suite("ai", "test_pi_safehouse.py")
+        env["AGENT_GIT_RUNTIME"] = "1"
+        suite("ai", "test_agent_git.py")
         commands.append(["nvim", "--headless", "-u", "NONE", "-i", "NONE",
                          "-l", "tests/neovim/test-tools.lua"])
     else:

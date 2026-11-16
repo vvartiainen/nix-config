@@ -33,6 +33,7 @@ let
     "fj"
     # Fixed scratch lock output; allow via shared inspection rules.
     "flake-update-preview"
+    "agent-git"
     # Need fj's keychain token and the 1Password app; both stay reviewed.
     "fj-edit-body"
     "op-item-from-secret"
@@ -60,7 +61,7 @@ let
       ++ map (cmd: "Bash(${commandString cmd})") (
         lib.filter (cmd: lib.head cmd != "rex") commands.hostExact
       )
-      ++ map (cmd: "Bash(${commandString cmd}:*)") commands.fetch
+      ++ map (cmd: "Bash(${commandString cmd}:*)") (commands.fetch ++ commands.gitMaintenance)
       # Keep the no-argument scheduled invocation explicit too.
       ++ [
         "Bash(flake-update-preview)"

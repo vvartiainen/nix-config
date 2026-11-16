@@ -179,6 +179,8 @@ let
   sandboxSpec = pkgs.writeText "pi-safehouse.json" (
     builtins.toJSON {
       inherit agentDir;
+      gitHelper = ../../shared/agent-git.py;
+      gitExecutable = "${pkgs.git}/bin/git";
       readable =
         policy.paths.readonly
         ++ policy.paths.runtime
@@ -231,7 +233,7 @@ in
     name = "pi";
     runtimeInputs = [ pkgs.git ];
     text = ''
-      exec ${lib.getExe pkgs.python3} ${./pi-safehouse.py} \
+      exec ${lib.getExe pkgs.python3} -I ${./pi-safehouse.py} \
         ${sandboxSpec} ${lib.getExe pkgs.agent-safehouse} ${lib.getExe pkgs.pi-coding-agent} "$@"
     '';
   };
