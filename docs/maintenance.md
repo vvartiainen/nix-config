@@ -13,8 +13,8 @@ just switch <HOSTNAME> 1   # apply without Homebrew bundle
 
 See [host data](design/host-data.md) for host selection and
 [agent configuration validation](agents/config.md#configuration-validation)
-for coverage. The package diff includes all pending Nix changes; it excludes
-Homebrew and mise updates. After applying, reload the
+for coverage. The package diff covers pending Nix changes, not Homebrew or mise
+updates. After applying, reload the
 [desktop](programs/desktop.md#reload-after-changes),
 [terminal](programs/terminal.md#reload-changes) and
 [Rex](programs/rex.md#reload) as needed.
@@ -33,62 +33,43 @@ just check-fixture              # Statix and public fixture evaluation, no build
 just build-fixture              # public fixture system build, no apply
 ```
 
-Checks use ShellCheck and shell syntax checks, Statix, Deadnix, Ruff and
-`git diff --check`, LuaJIT compilation, Node syntax checks, JSON/TOML parsing,
-and YAML syntax/duplicate-key checks with yamllint.
-Zsh uses `zsh -n` instead of ShellCheck. ShellCheck skips
-runtime-resolved sources; their files are checked separately. Formatting checks
-use Ruff, nixfmt, shfmt and StyLua, respecting Neovim's existing StyLua config.
 Formatting is opt-in while existing files have mixed styles. Vendored Yazi
-plugins/flavors and symlinks are excluded. Missing tools fail the check;
-apply the configuration manually to install the tool set and `nix-config-check`,
-which runs the same checker with its Nix-provided tools.
-Before applying, run the packaged checker from the repository root:
+plugins and flavors and symlinks are skipped. Missing tools fail the check;
+apply the configuration to install them. Before applying, run the packaged
+checker with its Nix-provided tools instead:
 
 ```sh
 nix run .#check-repository --override-input host "path:$PWD/nix/fixtures/host" -- --all --tests
 ```
 
-`just test` uses the public fixture and supplies the validator's Python
-dependencies, bundled schemas and generated permission policy. Building its
-runner also checks Pi's pinned native extension loader and policy. The suite
-uses the configured Kitty on `PATH` for its runtime tests; it does not launch
-or close terminal windows. A missing prerequisite fails rather than skipping a
-suite. None of these commands applies configuration.
+`just test` uses the public fixture and pinned dependencies, and the
+configured Kitty on `PATH` for its runtime tests. A missing prerequisite fails
+rather than skipping a suite. None of these commands applies configuration,
+and none replaces the [fixture evaluation and build](../AGENTS.md#validation-commands-no-apply)
+or manual private-host validation.
 
-The fixed Git helper also has standalone macOS sandbox tests, using only
+Two runtime suites run separately on macOS. The `agent-git` sandbox tests use
 synthetic repositories under `/private/tmp`:
 
 ```sh
 AGENT_GIT_RUNTIME=1 python3 -B -m unittest discover -s tests/ai -p test_agent_git.py -v
 ```
 
-Runtime integration tests run separately on macOS. From the repository root,
-provide an existing disposable directory outside `/tmp` (Safehouse grants
-`/tmp` itself, which would invalidate denial tests) and an existing Neovim
-plugin directory containing lazy.nvim, LazyVim, mason.nvim and conform.nvim:
+The integration tests need an existing disposable directory outside `/tmp`
+(Safehouse grants `/tmp` itself, which would invalidate denial tests) and an
+existing Neovim plugin directory containing lazy.nvim, LazyVim, mason.nvim and
+conform.nvim. They use synthetic identity and credentials and never install
+plugins. Run them outside the agent sandbox if it blocks starting a macOS
+sandbox or binding local test sockets:
 
 ```sh
 PI_SANDBOX_TEST_ROOT=/absolute/path/to/disposable-test-root \
 NVIM_TEST_PLUGINS=/absolute/path/to/existing/lazy/plugins just test-integration
 ```
 
-This supplies the pinned Safehouse executable, uses synthetic identity and
-credentials, and never installs Neovim plugins. Safehouse tests need permission
-to start a macOS sandbox and bind local test sockets; run outside the agent
-sandbox if it blocks those operations. Public fixture evaluation/build commands
-are in [AGENTS.md](../AGENTS.md#validation-commands-no-apply); full behavior tests
-do not replace them or manual private-host validation.
-
 After applying, start fresh Codex, Claude and Copilot sessions to load the
-repository validation hooks; approve them in the agent UI if requested.
-They run the linters, syntax checks and fast behavior suites before the agent
-finishes after code changes, including commits made since the current prompt.
-Documentation-only edits skip behavior suites. Hooks never evaluate or build
-Nix, run macOS integration tests, or apply configuration.
-Agent validation, hook scope and failure handling
-are defined in [AGENTS.md](../AGENTS.md#validation-commands-no-apply); agents
-never use private host data or apply a system configuration.
+repository validation hooks, and approve them in the agent UI if asked. Their
+scope is in [AGENTS.md](../AGENTS.md#validation-commands-no-apply).
 
 ## Updates and rollback
 
@@ -100,20 +81,17 @@ just rollback-to <GENERATION>
 just clean                     # remove generations older than 7 days and GC
 ```
 
-Agents use [the scratch-lock preview wrapper](agents/permissions.md#flake-update-previews)
-to review updates to the flake files embedded in the applied configuration
-before changing the repository lock. Rebuild and apply to preview newer flake
-definitions; working-directory edits do not affect the wrapper.
-
 Review `flake.lock` and `just build` before switching. The main `nixpkgs` input
-tracks unstable. Some inputs have their own update steps:
+tracks unstable. Agents preview updates with
+[`flake-update-preview`](agents/permissions.md#flake-update-previews). Some
+inputs have their own update steps:
 [Rosetta image](programs/linux-builders.md#update-the-rosetta-image),
 [Neovim nightly](programs/neovim.md#change-or-update-nightly) and
 [Rex](programs/rex.md#update).
 Weekly GC removes old system generations; `just clean` also handles user
 Home Manager generations. Garbage-collected generations cannot be restored.
 
-Nix activation prints a reminder when managed mise inputs change; it does not
+Activation prints a reminder when managed mise inputs change but does not
 install or prune tools. Run installation manually from the home context:
 
 ```sh
@@ -127,10 +105,9 @@ which tools; use `type -a <tool>` to diagnose competing installations.
 
 ## Homebrew app data
 
-Activation uses `homebrew.onActivation.cleanup = "uninstall"`: undeclared
-Homebrew packages are removed, while cask preferences and app data are kept
-for rollback. Review and delete that data manually after accepting a removal.
-To remove saved data for a removed cask, replace `CASK_NAME` below:
+Activation removes undeclared Homebrew packages
+(`homebrew.onActivation.cleanup = "uninstall"`) but keeps cask preferences and
+app data for rollback. After accepting a removal, delete that data manually:
 
 ```sh
 brew uninstall --cask --zap --force CASK_NAME
@@ -138,8 +115,7 @@ brew uninstall --cask --zap --force CASK_NAME
 
 `--force` allows zapping an already uninstalled cask. Zap removes the files
 listed by the cask, which can include shared files; back up anything needed
-first. See [Homebrew's uninstall options](https://docs.brew.sh/Manpage#uninstall-remove-rm-options-installed_formulainstalled_cask-).
-`brew cleanup` removes old downloads and package versions, not saved app data.
+first. `brew cleanup` removes old downloads and versions, not app data.
 
 ## Backups and Spotlight
 
@@ -148,9 +124,6 @@ Check with `tmutil isexcluded /nix`. Treat VM disks as rebuildable; keep
 important data elsewhere. Agent sessions are archived separately; see
 [session history](agents/sessions.md#session-history).
 
-Activation disables Spotlight indexing on a separately mounted `/nix` only when
-`mdutil -s /nix` reports `Indexing enabled.` Standard Nix volumes may instead
-report `unknown indexing state` (-400); activation skips these, without claiming
-an exclusion was applied. Time Machine exclusions do not affect Spotlight.
-Folder exclusions for rebuildable caches must be added in System Settings →
-Spotlight → Search Privacy; `mdutil` controls entire volumes.
+Activation disables Spotlight indexing on a separately mounted `/nix` volume
+when `mdutil` can. Time Machine exclusions do not affect Spotlight; exclude
+cache folders in System Settings → Spotlight → Search Privacy.

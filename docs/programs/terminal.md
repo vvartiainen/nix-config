@@ -6,34 +6,19 @@ editor in [Neovim](neovim.md).
 
 ## Opening files and directories
 
-After applying, macOS opens Markdown, plain text, code and configuration files
-in Kitty with the stable Homebrew Neovim. These macOS defaults are managed in
-`nix/modules/darwin/default-apps.nix` and apply to Finder and links from other
-apps. Directories open in Finder. Source and script types claimed by Xcode
-explicitly select the editor; Xcode projects, PDFs, images and office documents
-keep their existing associations. HTML documents and web URLs keep using the
-browser; editor activation rejects browser types and schemes.
-If an earlier switch selected Kitty as your browser, reselect your preferred
-browser in [System Settings → Desktop & Dock → Default web browser](https://support.apple.com/en-gb/102362).
+macOS opens Markdown, plain text, code and configuration files in Kitty with
+the stable Homebrew Neovim, set in `nix/modules/darwin/default-apps.nix`.
+Directories open in Finder; HTML, web URLs, Xcode projects, PDFs, images and
+office documents keep their usual apps. Inside Kitty, directory links open
+Yazi, text links Neovim, images `icat`, and `.log` links follow the log
+(`dotfiles/kitty/open-actions.conf`). Scripts sent to Kitty open for editing,
+not execution.
 
-Inside Kitty, directory links open Yazi in a pane, text links open Neovim,
-HTML links use the browser, images use `icat`, and `.log` links follow the log.
-Other files use their macOS default app. Files sent to Kitty through macOS open
-in a new OS window;
-scripts open for editing. These rules are in `dotfiles/kitty/open-actions.conf`
-and `launch-actions.conf`. Kitty needs these launch rules because macOS selects
-an application bundle as its default handler, rather than a terminal command.
-
-Check an association with `duti -x md` or `duti -d public.folder`. Change the
-`editor` bundle ID in the defaults module to select another editor app.
-Removing a managed association does not automatically restore the previous app.
-Activation checks current defaults before setting them; macOS may ask for
-confirmation when a default actually changes.
-macOS may reject an extension that has no declared file type, such as `.conf`.
-Activation warns with the skipped extension and continues applying the other
-defaults. For a skipped extension, use Finder's Get Info → Open with → Change
-All and check opening a file afterwards. Other association failures stop
-activation.
+Check an association with `duti -x md` or `duti -d public.folder`. Removing a
+managed association does not restore the previous app. macOS may ask to
+confirm a changed default, and may reject an extension without a declared file
+type, such as `.conf`: activation warns and continues, so set that one in
+Finder's Get Info → Open with → Change All.
 
 ## Remote files
 

@@ -11,7 +11,7 @@ each use, and **denied** means no approval can allow it.
 
 | Task | Use | Why |
 | --- | --- | --- |
-| Everyday work in this or another repository: edit, test, evaluate Nix, commit, read pull requests, web research | Claude Code, in the terminal or T3 | Sandboxed, reaches the Nix daemon, reads `gh`/`fj`, [configured-remote fetches](permissions.md#working-in-the-sandboxes) and web research without prompts |
+| Everyday work in this or another repository: edit, test, evaluate Nix, commit, read pull requests, web research | Claude Code, in the terminal or T3 | Sandboxed, reaches the Nix daemon, reads `gh`/`fj`, [configured-remote fetches](permissions.md#claudes-fetch-hook) and web research without prompts |
 | The same, with downloads from arbitrary hosts | Codex in the terminal | Sandboxed with ordinary internet access |
 | T3 work that needs a Codex model | Codex in T3 | Use the [T3 permission mode guidance](permissions.md#t3-code-permission-modes) |
 | Code you do not trust, or an untrusted extension or MCP server | Pi | The whole process is confined and no approval can leave the sandbox |
@@ -48,8 +48,8 @@ each use, and **denied** means no approval can allow it.
 | Unix sockets | Nix daemon and the OpenTofu plugin directory | Nix daemon and the OpenTofu plugin directory | Client default | Nix daemon, OpenTofu plugin directory and Herdr | Any | Injected SSH agent, system DNS and session Git broker; no Nix |
 | Web tools | Search and fetch run | Live web search | Documentation domains run | Documentation domains run | Client default | Search and fetch run |
 
-The [shared host policy](permissions.md#working-in-the-sandboxes) includes exact
-GitHub API/raw hosts. Host allowances do not restrict requests to downloads.
+The [shared host list](permissions.md#network) allows every request to its
+hosts, not only downloads.
 
 ## Commands
 
@@ -63,7 +63,7 @@ GitHub API/raw hosts. Host allowances do not restrict requests to downloads.
 | `git push`, forge writes | Asks | Asks | Asks | Asks | Asks | Branch pushes to `origin` and PR create/edit run; merges, other remotes and destructive remote forms ask |
 | [Flake update preview](permissions.md#flake-update-previews) | Runs outside sandbox | Runs outside sandbox (T3 may ask) | Approved retry | Approved retry | Runs, unsandboxed | Fails |
 | [Local Git maintenance](permissions.md#local-git-maintenance): `agent-git` | Runs | Runs (T3 may ask) | Approved retry | Approved retry | Runs, unsandboxed | Runs through session broker |
-| [`git fetch` from a configured remote](permissions.md#working-in-the-sandboxes) | Runs | Asks | Asks | Asks | Asks | Runs for `origin`; other remotes ask |
+| [`git fetch` from a configured remote](permissions.md#claudes-fetch-hook) | Runs | Asks | Asks | Asks | Asks | Runs for `origin`; other remotes ask |
 | `gh` and `fj` read-only views | Runs | Runs | Approved retry | Approved retry | Runs | `fj` runs with the forge token; `gh` fails |
 | Rex, Kitty, Incus | Rex always asks; others ask beyond help and listings | Always asks | Asks beyond help and listings | Asks beyond help and listings | Asks beyond help and listings | Asks, then fails |
 | `op read`, keychain lookups, force push, `git reset --hard`, `git clean -f`, disk erase | Denied | Denied, exact prefixes only | Denied | Denied, exact prefixes only | Denied | Denied |
@@ -78,14 +78,13 @@ to keep the existing read-only allowances.
 ## In T3 Code
 
 The tables above describe terminal clients. Choose the provider's mode using
-[T3 Code permission modes](permissions.md#t3-code-permission-modes),
-which covers the new-thread default, manual overrides and observed behavior.
+[T3 Code permission modes](permissions.md#t3-code-permission-modes).
 
 | Provider | Difference from the terminal |
 | --- | --- |
 | Claude | Same sandbox settings. Code Mode is off and T3's own tools run |
-| Codex | Managed per-turn sandbox: terminal network, agent-cache and shared Git metadata grants do not transfer. Inherited cache variables may point outside writable roots; use the active policy and reviewed retries. See the mode guidance above |
-| Pi | Same Safehouse sandbox; T3's loopback MCP endpoint and the SSH agent socket are reachable, so its own tools and SSH remotes work. T3's runtime mode also asks before every call it does not classify as read-only, so run Pi threads in Full access |
+| Codex | Managed per-turn sandbox: terminal network, agent-cache and shared Git metadata grants do not transfer; use reviewed retries |
+| Pi | Same Safehouse sandbox; T3's MCP endpoint and the SSH agent are reachable. T3 asks before every call it does not classify as read-only, so run Pi threads in Full access |
 | OpenCode | Same rules, no OS sandbox |
 
 ## Using them

@@ -15,8 +15,9 @@ The live editor retains Mason for formatter/debugger fallbacks.
 ## Language tools and formatting
 
 Nix owns the common language-server baseline and mise the runtimes and project
-versions; see [tool ownership](../design/tool-ownership.md). Both editors inherit the project's `PATH`; project dependencies or
-an optional dev shell can override the baseline. Project-only formatters,
+versions; see [tool ownership](../design/tool-ownership.md). Both editors
+inherit the project's `PATH`, so project dependencies or a dev shell can
+override the baseline. Project-only formatters,
 debuggers and test runners still need installation; nightly has no Mason fallback.
 Removing a declaration does not uninstall old mise/Mason tools or their shims.
 Check resolution before removing them:

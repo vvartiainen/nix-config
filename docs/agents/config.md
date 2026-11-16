@@ -2,11 +2,10 @@
 
 ## Select project tools
 
-Nix supplies an MCP catalog; `ct agents` selects agents and MCP servers and
-writes their project files. In this repository, generated agent configuration,
-MCP registrations and skill copies are local and ignored by Git. Review generated
-files before use; other projects can choose whether to commit their setup.
-No catalog MCP server is enabled globally or started without a project entry.
+Nix supplies an MCP catalog; `ct agents` selects agents and MCP servers per
+project and writes their project files. In this repository those generated
+files are local and ignored by Git; review them before use. No catalog MCP
+server is enabled globally.
 
 ```sh
 ct agents set targets claude enable
@@ -15,97 +14,66 @@ ct agents sync --dry-run
 ct agents sync
 ```
 
-The catalog includes the `nixos` server. Codex and Pi load project servers
-after project trust. Tool approval depends on the client: some adapters allow
-catalog tools, while Pi's MCP tools still ask. Loading a server does not grant
-its process an escape from the sandbox.
-See the cli-toolbox
+Codex and Pi load project servers after project trust. Tool approval depends on
+the client: some adapters allow catalog tools, while Pi's MCP tools still ask.
+Loading a server does not let its process escape the sandbox. See the
+cli-toolbox
 [agent tools guide](https://github.com/vvartiainen/cli-toolbox/blob/main/docs/agent-tools.md).
 
 ## Skills and plugins
 
 Authored skills live in the private `agent-skills` repository and are installed
-through Claude Code or Codex's native marketplace commands. Its README covers
-installation, updates and development. Nix does not copy skills into the store,
-register skill sources or reset marketplace choices on activation. Sandboxed
-commands can read the clients' plugin caches to run packaged skill helpers.
-
-Rex's vendor bootstrap skill and hooks remain managed with its pinned CLI.
-Skills and plugins do not grant permissions; the active session policy applies.
+through Claude Code or Codex's native marketplace commands; its README covers
+installation, updates and development. Nix does not manage skill sources or
+marketplace choices. Rex's bootstrap skill and hooks come with its pinned CLI.
+Skills and plugins grant no permissions.
 
 ## Global cleanup
 
-Close agent CLIs before switching so they cannot write stale settings back.
-Restart them afterwards to load the new configuration.
+Close agent CLIs before switching so they cannot write stale settings back, and
+restart them afterwards.
 
-Every switch removes global MCP registrations, then restores declared Rex and
-Herdr integrations. Skills, plugins, marketplace choices, project tools,
-authentication and session history remain in place. Select MCP servers per
-project; manually enabled global MCP servers are removed on the next switch.
+Every switch removes global MCP registrations, then restores the declared Rex
+and Herdr integrations; manually enabled global servers do not survive.
+Skills, plugins, marketplace choices, project tools, authentication and session
+history stay.
 
 ```sh
 just cleanup-agent-config --dry-run
 just cleanup-agent-config
 ```
 
-Review the dry run first. Changed configuration files are backed up under
-`~/.local/state/nix-config/agent-config-backup/`; only the latest run that
-changed something is retained. Inspect that private backup before recovery.
-Custom CLI homes and administrator-managed tools are outside cleanup coverage.
+Review the dry run first. Changed files are backed up under
+`~/.local/state/nix-config/agent-config-backup/`, keeping only the latest run
+that changed something. Custom CLI homes and administrator-managed tools are
+not covered.
 
 ## T3 Code settings
 
-The Homebrew cask provides the app. Nix merges preferences from
+The Homebrew cask provides the app. Every switch merges the values declared in
 [`t3-code.nix`](../../nix/modules/home/programs/ai/clients/t3-code.nix) into
-`~/.t3/userdata/settings.json` on every switch. Edit that module to keep changes
-made in T3; declared values are restored on each switch. Other settings remain
-app-managed. The server watches the file, so no restart is needed.
+`settings.json`, `client-settings.json` and `keybindings.json` under
+`~/.t3/userdata/`, keeping other app-managed values
+([how](../design/t3-code.md)). To keep a change made in T3, declare it in the
+module; declared values are restored on each switch. Close T3 before switching
+and reopen it afterwards.
 
-Nix also merges non-default UI preferences into `client-settings.json` in the
-same directory: notifications with sound, in-app notifications, links opening in
-T3, direct quit, proactive panels and hiding the **Open in** detail item.
-Nix also merges the [T3 keybindings](keybindings.md#t3-code) into
-`keybindings.json`, replacing rules for managed commands and preserving other
-shortcuts. Window bounds remain app-managed. Close T3 before switching and
-reopen it afterwards to load the shortcuts.
+The module also publishes the Catppuccin Mocha theme as the default. Each
+client adopts it once and keeps a later choice; bump `defaultThemeSetAt` to
+apply it again.
 
-Activation publishes the Catppuccin Mocha palette to
-`~/.t3/userdata/themes/catppuccin-mocha.json` and declares it in `settings.json`
-as the environment default theme. T3 reads published themes only from regular
-files, so the palette is copied rather than linked. Each client adopts the
-default once and keeps any later choice; bump `defaultThemeSetAt` in the module
-to apply it again.
-
-Managed preferences include provider paths and enabled providers, the default
-[permission mode](permissions.md#t3-code-permission-modes), model selections,
-favorites and hidden models, project defaults, compaction, pull request behavior
-and worktree cleanup. New threads use worktrees, projects default to auto-pull,
-and idle threads compact before the cache expires. Claude's compaction threshold
-is 400,000 tokens. Automatic settlement by age is disabled.
-
-Threads settle after every linked pull request merges. Worktrees are cleaned up
-on merge, thread deletion, or when unchanged, subject to T3's local-change
-protection. Merge cleanup needs a linked pull request, so agents link the pull
-request they open to their thread; a plain `git merge` leaves the worktree in
-place. Idle/settled-age cleanup, browser capture retention and log retention
-remain app-managed under **Settings → Worktrees → Cleanup**.
-
-Provider switches, forks and delegated tasks hand off conversation context on
-their own; see
-[portable handoffs](https://github.com/pingdotgg/t3code/blob/main/docs/user/portable-handoffs.md).
+Worktrees are cleaned up when every linked pull request merges, on thread
+deletion or when unchanged, subject to T3's local-change protection. Merge
+cleanup needs a linked pull request, so agents link the pull request they open
+to their thread; a plain `git merge` leaves the worktree in place. Idle cleanup
+and retention stay app-managed under **Settings → Worktrees → Cleanup**.
 
 ### Pull request merge method
 
-The environment default is **Rebase and merge**: `pullRequestMergeMethod =
-"rebase"` is declared in the module and merged into `settings.json` on every
-switch, so no UI step is needed and the server picks the change up without a
-restart. The repositories allow rebase merges only, so clients must request an allowed rebase method; the default states that intent and decides the method on a
-host that allows more than one. See
-[how T3 chooses](../design/t3-code.md#pull-request-merge-method).
-
+The environment default is **Rebase and merge**, matching the rebase-only
+repositories; see [why it is declared](../design/t3-code.md#pull-request-merge-method).
 Settings → Source control → **Default pull request merge method** shows the
-effective value. Change the default in the module; an override chosen there for
-one project stays app-owned and wins over it.
+effective value; a per-project override set there stays app-owned and wins.
 
 ## Configuration validation
 
@@ -113,16 +81,14 @@ one project stays app-owned and wins over it.
 just validate-agent-config
 ```
 
-This builds the validator from the checkout and reads actual global config
-files. `just check` and `just build` also invoke it; activation checks merged
-settings. It reports schema coverage, parsing-only checks and missing files.
-Validation is offline and checks structure and supported values, not whether
-commands, models or servers work. The bundled Claude schema adds hook
-`onFailure`, which SchemaStore lacks; the schema build fails once upstream
-adds it, so the patch can be dropped.
+This builds the validator from the checkout and reads the installed global
+config files; `just check` and `just build` also run it, and activation checks
+merged settings. It reports schema coverage, parsing-only checks and missing
+files. Validation is offline and checks structure and supported values, not
+whether commands, models or servers work.
 
-A failing merge preserves its destination and merge state, but activation is
-not transactional: earlier successful steps may already have written files.
-Project settings, custom CLI homes, private modules and runtime environment/
-flag overrides are outside this check. Agents use only the public fixture;
-the user validates private host settings manually before applying.
+A failing merge preserves its destination, but activation is not
+transactional: earlier steps may already have written files. Project settings,
+custom CLI homes, private modules and runtime overrides are outside this check.
+Agents use only the public fixture; the user validates private host settings
+before applying.

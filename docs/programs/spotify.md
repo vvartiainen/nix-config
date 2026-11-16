@@ -1,18 +1,10 @@
 # Spotify
 
 Spotify is the [spicetify](https://spicetify.app) build from
-`nix/modules/darwin/programs/spotify.nix`: the Nix package with the Catppuccin
-theme in Mocha colors patched in. Nix installs it to
-`/Applications/Nix Apps/Spotify.app`, and Homebrew no longer provides Spotify or
-`spicetify-cli`. Do not add either back; the module installs the app for you.
-
-## Theme and extensions
-
-`programs.spicetify` in the module owns the configuration. `theme` and
-`colorScheme` come from `inputs.spicetify-nix.legacyPackages.<system>.themes`,
-and `enabledExtensions` takes entries from the same set's `extensions`. Apply
-the configuration after a change, since the app is rebuilt rather than patched
-in place.
+`nix/modules/darwin/programs/spotify.nix`, themed with Catppuccin Mocha and
+installed to `/Applications/Nix Apps/Spotify.app`. Do not add Spotify or
+`spicetify-cli` to Homebrew. Theme and extension changes go in
+`programs.spicetify` and need an apply, since the app is rebuilt.
 
 ## Updates
 

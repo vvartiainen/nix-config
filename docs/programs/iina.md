@@ -1,11 +1,8 @@
 # IINA
 
 IINA plays web video that Zen hands to it, and with its AirPlay plugin it casts
-that file to an Apple TV. Nix installs both, in
-`nix/modules/darwin/programs/iina.nix`: the app comes from nixpkgs, and the
-plugin release is copied into IINA's plugins directory on activation. The Zen
-extension that sends pages to IINA is declared in
-`nix/modules/home/programs/zen-browser.nix`.
+that file to an Apple TV. Nix installs the app, the plugin and the Zen
+extension.
 
 ## Send a page to IINA
 
@@ -17,13 +14,9 @@ open it yet.
 ## Cast to an Apple TV
 
 IINA cannot AirPlay its own playback output, so casting uses the
-[AirPlay plugin](https://ozykhan.github.io/iina-airplay/): it remuxes the file
-IINA is playing into a live HLS stream, hands that to the Apple TV, and stays the
-remote. Activation copies it to
-`~/Library/Application Support/com.colliderli.iina/plugins`, where IINA looks for
-plugins, so nothing is installed through IINA's plugin store. The copy carries no
-`com.apple.quarantine`, which is what lets the bundled ffmpeg and helper run
-under their ad-hoc signatures.
+[AirPlay plugin](https://ozykhan.github.io/iina-airplay/), which streams the
+file IINA is playing to the Apple TV and stays the remote. Do not install it
+through IINA's plugin store.
 
 Play a file in IINA and either choose **Plugins → AirPlay → Cast to TV** in the
 menu bar or start from the sidebar's **Plugins → AirPlay** tab; **Send to TV**

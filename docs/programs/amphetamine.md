@@ -20,17 +20,10 @@ on a ventilated surface while running a closed-lid session.
 
 ## Managed files
 
-`nix/modules/darwin/programs/amphetamine.nix` pins the official installer and
-extracts its AppleScript without running the installer scripts. Home Manager
-copies it to `~/Library/Application Scripts/com.if.Amphetamine/powerProtect.scpt`.
-Nix-darwin manages `/etc/sudoers.d/amphetamine_PowerProtect`, allowing only the
-configured user to run `/usr/bin/pmset -a disablesleep 1` and the matching `0`
-command as root without a password. This grants that user the commands outside
-Amphetamine too; it does not grant general access to `pmset`.
-
-Activation installs support files; it does not disable sleep or start a session.
-Session preferences remain app-managed. Amphetamine Enhancer is a separate,
-optional helper and is not installed by this module.
+The module's sudoers rule lets the configured user run
+`/usr/bin/pmset -a disablesleep 1` and `0` as root without a password, also
+outside Amphetamine; it grants no other `pmset` access. Activation does not
+disable sleep or start a session, and session preferences stay app-managed.
 
 ## Troubleshooting
 
@@ -43,7 +36,5 @@ If sleep remains disabled after ending a session, restore it from Terminal:
 sudo /usr/bin/pmset -a disablesleep 0
 ```
 
-Before removing the module, end active sessions and restore normal sleep.
-Nix-darwin removes its managed sudoers file on the next activation; remove the
-copied AppleScript manually if no longer needed. Update the installer commit
-and hash together when updating Power Protect.
+Before removing the module, end active sessions and restore normal sleep;
+remove the copied AppleScript under `~/Library/Application Scripts/` manually.

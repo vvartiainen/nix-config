@@ -49,8 +49,7 @@ Agents follow [AGENTS.md](AGENTS.md) and use the public fixture for validation.
 
 Other flakes can import individual Home Manager modules directly, for example
 `${inputs.nix-config}/nix/modules/home/programs/lazygit.nix`, without importing
-the workstation configuration. Lazygit includes delta; its Neovim editor preset
-expects a configured `nvim` on `PATH`.
+the workstation configuration.
 
 ## Documentation
 

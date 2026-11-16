@@ -4,10 +4,8 @@
 
 [Global shortcuts](../keybindings.md#global-shortcuts) open CodexBar or the separate
 Metrics dashboard. CodexBar needs to be running. In Metrics, **Esc, Q, Ctrl+C
-or Cmd+W** hides the dashboard; **R** refreshes, **Ctrl+D** stops it. It hides
-on focus loss. Last successful reports stay visible while independent refreshes
-run; report ages and errors show stale data. Stop and reopen after dashboard
-changes. Codex needs its OAuth login; Claude Code must be installed and signed in.
+or Cmd+W** hides the dashboard; **R** refreshes, **Ctrl+D** stops it. Report
+ages and errors mark stale data. Stop and reopen it after dashboard changes. Codex needs its OAuth login; Claude Code must be installed and signed in.
 For repeated Claude credential prompts in CodexBar, choose **Providers → Claude →
 Usage source → CLI** to avoid repeated Keychain re-grants.
 
@@ -32,5 +30,5 @@ homelab AgentsView. Run `agent-transcripts-upload` to upload now, or add
 `--dry-run` to preview transfers. Remote files are never deleted.
 An unconfigured or unreachable endpoint is skipped silently and retried next
 hour. Reachable-server authentication and transfer failures exit with an error;
-check `~/Library/Logs/agent-transcripts-upload.log`. A failed reachability check
-also skips server outages; there are no alerts or metrics yet.
+check `~/Library/Logs/agent-transcripts-upload.log`. Server outages are skipped
+the same way, without alerts.

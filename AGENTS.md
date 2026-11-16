@@ -26,14 +26,11 @@ Choose validation according to the change:
   `statix`, `nixfmt` and `just lint` and hands fixture evaluation and builds to
   the user; see [Pi's limits](docs/agents/permissions.md#pi).
 
-Codex, Claude and Copilot stop hooks run the same fast checks in this repository
-and its worktrees after the user applies the hook configuration, including fast
-behavior suites after code changes. They include commits made since the current
-prompt, skip vendored code and never fix files,
-evaluate Nix, build or apply. A failure asks the agent to address its changes
-once; pre-existing issues and missing tools must be reported without changing
-unrelated files. Hooks do not replace the scoped validation below or relevant
-behavior tests. See [maintenance](docs/maintenance.md#repository-checks).
+Codex, Claude and Copilot stop hooks run the same fast checks, including fast
+behavior suites after code changes and commits made since the current prompt.
+They never fix files, evaluate Nix, build or apply. A failure asks the agent to
+address its changes once; report pre-existing issues and missing tools without
+changing unrelated files. Hooks do not replace the scoped validation below.
 
 Use the tracked `nix/fixtures/host` input for Nix verification. Run commands
 from the repository root. Do not run `just init-host` or migrate host data to
@@ -175,18 +172,11 @@ For T3 mode selection and approval behavior, follow the
     `agent-git branch --set-upstream-to origin/<branch> <branch>` ([local Git
     maintenance](docs/agents/permissions.md#local-git-maintenance)). Pi's `fj`
     takes `-r '<owner>/<repo>'` without the host.
-  - Merge by rebase. The Forgejo repositories these changes target allow rebase
-    merges only: merge commits, rebase-with-merge-commit, squash and
-    fast-forward-only are disabled, and an outdated branch does not block.
-    Conflicts and required checks can still require a branch update before
-    merging. A hand merge is
-    `fj pr merge -M rebase`; without `-M` it asks the host for a merge commit
-    and is refused, so never retry the same command without it. T3 Code's
-    default pull request merge method is `rebase` as well, which states the
-    intent and covers hosts that allow more than one method
-    ([T3 Code settings](docs/agents/config.md#pull-request-merge-method)). The
-    homelab repository owns the server side in its
-    `docs/services/forgejo.md#branch-protection` and `docs/design/forgejo.md`.
+  - Merge by rebase: the Forgejo repositories allow rebase merges only, and an
+    outdated branch does not block (conflicts and required checks still can).
+    A hand merge is `fj pr merge -M rebase`; without `-M` it asks for a merge
+    commit and is refused, so never retry it without `-M`. T3 Code defaults to
+    rebase too ([why](docs/design/t3-code.md#pull-request-merge-method)).
   - Write the body with the sections of
     [the PR template](.forgejo/pull_request_template.md), keeping its
     headings and order. Forgejo fills it in only in the web UI;

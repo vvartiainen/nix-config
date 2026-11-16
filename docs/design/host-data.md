@@ -50,8 +50,7 @@ if exported). Recipes stop with a hint when host data is missing.
 
 ## Public fixture
 
-`nix/fixtures/host` holds synthetic host data for agent evaluation and builds:
-synthetic identity and paths, nested virtualization disabled and no private
-modules. Agents validate with it instead of reading private host data, so their
-checks cover public configuration only. Never activate it. The commands are in
+`nix/fixtures/host` holds synthetic host data, so agents can evaluate and
+build without reading private host data; their checks cover public
+configuration only. Never activate it. The commands are in
 [AGENTS.md](../../AGENTS.md#validation-commands-no-apply).
