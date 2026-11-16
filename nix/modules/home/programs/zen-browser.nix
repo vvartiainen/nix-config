@@ -122,6 +122,8 @@ in
             "idcac-pub@guus.ninja" = "istilldontcareaboutcookies";
             "{d7742d87-e61d-4b78-b8a1-b469842139fa}" = "vimium-ff";
             "sponsorBlocker@ajay.app" = "sponsorblock";
+            # Hands the current page, link or video to IINA, which can cast it to AirPlay.
+            "open_in_iina_firefox@iina.io" = "open-in-iina-x";
           };
 
       # Tracking protection blocks Outlook Web's background sign-in, which signs it out right after login.
