@@ -68,7 +68,6 @@
       "font-ubuntu-mono-nerd-font"
       "ghostty"
       "home-assistant"
-      "iina"
       "kitty"
       "localsend"
       "moonlight"

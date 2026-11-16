@@ -18,6 +18,7 @@
     ../../modules/darwin/signed-binaries.nix
     ../../modules/darwin/programs/claude-code.nix
     ../../modules/darwin/programs/codexbar.nix
+    ../../modules/darwin/programs/iina.nix
     ../../modules/darwin/programs/vicinae.nix
     ../../modules/darwin/programs/rex.nix
     ../../modules/darwin/programs/sketchybar.nix
