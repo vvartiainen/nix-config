@@ -1,21 +1,34 @@
 # Desktop
 
-yabai, skhd and SketchyBar run as Nix-managed launchd services; Vicinae is the
-launcher. Shortcuts are in [keybindings](../keybindings.md); one-time
-permissions and Spaces are in
+yabai, skhd, SketchyBar and JankyBorders run as Nix-managed launchd services;
+Vicinae is the launcher. Shortcuts are in [keybindings](../keybindings.md);
+one-time permissions and Spaces are in
 [new Mac setup](../runbooks/new-mac.md#after-the-first-activation).
 
 ## Reload after changes
 
 After applying configuration, `reloadall` reloads yabai rules, skhd bindings,
 SketchyBar and Rex Lua configuration. It reports each step and exits nonzero
-if any fails. It does not restart GUI apps or terminal sessions.
+if any fails. It does not restart GUI apps or terminal sessions. JankyBorders
+restarts during activation when its settings change, so `reloadall` does not
+touch it.
 
 Use `reloadyabai` after removing or renaming rules/signals, and `reloadskhd`
 when skhd itself needs restarting. Nix manages their launchd services; avoid
 upstream skhd service-install commands, which create a competing service.
 
 Quit Zen before applying its GUI preferences, then reopen it.
+
+## Window borders
+
+JankyBorders outlines the focused window; yabai keeps windows fully opaque.
+Change the border colours or width in
+`nix/modules/darwin/programs/jankyborders.nix`; applying the configuration
+restarts it. To restart it by hand:
+
+```sh
+launchctl kickstart -k gui/$(id -u)/org.nix-community.home.jankyborders
+```
 
 ## Vicinae
 
