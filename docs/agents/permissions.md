@@ -19,15 +19,20 @@ hook and sandbox checks.
 
 ## Working in the sandboxes
 
-Write in the workspace, `$TMPDIR`, `/tmp` or `~/.cache/<tool>-agent`. Preserve
+The configured terminal sandboxes allow writes in the workspace, `$TMPDIR`,
+`/tmp` or `~/.cache/<tool>-agent`. T3 Codex uses its active managed writable
+roots instead; a cache environment variable is not a filesystem grant. Preserve
 the configured cache variables. Normal caches and tool installations remain
 read-only; install workstation tools manually outside the agent session.
 `XDG_CACHE_HOME` points to `~/.cache/xdg-agent`, so tools without their own
 cache variable, such as treefmt, uv and pre-commit, cache there. Under T3 it
 stays `~/.cache` for Claude and Codex, although the other cache variables
 apply; such tools can then fail with `Operation not permitted`.
-Set the tool's own cache variable to a `~/.cache/<tool>-agent` path, or run
-the tool in a terminal session.
+For Claude, set the tool's own cache variable to an allowed agent-cache path.
+For T3 Codex, check the active roots before selecting a cache path; even
+`NIX_CACHE_HOME=~/.cache/nix-agent` can fail opening `fetcher-locks/*.lock`.
+Use a reviewed retry for Nix or a terminal session with the configured profile.
+A scratch cache does not grant Nix daemon access.
 Credentials, shell history, browser profiles, private host data, keys and
 environment files are restricted. Approved unrestricted commands and host
 daemons can reach beyond these restrictions; review them accordingly.
@@ -44,7 +49,8 @@ including API uploads with supplied credentials. GitHub web, archive and release
 redirect hosts remain unlisted; redirects to them need review. No GitHub
 wildcard is allowed. These settings do not override T3 Codex's managed policy.
 Nix build/run/develop/store operations require review because they delegate to
-the host daemon. Project checks and ordinary non-Nix builds stay sandboxed.
+the host daemon; project checks stay sandboxed unless they run Nix, as this
+repository's `just check` and `just build` do.
 Unix sockets are blocked except the Nix daemon socket and
 `~/.cache/tofu-agent`, where `PLUGIN_UNIX_SOCKET_DIR` puts Terraform and
 OpenTofu provider sockets, so `validate` with providers runs sandboxed. Only
@@ -57,8 +63,13 @@ Codex and Claude can read sibling projects under the directory containing this
 checkout, with secret-file restrictions. Claude may still ask before accessing
 a sibling repository; launch with `--add-dir` when it belongs in the session.
 T3 Code's caches, attachments, browser artifacts and worktrees are readable;
-its database, provider secrets, sign-in cache, provider registry and service
-environment stay denied. A host can also pass content directly to the model.
+its settings, database, provider secrets, sign-in cache, provider registry and
+service environment stay denied in the configured terminal profiles. Settings
+can contain literal provider environment values or custom provider configuration;
+redaction of recognized credential fields is not a guarantee for the whole file.
+Inspect declared settings in the Nix module instead. T3 Codex supplies its own
+read policy, so these denies do not automatically carry over. A host can also
+pass content directly to the model.
 
 Git over SSH needs a key or the SSH agent socket. Pi's sandbox reads
 `~/.ssh/config` and `known_hosts` and reaches the socket a host app exports, so
@@ -299,6 +310,14 @@ subagent uses its parent thread's mode.
 endpoint and allows its Claude tool namespace; Codex tool-specific prompts
 remain separate from shell approvals.
 
+For Pi under **Full access**, no ordinary shell approval reaches you: asks from
+Pi's own permission layer are answered inside the session. A command Pi would have asked about then
+runs sandboxed and fails where the sandbox blocks it, so `nix build`, `nix
+develop`, `nix eval` and anything that runs them, such as `just check`, stop on
+the Nix daemon socket with `Operation not permitted`. Pi has no approval path for
+Nix in any mode; an approved ask cannot reach the daemon either. Write and lint
+the configuration, then run validation yourself or in a Codex/Claude thread.
+
 The default Codex, Claude and Pi provider paths and new-thread permission mode
 are merged into `~/.t3/userdata/settings.json` during activation. Close T3 before
 applying and restart it afterwards. Other instances and app-managed settings
@@ -321,6 +340,9 @@ No separate launcher or Codex home is needed.
 
 T3's Codex sandbox differs from the terminal profile
 ([T3 discussion #6976](https://github.com/pingdotgg/t3code/discussions/6976)).
+Terminal network, cache and shared Git metadata grants do not transfer to
+the managed per-turn policy; inspect the active tool permissions. Changing
+`network.sandbox` cannot enable T3 Codex networking.
 Do not rely on the terminal profile's secret-file denies in T3. Claude keeps
 its own sandbox settings under T3.
 
@@ -328,6 +350,19 @@ Sandboxed Pi reaches T3's local MCP endpoint, so its T3 tools and the thread's
 runtime mode work; no approval can reach any other host service or leave the
 sandbox. Run that blocked work manually or use Codex/Claude; see
 [Pi's limits](#pi).
+
+## Development expectations
+
+| Requirement | Configured behavior and limits |
+| --- | --- |
+| Work in an agent's own checkout | Terminal clients support their launch worktree. In T3, attach each thread to its own worktree. Claude and Pi keep their configured sandbox; T3 Codex may need reviewed Git metadata writes for staging and commits. |
+| Ordinary internet access | Terminal Codex and Pi allow arbitrary internet hosts. Claude, Cursor and Copilot retain the shared package/source host list; Claude web research runs freely, while unlisted shell downloads need review. T3 Codex networking is host-managed and may require escalation. |
+| Keep credentials private | Terminal profiles deny known credential paths and secret file patterns. This does not cover every secret in project files, inherited environment variables, tool output or approved host-side commands. T3 Codex's built-in profile does not inherit these denies. Use a configured terminal profile when those filesystem restrictions are required; Full access does not restore them. |
+
+Worktrees separate source edits, not all agent capabilities: clients can read
+shared artifacts and some permit writes to managed worktrees or shared refs.
+Keep secrets out of readable workspaces and launch environments. Pi's forge token
+and selected provider key remain deliberate exceptions described in [Secrets](#secrets).
 
 ## Worktrees
 
@@ -381,9 +416,15 @@ or scratch space. The launch checkout's git directories keep `config`,
 so sandboxed code cannot instrument a
 later unsandboxed `git` run; a linked worktree's `.git` pointer file is
 read-only for the same reason. `git push -u` therefore pushes the branch but
-cannot record its upstream: push with `git push origin <branch>` and give `fj`
-a repository argument. Both forms run without a prompt; other remotes and the
-guarded push forms still ask.
+cannot record its upstream: Git prints `error: could not write config file
+.../.git/config` twice and still reports the branch as tracking, so inspect the
+remote ref before assuming success. Push with `git push origin <branch>`, and
+give `fj` a
+repository argument. Where an upstream is genuinely needed, record it with
+`agent-git branch --set-upstream-to origin/<branch> <branch>` ([local Git
+maintenance](#local-git-maintenance)); a reviewed `git push -u` outside the
+sandbox records it too. Both push forms run without a prompt; other remotes and
+the guarded push forms still ask.
 
 Confirm the pinned permission extension loads without errors; inspect it with
 `/permission-system show`. Routine file tools, bash, tool discovery and the
@@ -436,7 +477,13 @@ retry still fails, report it rather than widening socket access.
 
 | Error | Action |
 | --- | --- |
-| `Operation not permitted` | Check the path and active grants; use workspace/temp for scratch files |
+| `Operation not permitted` | Check the path and active grants; use workspace/temp for scratch files. In a T3 Code thread running Pi under Full access, asks are answered inside the session, so Nix daemon work fails here without a prompt |
+| `could not write config file …/.git/config` after a push | The upstream write was blocked; this alone does not prove the remote push succeeded. Confirm with `git ls-remote origin <branch>` and continue without `-u` |
+| `curl: (6) Could not resolve host` | May be DNS or sandbox network policy; success of the exact approved retry supports the latter, not a new host grant |
+| Nix `fetcher-locks/*.lock` denied | Check active writable roots, especially T3 Codex; inherited `NIX_CACHE_HOME` is not a grant |
+| Ignored SQLite eval-cache busy warning | Avoid concurrent evaluated-option probes; serialize if results are affected, without changing permissions |
+| SSH `sign_and_send_pubkey` / `communication with agent failed`, then `Too many authentication failures` | Authentication failure; one exact reviewed retry may resolve a transient failure. Persistent failure needs user diagnosis outside the agent; do not open credential paths |
+| `rg --files /nix/store` hits a transient directory | Narrow the search to the known derivation output or artifact glob; do not grant more store access |
 | `403`, `Forbidden`, `CONNECT tunnel failed`, or host not allowlisted | Check whether sandbox policy blocked the host; request scoped approval if needed |
 | Go `x509: OSStatus -26276` | macOS trust-service access may be blocked; request an approved retry |
 | Node OpenSSL configuration read failure | Codex grants `/System/Library/OpenSSL`; apply and restart if the grant is missing |
@@ -446,6 +493,13 @@ Retry a confirmed sandbox failure once with escalation where supported; Pi
 cannot escalate. Explicit secret-file denies remain off-limits; see
 [Secrets](#secrets). Do not loop through variants, move credentials or disable
 TLS verification.
+
+For a stalled push, prefer the command session's status/output. If process
+inspection is needed, review a query for known process IDs, for example
+`ps -p <pid> -o pid=,ppid=,etime=,stat=,comm=`. Avoid full argument dumps:
+`ps -axo ...command | rg ...` reads every process's arguments before filtering
+and can expose tokens or private paths. Do not save an unfiltered dump or
+grant unrestricted `ps` just to suppress the prompt.
 
 Nixpkgs-built Go tools use the configured CA bundle; upstream binaries may still
 need escalation. Claude adds the Nix bundle to system certificates. Codex adds

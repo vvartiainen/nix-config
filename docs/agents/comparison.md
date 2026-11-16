@@ -84,7 +84,7 @@ which covers the new-thread default, manual overrides and observed behavior.
 | Provider | Difference from the terminal |
 | --- | --- |
 | Claude | Same sandbox settings. Code Mode is off and T3's own tools run |
-| Codex | Sandbox differs from the terminal profile; see the mode guidance above |
+| Codex | Managed per-turn sandbox: terminal network, agent-cache and shared Git metadata grants do not transfer. Inherited cache variables may point outside writable roots; use the active policy and reviewed retries. See the mode guidance above |
 | Pi | Same Safehouse sandbox; T3's loopback MCP endpoint and the SSH agent socket are reachable, so its own tools and SSH remotes work. T3's runtime mode also asks before every call it does not classify as read-only, so run Pi threads in Full access |
 | OpenCode | Same rules, no OS sandbox |
 

@@ -156,7 +156,15 @@ let
         // lib.genAttrs (map commandString policy.commands.hostExact) (_: "allow")
         // routineBash
         // rules "deny" policy.commands.denied
-        // lib.genAttrs policy.commands.deniedPatterns (_: "deny");
+        // lib.genAttrs policy.commands.deniedPatterns (_: "deny")
+        // {
+          # JSON sorts keys and Pi uses the last match. `?` matches the space
+          # after push but sorts after every `git push ...` routine guard, so
+          # an ask for main/deletion cannot override an explicit force deny.
+          "git push?*--force*" = "deny";
+          "git push?* -f" = "deny";
+          "git push?* -f *" = "deny";
+        };
       path =
         {
           "*" = "allow";

@@ -94,6 +94,19 @@ Provider switches, forks and delegated tasks hand off conversation context on
 their own; see
 [portable handoffs](https://github.com/pingdotgg/t3code/blob/main/docs/user/portable-handoffs.md).
 
+### Pull request merge method
+
+The environment default is **Rebase and merge**: `pullRequestMergeMethod =
+"rebase"` is declared in the module and merged into `settings.json` on every
+switch, so no UI step is needed and the server picks the change up without a
+restart. The repositories allow rebase merges only, so clients must request an allowed rebase method; the default states that intent and decides the method on a
+host that allows more than one. See
+[how T3 chooses](../design/t3-code.md#pull-request-merge-method).
+
+Settings → Source control → **Default pull request merge method** shows the
+effective value. Change the default in the module; an override chosen there for
+one project stays app-owned and wins over it.
+
 ## Configuration validation
 
 ```sh

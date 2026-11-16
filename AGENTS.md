@@ -87,9 +87,9 @@ Commands run in an OS sandbox (see
 For T3 mode selection and approval behavior, follow the
 [provider permission mode guidance](docs/agents/permissions.md#t3-code-permission-modes).
 
-- Writable: the workspace, `$TMPDIR`, `/tmp`, and `~/.cache/<tool>-agent`;
-  package caches and `XDG_CACHE_HOME` already point there, except
-  `XDG_CACHE_HOME` under T3; see
+- Writable in terminal sandboxes: the workspace, `$TMPDIR`, `/tmp`, and
+  `~/.cache/<tool>-agent`. T3 Codex uses managed writable roots; inherited
+  cache variables do not grant writes. For cache variables, see
   [cache variables](docs/agents/permissions.md#working-in-the-sandboxes).
   Use `/tmp` for scratch files.
   Nix refuses `--output-lock-file` and `--reference-lock-file` paths through
@@ -103,9 +103,10 @@ For T3 mode selection and approval behavior, follow the
   `api.github.com` and `raw.githubusercontent.com`; other domains need review.
   Host allowances are not upload filters; keep secrets out of exported variables
   and readable project files. See [network boundaries](docs/agents/permissions.md#working-in-the-sandboxes).
-- `nix build`, `nix eval` and `nix fmt` run through the daemon outside the agent
-  sandbox: Codex and Claude Code require approval, Copilot asks for the command,
-  and Pi cannot run them at all.
+- Nix builds and `nix fmt` require review for host-daemon delegation. Fixture
+  evaluation can run sandboxed in terminal Codex and Claude; T3 Codex may need
+  escalation for caches or daemon access. Pi cannot reach the daemon in any
+  mode, including T3 Full access; recipes that invoke Nix fail there too.
 - Codex and Claude Code run routine project commands inside their sandboxes
   without prompts; Copilot requires normal approval for unlisted commands.
   Claude excludes `gh` and Rex from its sandbox; Rex requires approval.
@@ -165,11 +166,27 @@ For T3 mode selection and approval behavior, follow the
     `git fetch origin`, then `git switch --no-track -c <branch> origin/main`.
   - Use the existing commit style: conventional commits, short message, no
     long descriptions, no trailers such as Co-Authored-By or Claude-Session.
-  - Push with `git push -u origin <branch>` and open the pull request with
+  - Push with `git push origin <branch>` and open the pull request with
     `fj pr create -r '<forge-host>/<owner>/<repo>' --base main --head <branch> --body-file <file> "<title>"`.
-    Pi's sandbox keeps the shared `.git/config` read-only, so there the upstream
-    is not recorded (`git push origin <branch>`) and `fj` takes
-    `-r '<owner>/<repo>'` without the host.
+    Sandboxed Git config is read-only, so `git push -u` can publish the
+    branch while failing to record its upstream. Reviewed pushes outside the
+    sandbox can record it. Push without `-u`; where an upstream is
+    needed, use
+    `agent-git branch --set-upstream-to origin/<branch> <branch>` ([local Git
+    maintenance](docs/agents/permissions.md#local-git-maintenance)). Pi's `fj`
+    takes `-r '<owner>/<repo>'` without the host.
+  - Merge by rebase. The Forgejo repositories these changes target allow rebase
+    merges only: merge commits, rebase-with-merge-commit, squash and
+    fast-forward-only are disabled, and an outdated branch does not block.
+    Conflicts and required checks can still require a branch update before
+    merging. A hand merge is
+    `fj pr merge -M rebase`; without `-M` it asks the host for a merge commit
+    and is refused, so never retry the same command without it. T3 Code's
+    default pull request merge method is `rebase` as well, which states the
+    intent and covers hosts that allow more than one method
+    ([T3 Code settings](docs/agents/config.md#pull-request-merge-method)). The
+    homelab repository owns the server side in its
+    `docs/services/forgejo.md#branch-protection` and `docs/design/forgejo.md`.
   - Write the body with the sections of
     [the PR template](.forgejo/pull_request_template.md), keeping its
     headings and order. Forgejo fills it in only in the web UI;

@@ -191,7 +191,10 @@ let
       ];
       idleCompaction = "beforeCacheExpires";
       projectSettingsFolded = true;
-      pullRequestMergeMethod = "merge";
+      # The forge allows rebase merges only, so every client rebases; this
+      # declares the intent and covers other hosts and projects. See
+      # docs/design/t3-code.md.
+      pullRequestMergeMethod = "rebase";
       removeAgentCreditsOnMerge = true;
       reviewGuideModelSelection = {
         instanceId = "codex";

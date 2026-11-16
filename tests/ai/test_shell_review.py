@@ -393,6 +393,17 @@ EOF
         self.assertNotIn("shell(rex:*)", launch)
         self.assertNotIn("shell(rex run", launch)
 
+    def test_t3_private_settings_and_credentials_stay_denied(self):
+        paths = self.fixture["paths"]
+        for name in ("settings.json", "client-settings.json", "secrets"):
+            path = f"/Users/agent/.t3/userdata/{name}"
+            with self.subTest(name=name):
+                self.assertIn(path, paths["denied"])
+                self.assertFalse(any(
+                    path == readable or path.startswith(readable + "/")
+                    for readable in paths["readable"]
+                ))
+
     def test_generated_adapter_boundaries(self):
         rules = self.fixture["opencode"]
         self.assertIn({"action": "shell", "resource": "*", "effect": "ask"}, rules)

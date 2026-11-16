@@ -76,5 +76,6 @@ The rest of `docs/`:
   [new Mac setup](docs/runbooks/new-mac.md)
 - [`design/`](docs/design/): how things are built and why:
   [host data](docs/design/host-data.md), [modules and dotfiles](docs/design/modules.md),
-  [tool ownership](docs/design/tool-ownership.md) and
+  [tool ownership](docs/design/tool-ownership.md),
+  [T3 Code settings](docs/design/t3-code.md) and
   [agent permissions](docs/design/agent-permissions.md)

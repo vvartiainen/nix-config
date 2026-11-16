@@ -483,6 +483,8 @@ let
       # T3 Code's service environment, sign-in cache, provider server registry
       # and thread database. Its cache, attachments, browser artifacts and
       # worktrees stay readable as shared host paths below.
+      ".t3/userdata/settings.json"
+      ".t3/userdata/client-settings.json"
       ".t3/service.env"
       ".t3/userdata/secrets/**"
       ".t3/userdata/clerk/**"
@@ -560,7 +562,8 @@ let
     # Read-only paths an agent host app shares with the CLI it runs. T3 Code
     # injects Pi's extension from its cache, hands attachment and browser
     # artifact paths to the model, and creates thread worktrees in its own
-    # root. Everything else under its home stays in homeSecrets.
+    # root. Settings can contain literal provider environment values and custom
+    # configuration; keep them private along with the credential store.
     hostShared = [
       "${config.home.homeDirectory}/.t3/caches"
       "${config.home.homeDirectory}/.t3/userdata/attachments"
@@ -678,8 +681,10 @@ let
         # socket; keep them in the one directory the sandboxes allow.
         PLUGIN_UNIX_SOCKET_DIR = dir "tofu";
         # Sandboxes protect .git/config, so creating a branch from a
-        # remote-tracking ref fails when Git records its upstream there.
-        # push.autoSetupRemote still sets one on the first, reviewed, push.
+        # remote-tracking ref fails when Git records its upstream there, and an
+        # explicit `git push -u` reports the write it cannot make. Only a
+        # reviewed `git push -u` outside the sandbox records the upstream;
+        # inside one, use `agent-git branch --set-upstream-to`.
         GIT_CONFIG_COUNT = "1";
         GIT_CONFIG_KEY_0 = "branch.autoSetupMerge";
         GIT_CONFIG_VALUE_0 = "false";
