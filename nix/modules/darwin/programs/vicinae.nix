@@ -30,10 +30,16 @@
       overrides = toString settings;
     in
     {
-      xdg.dataFile."vicinae/scripts/eject-all-disks.sh".source =
-        ../../../../dotfiles/vicinae/scripts/eject-all-disks.sh;
-      xdg.dataFile."vicinae/scripts/toggle-fn-keys.sh".source =
-        ../../../../dotfiles/vicinae/scripts/toggle-fn-keys.sh;
+      xdg.dataFile = {
+        "vicinae/scripts/eject-all-disks.sh".source =
+          ../../../../dotfiles/vicinae/scripts/eject-all-disks.sh;
+        "vicinae/scripts/toggle-fn-keys.sh".source =
+          ../../../../dotfiles/vicinae/scripts/toggle-fn-keys.sh;
+        "vicinae/scripts/start-time-machine-backup.sh".source =
+          ../../../../dotfiles/vicinae/scripts/start-time-machine-backup.sh;
+        "vicinae/scripts/time-machine-backup-status.sh".source =
+          ../../../../dotfiles/vicinae/scripts/time-machine-backup-status.sh;
+      };
 
       # Declared settings take precedence over the writable settings.json.
       home.sessionVariables.VICINAE_OVERRIDES = overrides;

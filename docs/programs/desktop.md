@@ -59,6 +59,15 @@ hands it to macOS with the `activateSettings` helper and the top row switches
 without logging out. Applying the configuration again writes the declared value
 from `nix/modules/darwin/system-settings.nix`, which enables function keys.
 
+**Start Time Machine Backup** requests a backup using the destinations already
+configured in System Settings → General → Time Machine. Connect your backup disk
+or network destination first. The command returns once macOS accepts the request;
+it does not wait for completion. An existing backup keeps running.
+**Time Machine Backup Status** shows current activity (`Running = 0` means idle).
+Both commands display `tmutil` output, including errors. If macOS reports a Full
+Disk Access error, grant Vicinae access in Privacy & Security → Full Disk Access
+and restart Vicinae before retrying.
+
 If Vicinae has quit, restart it with:
 
 ```sh
