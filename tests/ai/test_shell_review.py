@@ -371,7 +371,13 @@ EOF
         self.assertNotIn("Bash(flake-update-preview:*)", claude["permissions"]["ask"])
         hosts = claude["sandbox"]["network"]["allowedDomains"]
         self.assertIn("wthziax2yejsqc4k.public.blob.vercel-storage.com", hosts)
-        for host in ["github.com", "api.github.com", "codeload.github.com", "*.vercel-storage.com"]:
+        for host in ["api.github.com", "raw.githubusercontent.com"]:
+            self.assertIn(host, hosts)
+            self.assertIn(f"WebFetch(domain:{host})", claude["permissions"]["allow"])
+        for host in [
+            "github.com", "codeload.github.com", "*.github.com",
+            "*.githubusercontent.com", "*.vercel-storage.com", "*",
+        ]:
             self.assertNotIn(host, hosts)
         cursor = self.settings_file("cursor", "cursor-cli-config")
         self.assertEqual(cursor["sandbox"]["networkAllowlist"], hosts)

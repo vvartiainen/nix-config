@@ -43,10 +43,13 @@ each use, and **denied** means no approval can allow it.
 
 | | Claude Code | Codex | Cursor | Copilot | OpenCode | Pi |
 | --- | --- | --- | --- | --- | --- | --- |
-| Commands | Package download hosts; other hosts ask | Any host | Package download hosts and Cursor's defaults | Package download hosts | Any host | Any host |
+| Commands | Shared package/source hosts; other hosts ask | Any host | Shared package/source hosts and Cursor's defaults | Shared package/source hosts | Any host | Any host |
 | Services on this Mac | Asks | Blocked | Client default | Blocked | Reachable | Blocked |
 | Unix sockets | Nix daemon and the OpenTofu plugin directory | Nix daemon and the OpenTofu plugin directory | Client default | Nix daemon, OpenTofu plugin directory and Herdr | Any | Injected SSH agent, system DNS and session Git broker; no Nix |
 | Web tools | Search and fetch run | Live web search | Documentation domains run | Documentation domains run | Client default | Search and fetch run |
+
+The [shared host policy](permissions.md#working-in-the-sandboxes) includes exact
+GitHub API/raw hosts. Host allowances do not restrict requests to downloads.
 
 ## Commands
 

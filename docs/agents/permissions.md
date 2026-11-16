@@ -32,12 +32,17 @@ Credentials, shell history, browser profiles, private host data, keys and
 environment files are restricted. Approved unrestricted commands and host
 daemons can reach beyond these restrictions; review them accordingly.
 
-Codex allows ordinary internet access through its proxy, while local binding,
+Terminal Codex allows ordinary internet access through its proxy, while local binding,
 upstream proxies and control sockets remain restricted. Claude, Cursor and
-Copilot use the package-download host policy; Pi's network limits are below.
+Copilot use the shared package/source host policy; Pi's network limits are below.
 Claude's WebSearch and WebFetch tools are approved by a `PreToolUse` hook, not
 `WebFetch(domain:…)` allow rules, because those rules would also open the
-domains to sandboxed Bash.
+domains to sandboxed Bash. The shell allowlist includes the exact hosts
+`api.github.com` and `raw.githubusercontent.com` for routine API/source requests
+and downloads. It grants every path and supported HTTP method on those hosts,
+including API uploads with supplied credentials. GitHub web, archive and release
+redirect hosts remain unlisted; redirects to them need review. No GitHub
+wildcard is allowed. These settings do not override T3 Codex's managed policy.
 Nix build/run/develop/store operations require review because they delegate to
 the host daemon. Project checks and ordinary non-Nix builds stay sandboxed.
 Unix sockets are blocked except the Nix daemon socket and
@@ -216,13 +221,14 @@ and adds fetched sources to the Nix store.
 The shared inspection policy allows this fixed wrapper. Claude excludes it
 from the sandbox and allows it without prompting; terminal Codex also allows
 it outside the sandbox. Cursor and Copilot retain their sandbox and need an
-approved retry for GitHub downloads. OpenCode allows it without OS isolation;
+approved retry for unlisted GitHub download hosts. OpenCode allows it without OS isolation;
 Pi cannot reach the Nix daemon. T3's Codex sandbox override can still ask.
-Raw `nix flake update` stays reviewed. GitHub is not added to sandboxed Bash.
+Raw `nix flake update` stays reviewed. The API/raw allowances do not cover
+GitHub web, archive or release hosts.
 
-The package download allowlist includes `pkgs.superlogical.com` and its exact
+The shared network allowlist also includes `pkgs.superlogical.com` and its exact
 Rex tarball redirect host, `wthziax2yejsqc4k.public.blob.vercel-storage.com`.
-Claude, Cursor and Copilot render this shared list; Codex and Pi already allow
+Claude, Cursor and Copilot render this shared list; terminal Codex and Pi already allow
 ordinary internet access. No Vercel wildcard is granted. Like any host grant,
 the exact host can receive requests from sandboxed commands, so it is limited
 to the known download endpoint.
@@ -247,7 +253,13 @@ without the sandbox's read denies. `op read`,
 `op run`, `op inject`, `op item get` and keychain lookups are denied in every
 mode: they would put the value in the agent's context or let it run any command
 with it. Sandboxes keep exported environment variables and readable workspace
-files such as `*.tfvars` or local state; keep secrets out of both.
+files such as `*.tfvars` or local state; keep secrets out of both. Claude has
+no explicit credential-environment filtering configured; Codex sets cache
+variables without declaring a credential-variable exclusion list. Pi delegates
+environment sanitization to Safehouse and explicitly passes its selected provider
+key, cache settings and T3 variables. File denies alone do not prove that an
+exported credential is unavailable. Review launch environments separately from
+filesystem access; this policy does not guarantee that every secret is hidden.
 
 `op-item-from-secret --vault <vault> --title <title> [--category <category>] [--field <field>] <file>`
 stores a `request_secret` file in 1Password. It asks, runs outside the sandbox,

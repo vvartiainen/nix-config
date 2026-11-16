@@ -618,10 +618,14 @@ let
       "www.schemastore.org"
     ];
 
-    # Package download hosts only. npm's registry and crates.io also accept
-    # uploads, so access to them needs approval. This is a host boundary, not
-    # a guarantee against every possible data channel to an allowed service.
+    # Package downloads and routine GitHub source/API access. This is a host
+    # boundary, not an upload filter: an allowed API can receive workspace
+    # data, including with attacker-supplied credentials. Other publishing
+    # hosts, such as npm's registry and crates.io, still need approval.
     sandbox = [
+      # Exact hosts only; GitHub web, archive and release hosts stay reviewed.
+      "api.github.com"
+      "raw.githubusercontent.com"
       # Nix's global flake registry, fetched to resolve `nixpkgs#…`.
       "channels.nixos.org"
       # The Rex flake input's tarball, fetched by flake evaluation.

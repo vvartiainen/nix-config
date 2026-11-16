@@ -30,6 +30,16 @@ Rex, Kitty and Incus delegate to host services, so their control endpoints
 stay out of sandbox socket and network grants and each use is reviewed
 instead.
 
+The shared shell network allowlist permits the exact GitHub API and raw-content
+hosts for routine source inspection and artifact downloads. This accepts that
+readable workspace data can be sent to those hosts, including API uploads with
+an attacker-supplied token. Filesystem denies protect known credential paths,
+not all sensitive project content or exported variables. This tradeoff reduces
+download prompts without granting GitHub wildcards or local control endpoints;
+the [operating guide](../agents/permissions.md#working-in-the-sandboxes) lists
+the boundaries. Terminal Codex and Pi already permit ordinary internet access;
+T3 Codex retains its own managed policy.
+
 ## Local Git maintenance
 
 Direct Git config writes stay blocked: hooks, fsmonitor, aliases, filters and

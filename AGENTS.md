@@ -98,8 +98,11 @@ For T3 mode selection and approval behavior, follow the
   to preview the flake files embedded in the applied configuration, independent
   of the working directory; see [permissions](docs/agents/permissions.md#flake-update-previews).
   Raw `nix flake update` remains reviewed.
-- Network: Codex allows ordinary internet access; other clients may restrict
-  access to package download hosts and require approval for other domains.
+- Network: terminal Codex and Pi allow ordinary internet access; T3 Codex uses
+  its active managed policy. Claude, Cursor and Copilot allow package hosts,
+  `api.github.com` and `raw.githubusercontent.com`; other domains need review.
+  Host allowances are not upload filters; keep secrets out of exported variables
+  and readable project files. See [network boundaries](docs/agents/permissions.md#working-in-the-sandboxes).
 - `nix build`, `nix eval` and `nix fmt` run through the daemon outside the agent
   sandbox: Codex and Claude Code require approval, Copilot asks for the command,
   and Pi cannot run them at all.
