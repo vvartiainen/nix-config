@@ -13,12 +13,9 @@ if [ "${1:-}" = "--reset" ]; then
   rm -f "$state_file"
 fi
 
-space=$(yabai -m query --spaces --space 2>/dev/null) || exit 0
-space_index=$(printf '%s' "$space" | jq -r '.index // empty' 2>/dev/null) || exit 0
-[ -n "$space_index" ] || exit 0
-
-# The Spaces query does not expose the layout; ask the per-Space config.
-layout=$(yabai -m config --space "$space_index" layout 2>/dev/null) || exit 0
+# The Spaces query's "type" field holds the layout: bsp, stack or float.
+layout=$(yabai -m query --spaces --space 2>/dev/null |
+  jq -r '.type // empty' 2>/dev/null) || exit 0
 [ -n "$layout" ] || exit 0
 
 # Do not start another borders instance when the launchd service is not up.
