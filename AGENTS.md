@@ -190,6 +190,12 @@ For T3 mode selection and approval behavior, follow the
     apply; `fj issue create --body-file` does not apply them either. Because
     the repository has issue templates, pass `--no-template` with
     `--body-file`; without it `fj` refuses to create the issue.
+  - Group issues with labels: create one with
+    `fj repo labels create <name> <hex-color> -d "<description>"` and apply
+    labels with `fj issue edit <number> labels -a <label> [-a <label>]`.
+    These commands take no `-r`; with several remotes and no upstream they
+    cannot find the repository, so first run
+    `agent-git branch --set-upstream-to origin/main <branch>`.
   - In T3, link the pull request to the thread; see
     [T3 Code settings](docs/agents/config.md#t3-code-settings).
   - Push only to `origin`. Pushing to the public `github` mirror stays with
