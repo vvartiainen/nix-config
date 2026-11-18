@@ -14,6 +14,7 @@ FAST = {
     "kitty": ["test_kitty_metrics.py", "test_kitty_tab_bar.py"],
     "ai": [
         "test_agent_git.py",
+        "test_agent_betterleaks.py",
         "test_flake_update_preview.py",
         "test_agent_hooks.py",
         "test_git_credential_forgejo.py",

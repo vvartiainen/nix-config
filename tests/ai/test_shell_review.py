@@ -38,6 +38,7 @@ class ShellReviewTests(unittest.TestCase):
             "git status\n": "allow",
             "python3 -m unittest discover": "allow",
             "go test ./...": "allow",
+            "agent-betterleaks git .": "allow",
             "rm -rf /tmp/disposable-workspace-output": "allow",
             "rex ls --json": "allow",
             "rex --help": "allow",

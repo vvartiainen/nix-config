@@ -16,6 +16,7 @@ in
     ./shared/mcp.nix
     ./shared/flake-update-preview.nix
     ./shared/agent-git.nix
+    ./shared/agent-betterleaks.nix
     ./shared/op-item-from-secret.nix
     ./clients/opencode.nix
     ./clients/pi/pi-coding-agent.nix

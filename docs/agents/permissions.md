@@ -22,12 +22,13 @@ cache variable, such as treefmt, uv and pre-commit, use `XDG_CACHE_HOME`
 those tools can fail with `Operation not permitted`; in Claude, set the tool's
 own cache variable to an agent-cache path.
 
-Go tools that use wasilibs, such as betterleaks from Homebrew or nixpkgs,
-cache compiled regex code in `~/Library/Caches/com.github.wasilibs`, which has
-no variable to change it. Run them with `env HOME=/tmp/betterleaks-home`.
-Inside the sandbox they otherwise crash with `operation not permitted` and a
-nil-pointer panic. That directory stays ungranted: unsandboxed runs and Git
-hooks execute the cached native code.
+betterleaks caches compiled regex code in
+`~/Library/Caches/com.github.wasilibs`, with no variable to move it, so inside
+the sandbox it crashes with `operation not permitted` and a nil-pointer panic.
+Agents run `agent-betterleaks` with the same arguments instead: it runs the
+nixpkgs betterleaks with a throwaway `HOME` and deletes the cache afterwards.
+The real cache stays ungranted, because unsandboxed runs and Git hooks execute
+the native code in it.
 
 T3 Codex uses its own managed writable roots. An inherited cache variable is
 not a grant there, and even `NIX_CACHE_HOME=~/.cache/nix-agent` can fail on

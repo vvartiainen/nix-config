@@ -142,6 +142,8 @@ let
       "python3 -m unittest"
       "node --test"
       "statix check"
+      # Secret scans with a throwaway HOME; see agent-betterleaks.sh.
+      "agent-betterleaks"
       "terraform fmt"
       "terraform validate"
       "tofu fmt"

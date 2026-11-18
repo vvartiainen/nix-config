@@ -128,9 +128,8 @@ For T3 mode selection and approval behavior, follow the
 - Linked worktrees can also need approval for `git add` or `git commit` when
   their index/shared Git metadata is outside the writable roots. Escalate the
   exact Git command after a denial; do not change metadata permissions.
-- Run betterleaks as `env HOME=/tmp/betterleaks-home betterleaks ...`; its
-  cache under `~/Library/Caches` is not writable in the sandbox; see
-  [files](docs/agents/permissions.md#files).
+- Scan for secrets with `agent-betterleaks`, not `betterleaks`, which crashes
+  in the sandbox; see [files](docs/agents/permissions.md#files).
 - Credentials (`~/.ssh`, `~/.aws`, `.env`, keys) and tool installs
   (`mise install`) are off-limits; ask the user.
 - Avoid interactive commands; pass non-interactive flags.
