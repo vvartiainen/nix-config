@@ -11,11 +11,9 @@ Each kind of tool has one owner. When two owners provide the same command, use
 | Mason | Formatter and debugger fallbacks in the default Neovim only |
 | Projects | Project-only formatters, debuggers and test runners, or a dev shell that overrides the baseline |
 
-IINA is the exception among GUI apps: it comes from nixpkgs so that its AirPlay
-plugin can be installed and versioned declaratively instead of through IINA's
-plugin store.
+IINA comes from nixpkgs, unlike other GUI apps, so its AirPlay plugin can be
+declared.
 
-Nix never installs or prunes mise or Mason tools, and removing a declaration
-does not uninstall them or their shims. Homebrew removes undeclared packages
-but keeps their app data. The manual steps are in
-[maintenance](../maintenance.md#updates-and-rollback).
+Nix never installs or prunes mise or Mason tools; removing a declaration
+leaves them and their shims. Homebrew removes undeclared packages but keeps
+their app data. The manual steps are in [maintenance](../maintenance.md).

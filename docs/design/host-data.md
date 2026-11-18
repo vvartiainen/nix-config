@@ -2,9 +2,9 @@
 
 The public flake holds no machine identity. Each Mac keeps its user name, host
 name, repository path, hardware facts and private modules outside the repo in
-`~/.config/nix-config-host/`, which becomes the flake's `host` input. The
-repository stays publishable and work-specific configuration stays private.
-Never commit real hostnames, usernames, or work-specific configuration.
+`~/.config/nix-config-host/`, which becomes the flake's `host` input, so the
+repository stays publishable. Never commit real hostnames, usernames or
+work-specific configuration.
 
 ## The host file
 
@@ -36,21 +36,19 @@ and repository path; `just bootstrap` creates it if it is missing.
 
 ## How it is passed in
 
-The flake's `host` input defaults to a stub that fails with an error. The `just`
-recipes select the real directory with
-`--override-input host "path:$HOME/.config/nix-config-host"`. This implies
-`--no-write-lock-file`, so the path never ends up in `flake.lock`. Use the same
-flag with raw `nix` or `darwin-rebuild` commands for your machine.
+The `host` input defaults to a stub that fails. The `just` recipes pass the
+real directory; use the same flag with raw `nix` or `darwin-rebuild`:
 
-Only that directory and tracked repository files are copied into the Nix store.
-New repository files need `git add` before a build sees them.
+```sh
+--override-input host "path:$HOME/.config/nix-config-host"
+```
 
-Use `hostName` for `<HOSTNAME>` in recipes; it defaults to `hostname` (or `HOST`
-if exported). Recipes stop with a hint when host data is missing.
+It implies `--no-write-lock-file`, so the path never enters `flake.lock`. New
+repository files need `git add` before a build sees them. `<HOSTNAME>` in
+recipes is `hostName` and defaults to `hostname` (or `HOST`).
 
 ## Public fixture
 
-`nix/fixtures/host` holds synthetic host data, so agents can evaluate and
-build without reading private host data; their checks cover public
-configuration only. Never activate it. The commands are in
+`nix/fixtures/host` holds synthetic host data for agent evaluation and builds,
+covering public configuration only. Never activate it. The commands are in
 [AGENTS.md](../../AGENTS.md#validation-commands-no-apply).

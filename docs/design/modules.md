@@ -16,12 +16,10 @@ an example.
 
 ## Dotfiles
 
-App configs live in `dotfiles/` and are linked with `mkOutOfStoreSymlink` to
-the checkout at `repoRoot`, so edits apply without a rebuild. Links are made per
-file, so `~/.config/<app>` stays a real directory that programs can write into
-at runtime. Only files in the flake tree are linked: gitignored runtime
-directories are skipped, and a new dotfile needs `git add` and a rebuild
-before it gets a link.
+App configs live in `dotfiles/` and are linked per file with
+`mkOutOfStoreSymlink` to the checkout at `repoRoot`, so edits apply without a
+rebuild and `~/.config/<app>` stays writable. A new dotfile needs `git add`
+and a rebuild before it gets a link; gitignored files are skipped.
 
 Neovim nightly is the exception: its configuration and plugins are built into
 the store, while the default editor uses the live links; see

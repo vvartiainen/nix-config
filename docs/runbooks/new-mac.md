@@ -1,8 +1,6 @@
 # Set up a new Mac
 
-Set the configuration up from scratch on a new or wiped Mac. The steps after
-the first activation are manual because macOS and the apps do not expose them
-as configuration options.
+Set the configuration up from scratch on a new or wiped Mac.
 
 ## Prerequisites
 
@@ -11,8 +9,7 @@ as configuration options.
 - Homebrew
 - just (`brew install just`)
 
-Finish installing Xcode, then run these once on a new machine (safe to re-run).
-Apple does not expose them as nix-darwin options:
+Finish installing Xcode, then run (safe to re-run):
 
 ```sh
 sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
@@ -20,16 +17,12 @@ sudo xcodebuild -license accept
 softwareupdate --install-rosetta --agree-to-license
 ```
 
-Verify the active developer directory and tool lookup:
+Verify:
 
 ```sh
 xcode-select --print-path # expected: /Applications/Xcode.app/Contents/Developer
 xcrun --find clang
 ```
-
-Rosetta is required by the rosetta-builder and for `x86_64-linux` builds on the
-VZ linux-builder. The Xcode
-license must be accepted before `xcodebuild` and some Homebrew formulas work.
 
 ## Installation
 
@@ -47,8 +40,7 @@ license must be accepted before `xcodebuild` and some Homebrew formulas work.
 
 3. Clone this repository and `cd` into it.
 
-4. Generate [host data](../design/host-data.md) from the current user,
-   hostname, chip, and repository path, then review the generated file:
+4. Generate [host data](../design/host-data.md), then review the file:
 
    ```sh
    just init-host <HOSTNAME>
@@ -60,37 +52,32 @@ license must be accepted before `xcodebuild` and some Homebrew formulas work.
    just bootstrap <HOSTNAME>
    ```
 
-   Bootstrap also creates host data if it is missing. Add private modules and
-   SFTP hosts to the host file later as needed.
+   Add private modules and SFTP hosts to the host file later as needed.
 
 ## After the first activation
 
 - Grant Accessibility to `/opt/yabai/bin/yabai` and `/Applications/skhd.app` in
   System Settings → Privacy & Security. Grant skhd Input Monitoring if
   requested.
-- For the [Mission Control create-Space fallback](../programs/desktop.md#create-spaces),
-  allow skhd to control System Events when prompted (Privacy & Security →
-  Automation). The Accessibility grant belongs to the launching app: skhd for
-  the shortcut, or your terminal app when testing manually. Grant the terminal
-  Accessibility and System Events Automation for manual diagnostics too; do
-  not grant Dock or WindowManager. Confirm the shortcut separately, since a
-  successful terminal test does not verify skhd's permissions.
+- For the [create-Space fallback](../programs/desktop.md#create-spaces),
+  allow skhd to control System Events (Privacy & Security → Automation). To
+  run `create-space.sh --diagnose` from a terminal, grant the terminal app the
+  same Accessibility and Automation access. Do not grant Dock or
+  WindowManager.
 - Create missing Mission Control Spaces before relying on yabai routing:
   Notes apps use Space 5; Mail and Calendar use Space 6.
-- Complete Vicinae's onboarding and grant the macOS permissions requested for
-  the features you use. Leave Vicinae's separate login item disabled, since
-  Home Manager starts it through launchd.
+- Complete Vicinae's onboarding and grant the permissions it asks for. Leave
+  its login item disabled; launchd starts it.
 - Run `rex terminfo setup` once for the SSH fallback, then
   [select the Rex theme](../programs/rex.md#theme) and
   [add remote hosts](../programs/rex.md#remote-access).
-- Open T3 Code after activation and sign in to the providers you use. Default
-  provider paths and new-thread permissions are configured automatically; see
-  [T3 Code permission modes](../agents/permissions.md#t3-code-permission-modes).
+- Open T3 Code and sign in to the providers you use
+  ([permission modes](../agents/permissions.md#t3-code-permission-modes)).
 - Sign in to Codex and Claude Code so [CodexBar](../agents/sessions.md#quotas)
   can read quotas.
 - Install the [Apple Intelligence profile](#apple-intelligence-profile).
-- Slack theme is a manual per-workspace preference. Select dark mode and import
-  the Catppuccin Mocha string under Appearance → Custom theme:
+- In each Slack workspace, select dark mode and import this theme under
+  Appearance → Custom theme:
 
   ```text
   #1E1E2E,#F8F8FA,#CBA6F7,#1E1E2E,#11111B,#CDD6F4,#CBA6F7,#EBA0AC,#1E1E2E,#CDD6F4
@@ -98,9 +85,7 @@ license must be accepted before `xcodebuild` and some Homebrew formulas work.
 
 ## Apple Intelligence profile
 
-Apple Intelligence restrictions require installing the generated profile: open
-`/etc/apple-intelligence.mobileconfig` and approve it under System Settings →
-General → Device Management. Reinstall after profile changes. It blocks new
-downloads; existing models may remain. Apple has deprecated these restriction
-keys, so verify after major updates. Remove the installed profile before
-dropping its module if re-enabling the features.
+Open `/etc/apple-intelligence.mobileconfig` and approve it under System
+Settings → General → Device Management. Reinstall it after profile changes and
+verify it after major macOS updates. It blocks new model downloads only.
+Remove the installed profile before dropping its module.

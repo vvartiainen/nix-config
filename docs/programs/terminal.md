@@ -1,59 +1,49 @@
 # Terminal and files
 
-Kitty is the terminal, Yazi the file manager and Neovim the editor; Herdr runs
-inside Kitty. Keybindings are in [keybindings](../keybindings.md#kitty) and the
-editor in [Neovim](neovim.md).
+Kitty is the terminal, Yazi the file manager and [Neovim](neovim.md) the
+editor; Herdr runs inside Kitty. Keybindings are in
+[keybindings](../keybindings.md#kitty).
 
 ## Opening files and directories
 
-macOS opens Markdown, plain text, code and configuration files in Kitty with
-the stable Homebrew Neovim, set in `nix/modules/darwin/default-apps.nix`.
-Directories open in Finder; HTML, web URLs, Xcode projects, PDFs, images and
-office documents keep their usual apps. Inside Kitty, directory links open
-Yazi, text links Neovim, images `icat`, and `.log` links follow the log
-(`dotfiles/kitty/open-actions.conf`). Scripts sent to Kitty open for editing,
-not execution.
+Text, code and config files open in Kitty with Neovim
+(`nix/modules/darwin/default-apps.nix`); directories open in Finder. Inside
+Kitty, directory links open Yazi, text links Neovim, images `icat` and `.log`
+links follow the log (`dotfiles/kitty/open-actions.conf`).
 
-Check an association with `duti -x md` or `duti -d public.folder`. Removing a
-managed association does not restore the previous app. macOS may ask to
-confirm a changed default, and may reject an extension without a declared file
-type, such as `.conf`: activation warns and continues, so set that one in
-Finder's Get Info → Open with → Change All.
+```sh
+duti -x md                 # check an association
+duti -d public.folder
+```
+
+If activation warns that macOS rejected an extension (such as `.conf`), set
+it in Finder's Get Info → Open with → Change All.
 
 ## Remote files
 
-In kitty, `ssh` runs `kitten ssh`, so nothing needs installing on the remote:
+In Kitty, `ssh` runs `kitten ssh`, so nothing needs installing remotely:
 
-- `e <file>` (`edit-in-kitty`) edits a remote file in local nvim and saves back.
-- Ctrl+Shift-click a file in `ls` or `rg` output to edit, open or save it locally.
-- `kt` (`kitten transfer`) or `F7 t` copies files between local and remote.
-
-To browse remote files, run `yy sftp://<name>` for hosts listed in
-`programs.yazi.vfs.sftp` (see [host data](../design/host-data.md)).
-Yank in one yazi tab and paste in another to copy between local and remote.
-Opening a remote file edits a local cached copy; press `g U` on it afterwards
-to upload the changes.
+- `e <file>` edits a remote file in local Neovim and saves it back.
+- Ctrl+Shift-click a file in `ls` or `rg` output to edit, open or save it.
+- `kt` or **F7 → T** copies files between local and remote.
+- `yy sftp://<name>` browses hosts from `programs.yazi.vfs.sftp`
+  ([host data](../design/host-data.md)); press `g U` to upload an edited file.
 
 ## Restore and restart Kitty
 
-Kitty 0.50+ restores all running instances after logout or a computer restart,
-including window geometry and scrollback, with fresh shells. Start Kitty normally
-to restore; an explicit `--session` bypasses logout restore.
+Kitty restores its windows and scrollback after logout or restart; start it
+normally (an explicit `--session` skips this).
 
-Press **F7 → R** and confirm to save, quit and automatically reopen the current
-Kitty process with all its OS windows, tabs, layouts, working directories and
-window geometry. Other Kitty processes remain running. Apply the configuration
-manually once to link the restart helpers, then reload with **Ctrl+Shift+F5**.
+**F7 → R** saves, quits and reopens the current Kitty process with its
+windows, tabs and layouts, without scrollback or running programs.
+**F7 → S** saves a session file. If reopening fails, see
+`~/.local/state/kitty/restart.log` and reopen the snapshot:
 
-This restart omits scrollback and live process state. Programs started inside
-shells need to be resumed manually; commands launched directly by a session
-can run again. Window placement remains subject to yabai. A failed save leaves
-Kitty running. If reopening fails, inspect `~/.local/state/kitty/restart.log`;
-the recovery snapshot is `~/.local/state/kitty/restart-<old-pid>.kitty-session`.
-Reopen it from another terminal with `kitty --detach --session <snapshot>`.
-**F7 → S** still saves a reviewed session file, including foreground commands.
+```sh
+kitty --detach --session ~/.local/state/kitty/restart-<old-pid>.kitty-session
+```
 
 ## Reload changes
 
-Restart Kitty after changing remote-control or menu settings, including macOS
-menu shortcuts. Reload Herdr with `herdr server reload-config`.
+Reload Kitty with **Ctrl+Shift+F5**; restart it after remote-control or menu
+changes. Reload Herdr with `herdr server reload-config`.

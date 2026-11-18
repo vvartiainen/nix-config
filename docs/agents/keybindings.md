@@ -16,10 +16,7 @@ Desktop, browser, terminal and Herdr navigation are in
 | Inspect output | Ctrl+O | Codex/Claude open the transcript, Pi expands tools, Copilot expands recent output with an empty prompt |
 | Copy last response | Alt+Y | Codex and Claude; Claude runs `/copy` |
 
-OpenCode keeps Ctrl+O for recent sessions/projects. Cursor keeps Ctrl+R for
-reviewing changes. Mode, history, queueing and text editing otherwise follow
-each CLI's native controls. Codex Ctrl+T remains a transcript alias; OpenCode's
-leader shortcuts still open its editor and model picker.
+Other controls follow each CLI's defaults.
 
 ## Model and reasoning effort
 
@@ -32,13 +29,7 @@ leader shortcuts still open its editor and model picker.
 | Copilot CLI | Ctrl+X → / opens draft-preserving command entry; run `/model` | Use the same model/effort picker |
 | Cursor CLI | `/model` | Keep native model controls; no separate effort binding is configured |
 
-Codex effort stepping stops at the supported boundary; Alt+, / Alt+. and
-Shift+Down / Shift+Up remain aliases.
-Use `/model` for tiers requiring explicit selection. Codex Alt+P opens presets:
-0 is Model (`/model`), 1 is Review (`/review`), 2 is Subagents (`/subagents`).
-Model selection preserves the draft.
-
-Claude's Shift+Tab mode switching remains native.
+Codex Alt+P presets: 0 `/model`, 1 `/review`, 2 `/subagents`.
 
 ## Claude navigation
 
@@ -50,9 +41,7 @@ Claude's Shift+Tab mode switching remains native.
 | Model picker and effort slider | H/L decrease/increase effort |
 | Footer | H/J/K/L left/down/up/right |
 
-Letters type normally in text fields. Autocomplete keeps arrow navigation so
-J/K remain usable while entering commands and paths. Ctrl+G opens Neovim;
-Vim prompt editing is not enabled.
+Letters type normally in text fields, and autocomplete keeps arrow keys.
 
 ## Subagents
 
@@ -69,10 +58,7 @@ in its own thread.
 | Stop | X stops the selected row; Ctrl+X Ctrl+K twice stops all | Ask the main agent |
 | Side chat | `/btw` | Ctrl+/ switches between `/side` and its parent |
 
-Herdr uses Ctrl+B as its prefix, so use Ctrl+X Ctrl+B in Claude there. Codex
-Alt+Left/Right is built in and cannot be remapped; with text in the prompt it
-moves by word. In Codex approval prompts from another thread, O opens that
-thread. Claude has no next/previous agent binding.
+In Codex approval prompts from another thread, O opens that thread.
 
 ## T3 Code
 
@@ -85,18 +71,10 @@ Nix manages these shortcuts in `~/.t3/userdata/keybindings.json`:
 | Increase / decrease effort | Option+T / Option+Shift+T |
 | Stop current turn | Ctrl+Shift+X |
 
-These shortcuts leave embedded terminals and browser previews alone. Both Option
-keys work in T3; the terminal-only Right Option convention above does not apply.
-Effort stepping wraps at the highest and lowest levels.
-
-Other actions retain T3's defaults: Cmd+1–9 jumps to threads, Cmd+K opens the
-command palette, Cmd+J toggles the terminal, Cmd+D toggles the diff,
-Cmd+Shift+N starts a thread in the current project, Cmd+Shift+S settles or
-restores the thread, and Cmd+Shift+P pins it.
-
-Numbered question choices use T3's built-in 1–9 controls, which do not run while
-a text field has focus. Tab to a choice and use Space to activate it if typing
-numbers goes to the composer. Command approval controls remain app-managed.
+Both Option keys work in T3. Other actions keep T3's defaults, such as
+Cmd+K for the command palette, Cmd+J for the terminal and Cmd+D for the diff.
+If typing a question choice's number goes to the composer, Tab to the choice
+and press Space.
 
 ## Reload changes
 

@@ -1,40 +1,31 @@
 # Amphetamine
 
-Amphetamine keeps the Mac awake for a session. Nix declares the App Store app
-and installs [Power Protect](https://github.com/x74353/Amphetamine-Power-Protect)
-for closed-display sessions on Apple silicon, including when power is connected
-or disconnected. Apply the configuration normally; do not run the upstream
-Power Protect installer as well.
+Amphetamine keeps the Mac awake; Nix installs the App Store app and
+[Power Protect](https://github.com/x74353/Amphetamine-Power-Protect) for
+closed-lid sessions. Do not run the upstream Power Protect installer.
 
 ## Closed-lid sessions
 
-After the first activation, quit and reopen Amphetamine. In its session settings,
-turn off **Allow system sleep when display is closed**, then start a new session.
-If macOS asks Amphetamine to control System Events, allow it under System
-Settings → Privacy & Security → Automation. That grant remains manual.
+1. After the first activation, quit and reopen Amphetamine.
+2. In its session settings, turn off **Allow system sleep when display is
+   closed**.
+3. Allow Amphetamine to control System Events if asked (Privacy & Security →
+   Automation).
+4. Start a timed session. Test once with the lid closed, no external display,
+   and power unplugged and reconnected.
 
-Use a timed session for a build or coding agent. Test once with the lid closed
-and no external display, including unplugging and reconnecting power; confirm
-the job continues and normal sleep returns when the session ends. Keep the Mac
-on a ventilated surface while running a closed-lid session.
-
-## Managed files
-
-The module's sudoers rule lets the configured user run
-`/usr/bin/pmset -a disablesleep 1` and `0` as root without a password, also
-outside Amphetamine; it grants no other `pmset` access. Activation does not
-disable sleep or start a session, and session preferences stay app-managed.
+Keep the Mac on a ventilated surface during closed-lid sessions.
 
 ## Troubleshooting
 
-If Power Protect is not detected, restart Amphetamine and start a fresh session.
-Check the Automation grant if Power Protect reports a failure.
-
-If sleep remains disabled after ending a session, restore it from Terminal:
+If Power Protect is not detected or fails, restart Amphetamine, check the
+Automation grant and start a fresh session. If sleep stays disabled after a
+session:
 
 ```sh
 sudo /usr/bin/pmset -a disablesleep 0
 ```
 
-Before removing the module, end active sessions and restore normal sleep;
-remove the copied AppleScript under `~/Library/Application Scripts/` manually.
+The module's sudoers rule allows exactly that command, and `disablesleep 1`,
+without a password. Before removing the module, end sessions, restore sleep
+and delete the copied AppleScript under `~/Library/Application Scripts/`.

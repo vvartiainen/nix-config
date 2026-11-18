@@ -3,10 +3,8 @@
 In Kitty and Rex, **Alt means Right Option**; Left Option keeps keyboard-layout
 characters. Agent prompt controls are in [agent CLI keybindings](agents/keybindings.md).
 
-**Cmd+´** toggles Zen's sidebar and Kitty's tab bar; **Cmd+S** remains available
-in both apps. Use the Finnish **´** key without Shift (the ANSI Equal position,
-macOS keycode `0x18`), rather than typing a backtick with Shift. These skhd
-aliases also work in the app's navigation mode; other apps keep their own shortcuts.
+**Cmd+´** (the Finnish **´** key without Shift) toggles Zen's sidebar and
+Kitty's tab bar, also in navigation mode; **Cmd+S** still works.
 
 ## Global shortcuts
 
@@ -30,10 +28,9 @@ aliases also work in the app's navigation mode; other apps keep their own shortc
 | Ctrl+Shift+J/K in Slack | Next / previous channel or DM |
 | Right Option+1–9 in Kitty (including the quick-access window) or Rex | Jump to tab; other apps and Left Option keep typing characters |
 
-Global shortcuts take precedence over app actions: Ctrl+Shift+Space blocks
-JetBrains smart completion. The macOS input-source shortcuts are disabled so
-Ctrl+Space reaches apps for completion. Left Cmd+Option+Space keeps
-Spotlight. CodexBar must be running for its menu shortcut.
+Global shortcuts override app shortcuts, so Ctrl+Shift+Space blocks
+JetBrains smart completion. Ctrl+Space reaches apps; macOS input-source
+shortcuts are disabled.
 
 ## Window and resize modes
 
@@ -50,28 +47,19 @@ Release the modifiers, then use:
 | 1–6 | Move window to that Space and follow it |
 | R | Switch to resize mode |
 
-**Right Cmd+Right Option+R** (also Ctrl+Alt+R) enters resize mode; plain
-H/J/K/L resizes and W returns to window mode. These modes stay active for
-repeated actions. **Escape, Return, or the window-mode chord exits either**;
-the resize chord also exits resize mode. SketchyBar shows the active mode and
-key hints. Right-side Cmd+Option+W reserves the native close-all-windows chord;
-the left-side combination retains its normal behavior.
-
-Direct Ctrl+Alt+Cmd window/Space controls remain available; see
-[the bindings](../dotfiles/skhd/yabai) for the full list.
+**Right Cmd+Right Option+R** (also Ctrl+Alt+R) enters resize mode: H/J/K/L
+resizes and W returns to window mode. Modes stay active until **Escape,
+Return or the entry chord**. SketchyBar shows the mode and key hints. Direct
+Ctrl+Alt+Cmd controls are in [the bindings](../dotfiles/skhd/yabai).
 
 ## App navigation modes
 
-With **Zen, Kitty or Rex** focused, press **Right Cmd+Right Option+Space**, then
-release the modifiers. In Kitty, a Herdr window enters Herdr mode. The Kitty
-quick-access window runs as its own `kitty-quick-access` app and supports the
-same bindings while it is focused. SketchyBar shows the app's mode and key
-hints; keep it running for automatic exit on app switch.
-
-**Escape, Return, or the entry chord exits**. Right Cmd+Right Option+W/R
-switches to window/resize mode. Navigation, creation and layout actions generally
-stay in mode; pickers and typing actions exit so they can receive text. Release
-capture before answering a confirmation or clicking into a text field.
+With **Zen, Kitty or Rex** focused (including the Kitty quick-access window),
+press **Right Cmd+Right Option+Space**, then release the modifiers. A Herdr
+window in Kitty enters Herdr mode. **Escape, Return or the entry chord**
+exits; Right Cmd+Right Option+W/R switches to window/resize mode. Pickers and
+typing actions exit the mode; exit it before answering a confirmation or
+clicking a text field. SketchyBar must run for automatic exit on app switch.
 
 ### Zen
 
@@ -85,10 +73,6 @@ capture before answering a confirmation or clicking into a text field.
 | Cmd+T / Cmd+L / Cmd+K / Cmd+F | Exit mode and perform the native action |
 | Escape / Return / Right Cmd+Right Option+Space | Exit mode |
 | Right Cmd+Right Option+W / R | Switch to window / resize mode |
-
-N/O/F and the listed native Cmd shortcuts release capture before opening a text
-field. Clicking a field alone does not exit mode. Tab movement follows sequential
-order; H/L changes workspaces.
 
 ### Kitty
 
@@ -110,28 +94,15 @@ order; H/L changes workspaces.
 | Escape / Return / Right Cmd+Right Option+Space | Exit mode |
 | Right Cmd+Right Option+W / R | Switch to window / resize mode |
 
-Resize behavior depends on the layout; stack has no visible split to resize.
-Outside mode, Ctrl+Shift is Kitty's main modifier and **F7 → key** opens sessions
-and tools. **Ctrl+Shift+J/K** selects the next/previous tab and
-**Ctrl+Shift+L/H** moves the tab down/up. The tab bar lists only the current
-session's tabs and tabs outside sessions, and tab navigation follows it; F7 → F
-reaches every tab. **Cmd+S** toggles the tab bar in the current OS window. Reloading the
-configuration restores its configured visibility. Font controls:
+Outside mode:
 
 | Key | Action |
 | --- | --- |
-| Cmd+Plus / Cmd+Equal | Increase font size in the current OS window by 2 points |
-| Cmd+Minus | Decrease font size in the current OS window by 2 points |
-| Cmd+0 | Reset font size in the current OS window |
-| Cmd+Shift+Plus / Cmd+Shift+Equal | Increase font size in all OS windows by 2 points |
-| Cmd+Shift+Minus | Decrease font size in all OS windows by 2 points |
-| Cmd+Shift+0 | Reset font size in all OS windows |
-
-Cmd+Shift+/ also increases all-window font size for keyboard layouts where
-Shift+Plus is intercepted.
-
-**F7 → R** saves, quits and reopens Kitty with its windows and tabs; **F7 → S**
-saves a session file. See [restore and restart](programs/terminal.md#restore-and-restart-kitty).
+| Ctrl+Shift+J / K | Next / previous tab (in the current session; F7 → F reaches all) |
+| Ctrl+Shift+L / H | Move tab down / up |
+| Cmd+S | Toggle the tab bar in the current OS window |
+| Cmd+Plus / Minus / 0 | Font size up / down / reset in the current OS window; add Shift for all windows |
+| F7 → key | Sessions and tools; F7 → R [restarts Kitty](programs/terminal.md#restore-and-restart-kitty), F7 → S saves a session |
 
 ### Rex
 
@@ -164,8 +135,8 @@ Outside navigation mode:
 | Cmd+K | Clear the pane, including scrollback; this replaces Rex's default session picker shortcut |
 | Cmd+Enter / Cmd+Shift+Enter | Split right / down, also in navigation mode |
 
-Tab/pane closes retain capture; release it with Escape or Return before answering
-Rex's confirmation. Remote hosts need the same Lua bindings.
+Exit the mode before answering Rex's close confirmation. Remote hosts need
+the same Lua bindings.
 
 ### Herdr
 
@@ -186,8 +157,7 @@ Rex's confirmation. Remote hosts need the same Lua bindings.
 | Escape / Return / Right Cmd+Right Option+Space | Exit mode |
 | Right Cmd+Right Option+W / R | Switch to window / resize mode |
 
-These act on Herdr tabs and agents. Numbered agents follow the visible panel
-order. Direct controls remain available outside mode:
+Numbered agents follow the panel order. Outside the mode:
 
 | Action | Binding |
 | --- | --- |
@@ -209,10 +179,9 @@ order. Direct controls remain available outside mode:
 | Close workspace | F16, with confirmation |
 | Show active shortcuts | Ctrl+B → ? |
 
-Alt+C requires an empty agent prompt and does nothing during a running turn.
-It clears the shell, runs `/clear` in Claude, or `/new` in other agents.
-In the Go To picker, `/` searches; b/w/i/d filters blocked/working/idle/done,
-and a shows all terminals.
+Alt+C needs an empty prompt and an idle agent; it runs `/clear` in Claude
+and `/new` in other agents. In the Go To picker, `/` searches, B/W/I/D filters
+blocked/working/idle/done and A shows all.
 
 To load changed bindings, see the reload steps for the
 [desktop](programs/desktop.md#reload-after-changes),

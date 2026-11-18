@@ -1,8 +1,8 @@
 # Agent comparison
 
-What each agent client may do under the [shared policy](../design/agent-permissions.md#one-policy-one-adapter-per-client)
-and which one to pick. Paths, secrets, worktrees and diagnostics are in
-[agent permissions](permissions.md).
+What each agent client may do and which one to pick. Paths, secrets and
+diagnostics are in [agent permissions](permissions.md); T3 differences are in
+[T3 Code permission modes](permissions.md#t3-code-permission-modes).
 
 In the tables, **runs** means without a prompt, **asks** means you approve
 each use, and **denied** means no approval can allow it.
@@ -71,28 +71,3 @@ hosts, not only downloads.
 
 Where a client matches exact prefixes only, a reordered form such as
 `git reset HEAD~1 --hard` is not denied: it runs in the sandbox or asks.
-For standalone `fj` views in worktrees with multiple remotes, use the
-[fully qualified repository forms](permissions.md#forgejo-repository-discovery)
-to keep the existing read-only allowances.
-
-## In T3 Code
-
-The tables above describe terminal clients. Choose the provider's mode using
-[T3 Code permission modes](permissions.md#t3-code-permission-modes).
-
-| Provider | Difference from the terminal |
-| --- | --- |
-| Claude | Same sandbox settings. Code Mode is off and T3's own tools run |
-| Codex | Managed per-turn sandbox: terminal network, agent-cache and shared Git metadata grants do not transfer; use reviewed retries |
-| Pi | Same Safehouse sandbox; T3's MCP endpoint and the SSH agent are reachable. T3 asks before every call it does not classify as read-only, so run Pi threads in Full access |
-| OpenCode | Same rules, no OS sandbox |
-
-## Using them
-
-- Apply a policy change with `just switch`, with the agent clients closed,
-  then start new sessions. Running sessions keep their old policy.
-- Approve an escape for one specific command. Read what it runs outside the
-  sandbox: approved commands lose the credential denies.
-- Give agents secrets only through the [secret flow](permissions.md#secrets).
-- When a command fails in the sandbox, follow
-  [diagnose blocked commands](permissions.md#diagnose-blocked-commands).

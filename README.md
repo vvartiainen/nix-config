@@ -5,37 +5,23 @@ It targets Apple Silicon and is tailored to my machines; feel free to borrow par
 
 ## Setup
 
-Install Xcode, Homebrew, just, and Nix with flakes support, then clone this repo.
-Follow the [new Mac setup](docs/runbooks/new-mac.md) for prerequisites, private
-host data and the manual steps after the first activation.
-From the repository root:
-
-```sh
-just init-host <HOSTNAME>  # generate host data; review it before bootstrapping
-just bootstrap <HOSTNAME> # first activation
-```
-
-Machine identity and private modules live outside the repo in
-`~/.config/nix-config-host/` ([host data](docs/design/host-data.md)). Use its
-`hostName` for `<HOSTNAME>`; recipes default to the machine's hostname.
+Follow the [new Mac setup](docs/runbooks/new-mac.md). Machine identity and
+private modules live outside the repo in `~/.config/nix-config-host/`
+([host data](docs/design/host-data.md)).
 
 ## Everyday commands
 
-Validate your real host configuration before applying changes manually:
-
 ```sh
-just check <HOSTNAME>      # lint, evaluate, and validate installed agent config
-just build <HOSTNAME>      # build, show package changes, validate installed agent config
+just check <HOSTNAME>      # lint, evaluate, validate installed agent config
+just build <HOSTNAME>      # build and show package changes
 just switch <HOSTNAME>     # apply
-just switch <HOSTNAME> 1   # apply without running Homebrew bundle
-just up                   # update all flake inputs; pass names to update a subset
-just rollback             # return to the previous system generation
-just clean                # remove generations older than 7 days and collect garbage
+just up                   # update all flake inputs; pass names for a subset
+just rollback             # return to the previous generation
 ```
 
-See [maintenance](docs/maintenance.md) for repository checks, updates,
-generation selection and backups.
-Agents follow [AGENTS.md](AGENTS.md) and use the public fixture for validation.
+`<HOSTNAME>` defaults to the machine's hostname. See
+[maintenance](docs/maintenance.md) for checks, updates and backups. Agents
+follow [AGENTS.md](AGENTS.md).
 
 ## Repository layout
 
@@ -64,15 +50,18 @@ The rest of `docs/`:
 - [`programs/`](docs/programs/): everyday use of one program or area:
   [desktop](docs/programs/desktop.md), [terminal and files](docs/programs/terminal.md),
   [Neovim](docs/programs/neovim.md), [Rex](docs/programs/rex.md),
-  [Spotify](docs/programs/spotify.md), [IINA](docs/programs/iina.md) and
-  [Linux builders](docs/programs/linux-builders.md)
+  [Spotify](docs/programs/spotify.md), [IINA](docs/programs/iina.md),
+  [Amphetamine](docs/programs/amphetamine.md), [direnv](docs/programs/direnv.md)
+  and [Linux builders](docs/programs/linux-builders.md)
 - [`agents/`](docs/agents/): coding agents:
   [comparison](docs/agents/comparison.md),
   [permissions and sandboxes](docs/agents/permissions.md),
   [configuration](docs/agents/config.md), [keybindings](docs/agents/keybindings.md)
   and [quotas, status and history](docs/agents/sessions.md)
-- [`runbooks/`](docs/runbooks/): procedures done rarely, such as
-  [new Mac setup](docs/runbooks/new-mac.md)
+- [`runbooks/`](docs/runbooks/): procedures done rarely:
+  [new Mac setup](docs/runbooks/new-mac.md),
+  [agent forge token](docs/runbooks/forge-token.md) and
+  [transcript uploads](docs/runbooks/agent-transcript-uploads.md)
 - [`design/`](docs/design/): how things are built and why:
   [host data](docs/design/host-data.md), [modules and dotfiles](docs/design/modules.md),
   [tool ownership](docs/design/tool-ownership.md),

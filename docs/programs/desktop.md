@@ -2,55 +2,40 @@
 
 yabai, skhd, SketchyBar and JankyBorders run as Nix-managed launchd services;
 Vicinae is the launcher. Shortcuts are in [keybindings](../keybindings.md);
-one-time permissions and Spaces are in
-[new Mac setup](../runbooks/new-mac.md#after-the-first-activation).
-
-For keeping builds and coding agents running with the lid closed, see
-[Amphetamine](amphetamine.md).
+permissions and Spaces are in
+[new Mac setup](../runbooks/new-mac.md#after-the-first-activation). For
+closed-lid sessions, see [Amphetamine](amphetamine.md).
 
 ## Reload after changes
 
-After applying configuration, `reloadall` reloads yabai rules, skhd bindings,
-SketchyBar and Rex Lua configuration. It reports each step and exits nonzero
-if any fails. It does not restart GUI apps or terminal sessions. JankyBorders
-restarts during activation when its settings change, so `reloadall` does not
-touch it.
+```sh
+reloadall      # yabai rules, skhd bindings, SketchyBar and Rex Lua config
+reloadyabai    # after removing or renaming yabai rules or signals
+reloadskhd     # restart skhd
+```
 
-Use `reloadyabai` after removing or renaming rules/signals, and `reloadskhd`
-when skhd itself needs restarting. Nix manages their launchd services; avoid
-upstream skhd service-install commands, which create a competing service.
-
-Quit Zen before applying its GUI preferences, then reopen it.
+JankyBorders restarts during activation. Quit Zen before applying its
+preferences. Do not use upstream skhd service-install commands.
 
 ## Create Spaces
 
-The create-Space shortcut runs `~/.config/yabai/create-space.sh`. When
-`yabai -m space --create` fails, it presses Mission Control's add button
-through System Events instead, so SIP can stay enabled. Failures go to skhd's
-stderr log; a timeout after pressing may mean creation succeeded, so inspect
-your Spaces before retrying.
-
-Diagnose the UI without adding a Space (this opens and closes Mission Control):
+The create-Space shortcut runs `~/.config/yabai/create-space.sh`, which falls
+back to Mission Control's add button when `yabai -m space --create` fails, so
+SIP can stay enabled. Errors go to skhd's log; check your Spaces before
+retrying after a timeout. Diagnose without adding a Space:
 
 ```sh
 ~/.config/yabai/create-space.sh --diagnose
 ```
 
-Permissions are in
-[new Mac setup](../runbooks/new-mac.md#after-the-first-activation).
-SketchyBar shows Spaces 1–10 only. Destroy has no fallback: remove Spaces
-manually in Mission Control when `yabai -m space --destroy` cannot.
+SketchyBar shows Spaces 1–10. Remove Spaces in Mission Control when
+`yabai -m space --destroy` cannot.
 
 ## Window borders
 
-JankyBorders outlines the focused window in bsp layout only. Yabai signals
-and the layout keybindings run `~/.config/yabai/borders-layout.sh` to follow
-the layout; run it by hand after changing a layout some other way. Trackpad or
-Mission Control Space switches can still flash the borders briefly.
-
-Change the border colours or width in
-`nix/modules/darwin/programs/jankyborders.nix`; applying the configuration
-restarts it. To restart it by hand:
+JankyBorders outlines the focused window in bsp layout only. After changing
+layout outside the bindings, run `~/.config/yabai/borders-layout.sh`. Colours
+and width are in `nix/modules/darwin/programs/jankyborders.nix`. Restart it:
 
 ```sh
 launchctl kickstart -k gui/$(id -u)/org.nix-community.home.jankyborders
@@ -58,28 +43,18 @@ launchctl kickstart -k gui/$(id -u)/org.nix-community.home.jankyborders
 
 ## Vicinae
 
-Vicinae is the daily launcher, opened with **Cmd+Space**. Homebrew installs it;
-Nix manages preferences and startup. Configure extensions and sign-ins in
-Vicinae. Managed preferences live in `nix/modules/darwin/programs/vicinae.nix`
-and override the corresponding GUI settings; extension credentials and app data
-stay local.
+**Cmd+Space** opens Vicinae. Managed preferences live in
+`nix/modules/darwin/programs/vicinae.nix` and override GUI settings;
+extensions and sign-ins stay local. Managed commands:
 
-The managed **Eject All Disks** command asks Finder to eject disks without
-forcing busy volumes. Approve Finder control under Privacy & Security →
-Automation if prompted. Use **Reload Script Directories** if a command is
-missing, and check Finder before unplugging a drive.
+- **Eject All Disks**: asks Finder to eject non-busy disks; check Finder
+  before unplugging.
+- **Toggle Function Keys**: flips standard F1–F12 keys; applying restores the
+  declared setting.
+- **Start Time Machine Backup** and **Time Machine Backup Status**
+  (`Running = 0` means idle); they need Full Disk Access for Vicinae.
 
-**Toggle Function Keys** flips "Use F1, F2, etc. keys as standard function
-keys" without logging out. Applying the configuration restores the declared
-standard function keys.
-
-**Start Time Machine Backup** requests a backup to the configured destinations
-without waiting for it; connect the backup disk first. **Time Machine Backup
-Status** shows current activity (`Running = 0` means idle). On a Full Disk
-Access error, grant Vicinae access in Privacy & Security → Full Disk Access and
-restart it.
-
-If Vicinae has quit, restart it with:
+Use **Reload Script Directories** if a command is missing. Restart Vicinae:
 
 ```sh
 launchctl kickstart -k gui/$(id -u)/org.nix-community.home.vicinae
@@ -87,7 +62,6 @@ launchctl kickstart -k gui/$(id -u)/org.nix-community.home.vicinae
 
 ## yabai sudoers rule
 
-Activation rewrites `/etc/sudoers.d/yabai` only when the yabai binary changes.
-Endpoint security tools may kill activation (exit 137) during that write; it
-then fails on every switch until the file holds the rule for the new hash, so
-install that rule manually.
+Activation rewrites `/etc/sudoers.d/yabai` when the yabai binary changes.
+If endpoint security kills activation (exit 137) there, install the rule for
+the new hash manually.

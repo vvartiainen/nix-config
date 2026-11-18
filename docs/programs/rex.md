@@ -1,30 +1,26 @@
 # Rex
 
-The Rex GUI app runs the macOS server; this flake supplies the CLI and
-terminfo. Keybindings are in [keybindings](../keybindings.md#rex).
+The Rex GUI app runs the server; this flake supplies the CLI and terminfo.
+Keybindings are in [keybindings](../keybindings.md#rex).
 
 ## Reload
 
-Reload Lua configuration with `rex config reload`; `reloadall` also does it.
-GUI preference changes need an app restart: quit Rex before applying them,
-then reopen it.
+Run `rex config reload` (or `reloadall`) for Lua changes. Quit Rex before
+applying GUI preference changes, then reopen it.
 
 ## Theme
 
-Select **Apply Catppuccin Mocha** in Rex's palette once per Mac and again after
-changing the palette; reloading Lua alone does not select it.
+Select **Apply Catppuccin Mocha** in Rex's palette once per Mac and after
+palette changes.
 
 ## Remote access
 
 Run `rex terminfo setup` once for the SSH fallback. Each agent host needs its
-own Rex server. Add each host separately in the Mac app, iPhone and CLI; the
-Mac is not a proxy for Linux sessions. Keep enrollment state and pairing
-addresses private. Check access after a server restart and from the phone on
-cellular before relying on it.
+own Rex server, added separately in the Mac app, iPhone and CLI. Keep pairing
+details private, and check access from the phone on cellular.
 
 ## Update
 
-The flake tracks Rex's preview channel, so `just up rex` moves the CLI to the
-newest preview. The GUI build in `nix/modules/darwin/programs/rex.nix` is
-pinned by hand; bump it in the same change, because the CLI and app share an
-API revision.
+`just up rex` moves the CLI to the newest preview. Bump the pinned GUI build in
+`nix/modules/darwin/programs/rex.nix` in the same change; both share an API
+revision.
