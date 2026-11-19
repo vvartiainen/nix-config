@@ -17,7 +17,6 @@
     ../../modules/darwin/rosetta-builder.nix
     ../../modules/darwin/signed-binaries.nix
     ../../modules/darwin/programs/amphetamine.nix
-    ../../modules/darwin/programs/claude-code.nix
     ../../modules/darwin/programs/codexbar.nix
     ../../modules/darwin/programs/iina.nix
     ../../modules/darwin/programs/vicinae.nix

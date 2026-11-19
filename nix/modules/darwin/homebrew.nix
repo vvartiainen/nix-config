@@ -54,6 +54,7 @@
       "brave-browser"
       "chatgpt"
       "claude"
+      "claude-code"
       "codex"
       "drawio"
       "android-platform-tools"
