@@ -150,7 +150,7 @@ let
 
   # Preserve security features when adding UI feature settings below.
   settings = lib.recursiveUpdate permissionSettings {
-    model = "gpt-6.1-sol";
+    model = "gpt-6.2-sol";
     model_reasoning_effort = "medium";
     plan_mode_reasoning_effort = "high";
     # Compact at 80% of the model's 500k-token context window, like the other

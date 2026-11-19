@@ -63,7 +63,7 @@ let
 
   settings = {
     model = "deepseek/deepseek-flash";
-    provider.openai.models."gpt-6.1-sol".options.reasoningEffort = "medium";
+    provider.openai.models."gpt-6.2-sol".options.reasoningEffort = "medium";
     lsp.typescript = {
       command = [
         (lib.getExe pkgs.typescript)

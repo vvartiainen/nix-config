@@ -28,7 +28,7 @@ in
       compaction = {
         enabled = true;
         modelOverrides."deepseek/deepseek-flash".reserveTokens = 200000;
-        modelOverrides."openai-codex/gpt-6.1-sol".reserveTokens = 100000;
+        modelOverrides."openai-codex/gpt-6.2-sol".reserveTokens = 100000;
       };
 
       packages = [

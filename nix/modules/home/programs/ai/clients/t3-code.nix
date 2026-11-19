@@ -155,7 +155,7 @@ let
       defaultThemeSetAt = "2026-11-15T02:37:03.000Z";
       fallbackModelSelection = {
         instanceId = "codex";
-        model = "gpt-6.1-sol";
+        model = "gpt-6.2-sol";
         options = [
           {
             id = "reasoningEffort";
@@ -173,7 +173,7 @@ let
           provider = "pi";
         }
         {
-          model = "gpt-6.1-sol";
+          model = "gpt-6.2-sol";
           provider = "codex";
         }
         {
@@ -198,7 +198,7 @@ let
       removeAgentCreditsOnMerge = true;
       reviewGuideModelSelection = {
         instanceId = "codex";
-        model = "gpt-6.1-sol";
+        model = "gpt-6.2-sol";
       };
       reviewGuidesEnabled = true;
       sidebarAutoSettleAfterDays = null;
