@@ -1,6 +1,7 @@
 """Run behavior suites without reading real host configuration or credentials."""
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import os
 from pathlib import Path
 import shutil
@@ -36,12 +37,15 @@ def main():
     env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1", GIT_CONFIG_GLOBAL=os.devnull,
                GIT_CONFIG_NOSYSTEM="1")
     commands = []
+    # Unit suites run in parallel; runtime suites that launch apps run alone.
+    serial = []
 
     def suite(directory, pattern):
         commands.append([sys.executable, "-B", "-m", "unittest", "discover",
                          "-s", f"tests/{directory}", "-p", pattern, "-v"])
 
     if args.integration:
+        commands = serial
         for name in ("SAFEHOUSE", "PI_SANDBOX_TEST_ROOT", "NVIM_TEST_PLUGINS"):
             if not env.get(name) or not Path(env[name]).exists():
                 parser.error(f"{name} must name an existing integration-test path (see docs/maintenance.md)")
@@ -66,18 +70,28 @@ def main():
                             "test_shell_review.py"):
                 suite("ai", pattern)
             for name in ("test_kitty_open_actions.py", "test_kitty_restart.py"):
-                commands.append(["kitty", "+runpy", "import runpy; "
+                serial.append(["kitty", "+runpy", "import runpy; "
                                  f"runpy.run_path('tests/kitty/{name}', run_name='__main__')"])
-    failed = False
-    for command in commands:
-        print("+ " + " ".join(command), flush=True)
+    timeout = 120 if args.integration else 30
+
+    def run(command):
         try:
-            result = subprocess.run(command, env=env, timeout=120 if args.integration else 30,
-                                    stdin=subprocess.DEVNULL, check=False)
-            failed |= result.returncode != 0
+            result = subprocess.run(command, env=env, timeout=timeout, stdin=subprocess.DEVNULL,
+                                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                    text=True, check=False)
+            return result.returncode != 0, result.stdout or ""
         except (OSError, subprocess.TimeoutExpired) as error:
-            print(str(error), file=sys.stderr)
-            failed = True
+            return True, f"{error}\n"
+
+    with ThreadPoolExecutor(max_workers=max(1, min(len(commands), os.cpu_count() or 1))) as pool:
+        results = list(pool.map(run, commands))
+    results += [run(command) for command in serial]
+    failed = False
+    # Report in suite order so parallel output stays readable.
+    for command, (failure, output) in zip(commands + serial, results):
+        print("+ " + " ".join(command), flush=True)
+        print(output, end="", flush=True)
+        failed |= failure
     return int(failed)
 
 
